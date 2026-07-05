@@ -1,0 +1,15 @@
+# Node
+client/node_modules/
+client/dist/
+
+# PHP
+server/vendor/
+
+# Miljövariabler
+.env
+server/.env
+client/.env
+
+# OS
+.DS_Store
+Thumbs.db
