@@ -9,12 +9,14 @@ export default function App() {
   return(
     <HashRouter>
       <Header />
+      <main>
       <Routes>
         <Route path="/" element={<div>Hem</div>} />
         <Route path="/products" element={<div>Produkter</div>} />
         <Route path="/about" element={<div>Om oss</div>} />
         <Route path="/contact" element={<div>Kontakt</div>} />
       </Routes>
+      </main>
       <Footer />
       
     </HashRouter>  )

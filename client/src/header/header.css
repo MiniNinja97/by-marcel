@@ -6,6 +6,7 @@
     z-index: 100;
     display: flex;
     align-items: center;
+    flex-direction: row;
     justify-content: space-between;
     padding: 1rem 2.5rem;
     background: #0a0a0a;
@@ -24,8 +25,9 @@
 
 }
 
-.header_nav {
+.header__nav {
     display: flex;
+    flex-direction: row;
     gap: 3rem;
     list-style: none;
 
@@ -40,6 +42,7 @@
   color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
   transition: color 0.2s ease;
+  list-style: none;
 }
 
 .header__nav a:hover {
@@ -49,7 +52,7 @@
   color: var(--gold);
 }
 
-.header_cart {
+.header__cart {
     display: flex; 
     align-items: center;
     gap: 0.5rem;
