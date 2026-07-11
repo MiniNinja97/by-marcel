@@ -1,0 +1,78 @@
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2.5rem;
+    background: #0a0a0a;
+    border-bottom: 0.5px solid rgba(201, 168, 76, 0.2);
+
+}
+
+.header__logo {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.1rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    text-decoration: none;
+
+}
+
+.header_nav {
+    display: flex;
+    gap: 3rem;
+    list-style: none;
+
+}
+
+.header__nav a {
+  font-family: var(--font-sans);
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.15rem;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.header__nav a:hover {
+  color: var(--gold);
+}
+.header__nav a.active {
+  color: var(--gold);
+}
+
+.header_cart {
+    display: flex; 
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: 0.06rem solid var(--gold);
+    color: rgba(255, 255, 255, 0.7);
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    letter-spacing: 0.125rem;
+    text-transform: uppercase;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+
+}
+
+.header_cart:hover {
+    background: rgba(201, 168, 76, 0.2);
+    color: var(--gold);
+}
+
+.header_cart-icon {
+    font-size: 1rem;
+    color: var(--gold)
+}
