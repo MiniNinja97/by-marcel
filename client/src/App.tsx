@@ -1,5 +1,6 @@
 import {HashRouter as Router, Route, Routes, HashRouter} from 'react-router-dom'
 import Header from './header/header'
+import Footer from './footer/footer'
 import './styles/global.css'
 import './App.css'
 
@@ -14,7 +15,7 @@ export default function App() {
         <Route path="/about" element={<div>Om oss</div>} />
         <Route path="/contact" element={<div>Kontakt</div>} />
       </Routes>
-      <Header />
+      <Footer />
       
     </HashRouter>  )
 }

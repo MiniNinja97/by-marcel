@@ -6,6 +6,7 @@ export default function Header  () {
     return (
         <header className="header">
             <Link to="/" className="header__logo">
+            By Marcel
             </Link>
 
             <nav>
