@@ -1,0 +1,203 @@
+.hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--bg);
+}
+
+/* hero bilder */
+.hero-slides {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.hero-slide {
+    position: absolute;
+    inset: 0; 
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    animation: heroFade 15s infinite;
+    
+}
+
+/* lägg in bilderna här sedan */
+.slide-1 {
+    background-color: #10141a;
+    animation-delay: 0s;
+}
+
+.slide-2 {
+    background-color: #10141a;
+    animation-delay: 5s;
+}
+
+.slide-3 {
+    background-color: #10141a;
+    animation-delay: 10s;
+}
+
+@keyframes heroFade {
+    0% {
+        opacity: 0;
+    }
+    8% {
+        opacity: 1;
+    }
+    33% {
+        opacity: 1;
+    }
+    41% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+/* overlay ovanpå bilderna */
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+/* texten ovanpå hero bilderna */
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+/* loggan */
+
+.logo img {
+    width: 40rem;
+    max-width: 90vw;
+}
+
+/* text */
+.hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.hero-text h2 {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.2rem;
+    color: var(--gold);
+    text-transform: uppercase;
+}
+
+/* knappen */
+
+.hero-button {
+    background: none;
+border: 0.0625rem solid var(--text);
+color: var(--text);
+font-family: var(--font-sans);
+font-size: 0.625rem;
+font-weight: 500;
+letter-spacing: 0.2rem;
+text-transform: uppercase;
+padding: 0.875rem 2rem;
+border-radius: 0.25rem;
+transition: all 0.2s ease;
+margin-top: 2.5rem;
+
+}
+
+.hero-button:hover {
+    background: var(--gold);
+    color: var(--bg);
+    font-weight: 800;
+    border: 0.0625rem solid var(--bg);
+    
+}
+
+/* home content */
+
+.home-content {
+    padding: 5rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.home-content-top {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+#home-content-title {
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    font-weight: 400;
+    letter-spacing: 0.2rem;
+    text-transform: uppercase;
+    color: var(--gold-muted);
+}
+
+.home-content-top h2 {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text);
+}
+
+/* trippelknapparna */
+.tripple-btn {
+    display: flex; 
+    align-items: center;
+    gap: 0;
+    background: rgba(255, 255, 255, 0.03);
+    border: 0.0625rem solid rgba(201, 168, 76, 0.2);
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+    width: fit-content;
+    align-self: flex-end
+}
+
+.tripple-btn-item {
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    font-weight: 400;
+    letter-spacing: 0.15rem;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    background: none;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.2rem;
+    transition: all 0.2s ease;
+}
+
+.tripple-btn-item:hover {
+    color: var(--text);
+}
+
+.tripple-btn-item:active {
+    background: var(--gold);
+    color: #0a0a0a;
+    font-weight: 600;
+}
+
+/* produktkort */
+

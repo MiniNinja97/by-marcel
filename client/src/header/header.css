@@ -35,14 +35,15 @@
 
 .header__nav a {
   font-family: var(--font-sans);
-  font-size: 0.625rem;
-  font-weight: 400;
-  letter-spacing: 0.15rem;
+  font-size: 0.85rem;
+  font-weight: 650;
+  letter-spacing: 0.16rem;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
   transition: color 0.2s ease;
   list-style: none;
+  padding-right: 2rem;
 }
 
 .header__nav a:hover {
