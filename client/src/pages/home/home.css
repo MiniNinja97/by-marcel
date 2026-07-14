@@ -201,3 +201,131 @@ margin-top: 2.5rem;
 
 /* produktkort */
 
+.product-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.product-card1,
+.product-card2
+.product-card3 {
+
+    background: var(--bg-card);
+    border: o.0625rem solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.25rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+.product-card1:hover,
+.product-card2:hover,
+.product-card3:hover {
+    border-color: rgba(201, 168, 76, 0.3);
+}
+
+.product-card1 img,
+.product-card2 img,
+.product-card3 img {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #1a1a1a;
+    object-fit: cover;
+    margin-bottom: 0.5rem;
+}
+
+.product-card1 h2,
+.product-card2 h2, 
+.product-card3 h2 {
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    color: var(--text-muted);
+    padding: 0 1 rem;
+}
+
+.product-card1 p:last-of-type,
+.product-card2 p:last-of-type,
+.product-card3 p:last-of-type {
+    color: var(--gold);
+    margin-top: 0.5rem;
+}
+
+/* avgränsaren */
+
+.devider {
+    width: 100%;
+    height: 0.0625rem;
+    background: rgba(201, 168, 76, 0.1);
+    margin: 1rem 0;
+}
+
+/* home content */
+
+.home-content-bottom {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.home-content-bottom h2 {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text);
+    grid-column: 1 / -1;
+}
+
+.product-card-bottom {
+    background: var(--bg-card);
+    border: 0.0625rem solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.25rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+.product-card-bottom:hover {
+    border-color: rgba(201, 168, 76, 0.3);
+}
+
+.product-card-bottom img {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #1a1a1a;
+    object-fit: cover;
+    margin-bottom: 0.5rem;
+}
+
+.product-card-bottom h2 {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text);
+    padding: 0 1rem;
+}
+
+.product-card-bottom p {
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    color: var(--text-muted);
+    padding: 0 1rem;
+}
+
+.product-card-bottom p:last-of-type {
+    color: var(--gold);
+    margin-top: 0.5rem;
+}
+
+/* kategorier */
+
+
+
+
+
