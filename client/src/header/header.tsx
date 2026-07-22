@@ -11,7 +11,7 @@ export default function Header  () {
 
             <nav>
                 <ul className="header__nav">
-                    <li><NavLink to="/products">Produkter</NavLink></li>
+                    <li><NavLink to="/produkter">Produkter</NavLink></li>
                     
                     <li><NavLink to="/about">Om oss</NavLink></li>
 

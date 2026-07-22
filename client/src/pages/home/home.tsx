@@ -25,7 +25,7 @@ export default function Home () {
                     <div className="hero_content">
 
                     <div className="hero-text">
-                        <h2>Handgjorda produkter * Tillverkat i Sverige</h2>
+                        <h2>Handgjorda produkter </h2>
 
                 </div>
 
