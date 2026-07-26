@@ -106,7 +106,7 @@
 .contact-form button {
     background: var(--gold);
     border: none;
-    color: #0a0a0a;
+    color: #222222;
     font-family: var(--font-sans);
     font-size: 0.625rem;
     font-weight: 600;
