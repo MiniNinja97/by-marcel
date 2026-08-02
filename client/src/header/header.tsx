@@ -1,7 +1,10 @@
 import {Link, NavLink} from "react-router-dom";
 import './header.css';
+import { useCartStore } from '../store/useCartStore'
 
 export default function Header  () {
+
+    const { getTotalItems } = useCartStore()
 
     return (
         <header className="header">
@@ -19,10 +22,10 @@ export default function Header  () {
                 </ul>
             </nav>
 
-            <button className="header__cart-button">
+            <NavLink to="/korg" className="header__cart-button">
                 <span className="header__cart-icon">🛒</span>
-                Kundkorgen (0)
-            </button> 
+                Kundkorgen ({getTotalItems()})
+            </NavLink>
 
         </header> 
 
