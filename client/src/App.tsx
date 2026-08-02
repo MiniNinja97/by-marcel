@@ -7,6 +7,7 @@ import Products from './pages/products/products'
 import Contact from './pages/contact/contact'
 import Product from './pages/product_card/product_card'
 import Cart from './pages/cart/cart'
+import Admin from './pages/admin/admin'
 
 import './styles/global.css'
 import './App.css'
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact/>} />
         <Route path="/korg" element={<Cart />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
       </main>
       <Footer />
