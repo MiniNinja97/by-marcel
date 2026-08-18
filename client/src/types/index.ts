@@ -18,11 +18,13 @@ export const FONT_OPTIONS: FontOption[] = [
         slug: string
         description: string
         material: string
+        type: ProductType
         base_price: number
         images: string[]
         sizes?: string[]
         shapes?: string[]
         colors?: ProductColor[]
+        variants?: ProductVariant[]
         allows_custom_photo: boolean
         allows_custom_text: boolean
         allows_font_selection: boolean
@@ -50,6 +52,7 @@ export const FONT_OPTIONS: FontOption[] = [
         custom_text?: string
         unit_price: number
         total_price: number
+        selected_options?: Record<string, ProductOptionValue>
     }
 
     export interface Cart {
@@ -89,6 +92,7 @@ export const FONT_OPTIONS: FontOption[] = [
         order_id: string
         product_id: string
         product_name: string
+        supplier_id?: string
         quantity: number
         unit_price: number
         weight: number
@@ -98,6 +102,19 @@ export const FONT_OPTIONS: FontOption[] = [
         selected_font?: FontOption
         custom_photo_url?: string
         custom_text?: string
+        selected_options?: Record<string, ProductOptionValue>
     }
 
     export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+
+    export type ProductType = 'EC' | 'ES' | 'OWN'
+
+export type ProductOptionValue = string | number | boolean
+
+export interface ProductVariant {
+    id: string
+    supplier_id: string
+    options: Record<string, ProductOptionValue>
+    price: number
+    weight?: number
+}
