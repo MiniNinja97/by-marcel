@@ -76,13 +76,13 @@ export const FONT_OPTIONS: FontOption[] = [
     export interface Order {
         id: string
         customer: Customer
-        items: CartItem[]
+        items: OrderItem[]
         subtotal: number
         shipping: number
         total_weight: number
         total_price: number
         status: OrderStatus
-        stripe_payment_id: string
+        stripe_payment_id?: string
         created_at: string
 
     }
