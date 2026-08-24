@@ -126,6 +126,18 @@
     aspect-ratio: 1;
     background: #1a1a1a;
     border-radius: 0.25rem;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
 .product-card-info {

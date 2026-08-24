@@ -1,23 +1,33 @@
 import { useEffect, useState } from 'react'
 import { useParams, NavLink } from 'react-router-dom'
 import { getProducts } from '../../api/products'
-import type { Product } from '../../types'
+import type { Product, ProductVariant } from '../../types'
+import { useCartStore } from '../../store/useCartStore'
 import './product_card.css'
 
 export default function Product() {
     const { id } = useParams()
+    const { addItem } = useCartStore()
 
     const [product, setProduct] = useState<Product | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
     const [selectedImage, setSelectedImage] = useState(0)
+
+    // Här sparas alla val kunden gör.
+    // Exempel:
+    // size: "33 x 8 cm"
+    // frame: "true"
+    const [selectedOptions, setSelectedOptions] = useState<
+        Record<string, string>
+    >({})
+
     const [customText, setCustomText] = useState('')
     const [customPhoto, setCustomPhoto] = useState<File | null>(null)
     const [quantity, setQuantity] = useState(1)
 
-    // Hämta produkterna från API:t och hitta produkten
-    // som har samma id som finns i URL:en.
+    // Hämta produkten från API
     useEffect(() => {
         async function loadProduct() {
             try {
@@ -33,9 +43,11 @@ export default function Product() {
                 }
 
                 setProduct(foundProduct)
+
             } catch (error) {
                 console.error(error)
                 setError('Kunde inte hämta produkten')
+
             } finally {
                 setLoading(false)
             }
@@ -44,19 +56,78 @@ export default function Product() {
         loadProduct()
     }, [id])
 
-    const handleAddToCart = () => {
-        if (!product) return
-
-        // Kopplas till Zustand-storen senare
-        console.log({
-            product,
-            customText,
-            customPhoto,
-            quantity,
-        })
+    // Körs när kunden väljer exempelvis storlek eller ram
+    const handleOptionChange = (
+        optionName: string,
+        value: string
+    ) => {
+        setSelectedOptions(previous => ({
+            ...previous,
+            [optionName]: value,
+        }))
     }
 
-    // Medan produkten hämtas
+    // Leta efter varianten som matchar kundens val
+    const selectedVariant: ProductVariant | undefined =
+        product?.variants?.find(variant => {
+
+            if (!product.options) {
+                return false
+            }
+
+            // Kontrollera först att kunden gjort alla val
+            const allOptionsSelected = product.options.every(
+                option =>
+                    selectedOptions[option.option_name] !== undefined
+            )
+
+            if (!allOptionsSelected) {
+                return false
+            }
+
+            // Kontrollera sedan om varianten matchar valen
+            return product.options.every(option => {
+
+                const selectedValue =
+                    selectedOptions[option.option_name]
+
+                const variantValue =
+                    variant.options[option.option_name]
+
+                return String(variantValue) === selectedValue
+            })
+        })
+
+    // Visa variantens pris om en variant hittats.
+    // Annars visas produktens grundpris.
+    const displayedPrice =
+        selectedVariant?.price ?? product?.base_price ?? 0
+
+    const handleAddToCart = () => {
+    if (!product || !selectedVariant) return
+
+    addItem({
+        product: product,
+        quantity: quantity,
+
+        selected_size: selectedOptions.size,
+
+        custom_text: customText || undefined,
+        custom_photo: customPhoto || undefined,
+
+        unit_price: selectedVariant.price,
+        total_price: selectedVariant.price * quantity,
+
+        selected_options: selectedOptions,
+    })
+
+    setSelectedOptions({})
+    setCustomText('')
+    setCustomPhoto(null)
+    setQuantity(1)
+    setSelectedImage(0)
+}
+
     if (loading) {
         return (
             <div className='product-page'>
@@ -65,7 +136,6 @@ export default function Product() {
         )
     }
 
-    // Om något gick fel
     if (error) {
         return (
             <div className='product-page'>
@@ -74,10 +144,16 @@ export default function Product() {
         )
     }
 
-    // Extra säkerhet för TypeScript
     if (!product) {
         return null
     }
+
+    // Har kunden gjort alla val?
+    const allOptionsSelected =
+        product.options?.every(
+            option =>
+                selectedOptions[option.option_name] !== undefined
+        ) ?? true
 
     return (
         <div className='product-page'>
@@ -141,7 +217,7 @@ export default function Product() {
 
                 </div>
 
-                {/* Höger — produktinformation */}
+                {/* Höger — info + val */}
                 <div className='product-right'>
 
                     <div className='product-info'>
@@ -156,9 +232,57 @@ export default function Product() {
 
                     </div>
 
+                    {/* Pris */}
                     <p className='product-price'>
-                        {product.base_price} kr
+                        {displayedPrice} kr
                     </p>
+
+                    {/* Dynamiska produktval */}
+                    {product.options?.map(option => (
+                        <div
+                            className='product-option'
+                            key={option.id}
+                        >
+                            <label>
+                                {option.display_name}
+                            </label>
+
+                            <select
+                                value={
+                                    selectedOptions[
+                                        option.option_name
+                                    ] ?? ''
+                                }
+                                onChange={event =>
+                                    handleOptionChange(
+                                        option.option_name,
+                                        event.target.value
+                                    )
+                                }
+                            >
+                                <option value='' disabled>
+                                    Välj {option.display_name.toLowerCase()}
+                                </option>
+
+                                {option.values.map(value => (
+                                    <option
+                                        key={value.value}
+                                        value={value.value}
+                                    >
+                                        {value.display_value}
+                                    </option>
+                                ))}
+
+                            </select>
+                        </div>
+                    ))}
+
+                    {/* Om kombinationen inte finns */}
+                    {allOptionsSelected && !selectedVariant && (
+                        <p className='variant-unavailable'>
+                            Den valda kombinationen är inte tillgänglig.
+                        </p>
+                    )}
 
                     {/* Bilduppladdning */}
                     {product.allows_custom_photo && (
@@ -170,9 +294,9 @@ export default function Product() {
                                 <input
                                     type='file'
                                     accept='image/*'
-                                    onChange={e =>
+                                    onChange={event =>
                                         setCustomPhoto(
-                                            e.target.files?.[0] ?? null
+                                            event.target.files?.[0] ?? null
                                         )
                                     }
                                 />
@@ -195,10 +319,11 @@ export default function Product() {
                             <label>Din text</label>
 
                             <div className='gravyr-box'>
+
                                 <textarea
                                     value={customText}
-                                    onChange={e =>
-                                        setCustomText(e.target.value)
+                                    onChange={event =>
+                                        setCustomText(event.target.value)
                                     }
                                     maxLength={60}
                                     placeholder='Skriv din text här...'
@@ -208,8 +333,8 @@ export default function Product() {
                                 <p className='gravyr-hint'>
                                     Max 60 tecken · Radbrytningar tillåtna
                                 </p>
-                            </div>
 
+                            </div>
                         </div>
                     )}
 
@@ -249,10 +374,11 @@ export default function Product() {
                         </div>
                     </div>
 
-                    {/* Lägg i korg */}
+                    {/* Lägg i kundkorgen */}
                     <button
                         className='add-to-cart-btn'
                         onClick={handleAddToCart}
+                        disabled={!selectedVariant}
                     >
                         Lägg till i kundkorgen
                     </button>
