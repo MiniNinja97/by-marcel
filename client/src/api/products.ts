@@ -59,3 +59,50 @@ export async function updateProductVisibility(
     throw new Error("Kunde inte uppdatera produkten");
   }
 }
+export async function updateProductStockStatus(
+    id: string,
+    isOutOfStock: boolean
+): Promise<void> {
+
+    const response = await fetch(
+        'https://www.bymarcel.se/Server/api/update-product.php',
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id: id,
+                is_out_of_stock: isOutOfStock,
+            }),
+        }
+    )
+
+    if (!response.ok) {
+        throw new Error('Kunde inte uppdatera lagerstatus')
+    }
+}
+
+export async function updateProductFeatured(
+    id: string,
+    isFeatured: boolean
+): Promise<void> {
+
+    const response = await fetch(
+        'https://www.bymarcel.se/Server/api/update-product.php',
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id: id,
+                is_featured: isFeatured,
+            }),
+        }
+    )
+
+    if (!response.ok) {
+        throw new Error('Kunde inte uppdatera utvald produkt')
+    }
+}

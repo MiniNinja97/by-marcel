@@ -30,10 +30,10 @@ CREATE TABLE products (
 
 -- =========================================================
 -- PRODUCT IMAGES
--- Sparar bilder som hör till en produkt.
--- Själva bilden ligger på servern, medan databasen bara sparar URL/sökväg.
--- En produkt kan ha flera bilder.
--- sort_order bestämmer vilken bild som visas först.
+-- Sparar produktens generella bilder.
+--
+-- Dessa används bland annat som standardbild för produkten.
+-- Själva bilden ligger på servern och databasen sparar sökvägen.
 -- =========================================================
 
 CREATE TABLE product_images (
@@ -50,12 +50,13 @@ CREATE TABLE product_images (
 
 -- =========================================================
 -- PRODUCT VARIANTS
--- Kopplar en By Marcel-produkt till leverantörens olika artiklar.
--- Används främst för EC-produkter.
+-- Kopplar en By Marcel-produkt till leverantörens artiklar.
 --
 -- Exempel:
--- Gatunamnskylt + 33x8 cm + ram
--- -> leverantörskod SG-01
+-- EC.SG1
+-- + 33x8 cm
+-- + med ram
+-- -> EC.SG1.01 / SG-01
 --
 -- options innehåller kombinationen av val som JSON.
 -- =========================================================
@@ -75,13 +76,37 @@ CREATE TABLE product_variants (
 
 
 -- =========================================================
+-- PRODUCT VARIANT IMAGES
+-- Bilder som hör till en specifik variant.
+--
+-- Gör att produktbilden kan ändras när kunden väljer
+-- exempelvis storlek, ram, form eller annan variant.
+--
+-- Exempel:
+-- EC.SG1.01 -> /uploads/products/EC.SG1.01.jpg
+-- EC.SG1.06 -> /uploads/products/EC.SG1.06.jpg
+-- =========================================================
+
+CREATE TABLE product_variant_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    variant_id VARCHAR(100) NOT NULL,
+    image_url VARCHAR(500) NOT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+
+    FOREIGN KEY (variant_id)
+        REFERENCES product_variants(id)
+        ON DELETE CASCADE
+);
+
+
+-- =========================================================
 -- PRODUCT OPTIONS
 -- Beskriver vilka val en viss produkt erbjuder kunden.
 --
 -- Exempel:
--- size  -> "Storlek"
--- frame -> "Ram"
--- shape -> "Form"
+-- size  -> Storlek
+-- frame -> Ram
+-- shape -> Form
 -- =========================================================
 
 CREATE TABLE product_options (
@@ -99,13 +124,13 @@ CREATE TABLE product_options (
 
 -- =========================================================
 -- PRODUCT OPTION VALUES
--- Innehåller de möjliga värdena för ett produktalternativ.
+-- Möjliga värden för ett produktalternativ.
 --
 -- Exempel:
+--
 -- Storlek:
 -- 33 x 8 cm
 -- 40 x 8 cm
--- 70 x 15 cm
 --
 -- Ram:
 -- true  -> Med ram
@@ -126,8 +151,42 @@ CREATE TABLE product_option_values (
 
 
 -- =========================================================
+-- PRODUCT TEXT FIELDS
+-- Bestämmer vilka egna textfält en produkt har.
+--
+-- Detta gör att olika produkter kan ha olika antal textrader.
+--
+-- Exempel EC.SG1:
+-- line1 -> Din text
+--
+-- En annan produkt kan exempelvis ha:
+-- line1 -> Rad 1
+-- line2 -> Rad 2
+-- line3 -> Rad 3
+-- line4 -> Rad 4
+--
+-- max_length kan också skilja mellan fälten.
+-- =========================================================
+
+CREATE TABLE product_text_fields (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id VARCHAR(100) NOT NULL,
+    field_name VARCHAR(100) NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    placeholder VARCHAR(255) DEFAULT NULL,
+    max_length INT NOT NULL DEFAULT 60,
+    sort_order INT NOT NULL DEFAULT 0,
+
+    FOREIGN KEY (product_id)
+        REFERENCES products(id)
+        ON DELETE CASCADE
+);
+
+
+-- =========================================================
 -- PRODUCT COLORS
 -- Gemensam lista över färger som kan användas på produkter.
+--
 -- Färgen kan innehålla namn, hexkod och eventuellt pristillägg.
 -- =========================================================
 
@@ -142,11 +201,10 @@ CREATE TABLE product_colors (
 
 -- =========================================================
 -- PRODUCT COLOR LINKS
--- Kopplingstabell mellan produkter och färger.
--- Bestämmer vilka färger en viss produkt får använda.
+-- Koppling mellan produkter och tillåtna färger.
 --
 -- Samma färg kan användas av många produkter.
--- Samma produkt kan ha många färger.
+-- Samma produkt kan använda många färger.
 -- =========================================================
 
 CREATE TABLE product_color_links (
@@ -167,7 +225,7 @@ CREATE TABLE product_color_links (
 
 -- =========================================================
 -- FONTS
--- Gemensam lista över de typsnitt kunden kan välja mellan.
+-- Gemensam lista över typsnitt kunden kan välja mellan.
 -- =========================================================
 
 CREATE TABLE fonts (
@@ -178,8 +236,7 @@ CREATE TABLE fonts (
 
 -- =========================================================
 -- PRODUCT FONT LINKS
--- Kopplingstabell mellan produkter och typsnitt.
--- Bestämmer vilka fonts som får användas på respektive produkt.
+-- Koppling mellan produkter och tillåtna typsnitt.
 -- =========================================================
 
 CREATE TABLE product_font_links (
@@ -201,7 +258,6 @@ CREATE TABLE product_font_links (
 -- =========================================================
 -- CUSTOMERS
 -- Sparar kundens kontakt- och leveransuppgifter.
--- En kund kan senare vara kopplad till flera ordrar.
 -- =========================================================
 
 CREATE TABLE customers (
@@ -221,18 +277,22 @@ CREATE TABLE customers (
 -- =========================================================
 -- ORDERS
 -- Sparar information om en genomförd order.
--- Själva produkterna i ordern ligger i order_items.
+--
+-- Produkterna i ordern sparas separat i order_items.
 -- =========================================================
 
 CREATE TABLE orders (
     id VARCHAR(100) PRIMARY KEY,
     customer_id VARCHAR(100) NOT NULL,
+
     subtotal DECIMAL(10,2) NOT NULL,
     shipping DECIMAL(10,2) NOT NULL,
     total_weight DECIMAL(10,2) NOT NULL,
     total_price DECIMAL(10,2) NOT NULL,
+
     status VARCHAR(50) NOT NULL,
     stripe_payment_id VARCHAR(255),
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (customer_id)
@@ -243,35 +303,61 @@ CREATE TABLE orders (
 
 -- =========================================================
 -- ORDER ITEMS
--- Sparar varje enskild produkt i en order.
+-- Sparar varje produkt som ingår i en order.
 --
--- Viktigt:
--- Här sparas informationen som den såg ut när köpet gjordes.
--- Om admin senare ändrar produktens pris eller namn påverkas
--- därför inte gamla ordrar.
+-- Informationen sparas som den såg ut vid köptillfället.
+-- Om produkten senare ändras påverkas därför inte gamla ordrar.
 --
--- supplier_id gör att admin direkt kan se vilken artikel
--- som ska beställas från leverantören.
+-- supplier_id:
+-- Leverantörens artikelnummer för vald variant.
+--
+-- selected_options:
+-- Alla dynamiska produktval.
+-- Exempel:
+-- {
+--   "size": "33 x 8 cm",
+--   "frame": "true"
+-- }
+--
+-- custom_texts:
+-- Kundens dynamiska textrader.
+-- Exempel:
+-- {
+--   "line1": "STORGATAN",
+--   "line2": "12"
+-- }
 -- =========================================================
 
 CREATE TABLE order_items (
     id VARCHAR(100) PRIMARY KEY,
+
     order_id VARCHAR(100) NOT NULL,
     product_id VARCHAR(100) NOT NULL,
+
     product_name VARCHAR(255) NOT NULL,
     supplier_id VARCHAR(100),
+
     quantity INT NOT NULL,
     unit_price DECIMAL(10,2) NOT NULL,
     weight DECIMAL(10,2) NOT NULL,
 
+    -- Äldre/separata val behålls tills vidare
     selected_size VARCHAR(255),
     selected_shape VARCHAR(255),
     selected_color VARCHAR(255),
     selected_font VARCHAR(255),
+
+    -- Dynamiska produktval
     selected_options JSON,
 
+    -- Personalisering
     custom_photo_url VARCHAR(500),
+
+    -- Äldre textfält behålls tills vidare
     custom_text TEXT,
+
+    -- Nya dynamiska textfält
+    custom_texts JSON,
 
     FOREIGN KEY (order_id)
         REFERENCES orders(id)

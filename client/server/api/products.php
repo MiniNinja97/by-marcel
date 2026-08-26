@@ -11,111 +11,195 @@ $result = $conn->query($sql);
 $products = [];
 
 if ($result) {
+
     while ($row = $result->fetch_assoc()) {
 
         $productId = $row["id"];
 
+
+        // =========================================
+        // BILDER
+        // =========================================
+
+        $imageSql = "
+            SELECT image_url
+            FROM product_images
+            WHERE product_id = ?
+            ORDER BY sort_order ASC
+        ";
+
+        $imageStmt = $conn->prepare($imageSql);
+        $imageStmt->bind_param("s", $productId);
+        $imageStmt->execute();
+
+        $imageResult = $imageStmt->get_result();
+
+        $images = [];
+
+        while ($image = $imageResult->fetch_assoc()) {
+            $images[] = $image["image_url"];
+        }
+
+        $row["images"] = $images;
+
+        $imageStmt->close();
+
+
+        // =========================================
+        // PRODUKTVAL
+        // Exempel: storlek, ram, form
+        // =========================================
+
         $optionSql = "
-    SELECT id, option_name, display_name, sort_order
-    FROM product_options
+            SELECT id, option_name, display_name, sort_order
+            FROM product_options
+            WHERE product_id = ?
+            ORDER BY sort_order ASC
+        ";
+
+        $optionStmt = $conn->prepare($optionSql);
+        $optionStmt->bind_param("s", $productId);
+        $optionStmt->execute();
+
+        $optionResult = $optionStmt->get_result();
+
+        $options = [];
+
+        while ($option = $optionResult->fetch_assoc()) {
+
+            $optionId = $option["id"];
+
+            $valueSql = "
+                SELECT value, display_value, sort_order
+                FROM product_option_values
+                WHERE option_id = ?
+                ORDER BY sort_order ASC
+            ";
+
+            $valueStmt = $conn->prepare($valueSql);
+            $valueStmt->bind_param("i", $optionId);
+            $valueStmt->execute();
+
+            $valueResult = $valueStmt->get_result();
+
+            $values = [];
+
+            while ($value = $valueResult->fetch_assoc()) {
+                $values[] = $value;
+            }
+
+            $option["values"] = $values;
+            $options[] = $option;
+
+            $valueStmt->close();
+        }
+
+        $row["options"] = $options;
+
+        $optionStmt->close();
+
+
+        // =========================================
+        // CUSTOM TEXT-FÄLT
+        // Exempel: Rad 1, Rad 2, Rad 3...
+        // =========================================
+
+        $textFieldSql = "
+            SELECT
+                id,
+                field_name,
+                display_name,
+                placeholder,
+                max_length,
+                sort_order
+            FROM product_text_fields
+            WHERE product_id = ?
+            ORDER BY sort_order ASC
+        ";
+
+        $textFieldStmt = $conn->prepare($textFieldSql);
+        $textFieldStmt->bind_param("s", $productId);
+        $textFieldStmt->execute();
+
+        $textFieldResult = $textFieldStmt->get_result();
+
+        $textFields = [];
+
+        while ($textField = $textFieldResult->fetch_assoc()) {
+            $textFields[] = $textField;
+        }
+
+        $row["text_fields"] = $textFields;
+
+        $textFieldStmt->close();
+
+
+       // =========================================
+// VARIANTER / LEVERANTÖRSARTIKLAR
+// =========================================
+
+$variantSql = "
+    SELECT id, supplier_id, price, weight, options
+    FROM product_variants
     WHERE product_id = ?
-    ORDER BY sort_order ASC
 ";
 
-$optionStmt = $conn->prepare($optionSql);
-$optionStmt->bind_param("s", $productId);
-$optionStmt->execute();
+$variantStmt = $conn->prepare($variantSql);
+$variantStmt->bind_param("s", $productId);
+$variantStmt->execute();
 
-$optionResult = $optionStmt->get_result();
+$variantResult = $variantStmt->get_result();
 
-$options = [];
+$variants = [];
 
-while ($option = $optionResult->fetch_assoc()) {
+while ($variant = $variantResult->fetch_assoc()) {
 
-    $optionId = $option["id"];
+    // Gör JSON-options till en PHP-array
+    $variant["options"] = json_decode(
+        $variant["options"],
+        true
+    );
 
-    // Hämta produktens bilder
-$imageSql = "
-    SELECT image_url
-    FROM product_images
-    WHERE product_id = ?
-    ORDER BY sort_order ASC
-";
+    $variantId = $variant["id"];
 
-$imageStmt = $conn->prepare($imageSql);
-$imageStmt->bind_param("s", $productId);
-$imageStmt->execute();
 
-$imageResult = $imageStmt->get_result();
+    // =========================================
+    // BILDER FÖR DENNA VARIANT
+    // =========================================
 
-$images = [];
-
-while ($image = $imageResult->fetch_assoc()) {
-    $images[] = $image["image_url"];
-}
-
-$row["images"] = $images;
-
-$imageStmt->close();
-
-    $valueSql = "
-        SELECT value, display_value, sort_order
-        FROM product_option_values
-        WHERE option_id = ?
+    $variantImageSql = "
+        SELECT image_url
+        FROM product_variant_images
+        WHERE variant_id = ?
         ORDER BY sort_order ASC
     ";
 
-    $valueStmt = $conn->prepare($valueSql);
-    $valueStmt->bind_param("i", $optionId);
-    $valueStmt->execute();
+    $variantImageStmt = $conn->prepare($variantImageSql);
+    $variantImageStmt->bind_param("s", $variantId);
+    $variantImageStmt->execute();
 
-    $valueResult = $valueStmt->get_result();
+    $variantImageResult = $variantImageStmt->get_result();
 
-    $values = [];
+    $variantImages = [];
 
-    while ($value = $valueResult->fetch_assoc()) {
-        $values[] = $value;
+    while ($variantImage = $variantImageResult->fetch_assoc()) {
+        $variantImages[] = $variantImage["image_url"];
     }
 
-    $option["values"] = $values;
-    $options[] = $option;
+    $variant["images"] = $variantImages;
 
-    $valueStmt->close();
+    $variantImageStmt->close();
+
+
+    // Lägg till färdig variant
+    $variants[] = $variant;
 }
 
-$row["options"] = $options;
+$row["variants"] = $variants;
 
-$optionStmt->close();
-
-        $variantSql = "
-            SELECT id, supplier_id, price, weight, options
-            FROM product_variants
-            WHERE product_id = ?
-        ";
-
-        $stmt = $conn->prepare($variantSql);
-        $stmt->bind_param("s", $productId);
-        $stmt->execute();
-
-        $variantResult = $stmt->get_result();
-
-        $variants = [];
-
-        while ($variant = $variantResult->fetch_assoc()) {
-
-            $variant["options"] = json_decode(
-                $variant["options"],
-                true
-            );
-
-            $variants[] = $variant;
-        }
-
-        $row["variants"] = $variants;
+$variantStmt->close();
 
         $products[] = $row;
-
-        $stmt->close();
     }
 }
 

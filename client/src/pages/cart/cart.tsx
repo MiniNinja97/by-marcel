@@ -35,121 +35,118 @@ export default function Cart() {
       </div>
 
       <div className="cart-layout">
+        <div className="cart-items">
+          {items.map((item) => (
+            <div
+              key={`${item.product.id}-${JSON.stringify(item.selected_options)}-${item.custom_text ?? ""}`}
+              className="cart-item"
+            >
+              <div className="cart-item-img">
+                {item.product.images[0] ? (
+                  <img
+                    src={`https://www.bymarcel.se${item.product.images[0]}`}
+                    alt={item.product.name}
+                  />
+                ) : (
+                  <div className="cart-item-img-placeholder" />
+                )}
+              </div>
 
-  <div className="cart-items">
-    {items.map((item) => (
-      <div
-        key={`${item.product.id}-${JSON.stringify(item.selected_options)}-${item.custom_text ?? ""}`}
-        className="cart-item"
-      >
+              <div className="cart-item-info">
+                <h3>{item.product.name}</h3>
 
-        <div className="cart-item-img">
-          {item.product.images[0] ? (
-            <img
-              src={`https://www.bymarcel.se${item.product.images[0]}`}
-              alt={item.product.name}
-            />
-          ) : (
-            <div className="cart-item-img-placeholder" />
-          )}
+                <p className="cart-item-specs">
+                  {[
+                    item.selected_size,
+                    item.selected_color?.name,
+                    item.selected_shape,
+                  ]
+                    .filter(Boolean)
+                    .join(" . ")}
+                </p>
+
+                {item.custom_texts &&
+                  Object.entries(item.custom_texts).map(([fieldName, text]) => {
+                    if (!text) return null;
+
+                    const textField = item.product.text_fields?.find(
+                      (field) => field.field_name === fieldName,
+                    );
+
+                    return (
+                      <p className="cart-item-text" key={fieldName}>
+                        {textField?.display_name ?? fieldName}: {text}
+                      </p>
+                    );
+                  })}
+
+                <div className="cart-item-quantity">
+                  <button
+                    className="quantity-btn"
+                    onClick={() =>
+                      updateQuantity(item, Math.max(1, item.quantity - 1))
+                    }
+                  >
+                    -
+                  </button>
+
+                  <span>{item.quantity}</span>
+
+                  <button
+                    className="quantity-btn"
+                    onClick={() => updateQuantity(item, item.quantity + 1)}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="cart-item-right">
+                <p className="cart-item-price">
+                  {item.unit_price * item.quantity} kr
+                </p>
+
+                <button
+                  className="cart-item-remove"
+                  onClick={() => removeItem(item)}
+                >
+                  Ta bort
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
 
-        <div className="cart-item-info">
-          <h3>{item.product.name}</h3>
+        <div className="cart-summary">
+          <h2>Orderöversikt</h2>
 
-          <p className="cart-item-specs">
-            {[
-              item.selected_size,
-              item.selected_color?.name,
-              item.selected_shape,
-            ]
-              .filter(Boolean)
-              .join(" . ")}
-          </p>
+          <div className="cart-summary-rows">
+            <div className="cart-summary-row">
+              <span>Delsumma</span>
+              <span>{subtotal} kr</span>
+            </div>
 
-          {item.custom_text && (
-            <p className="cart-item-text">
-              Vald text: {item.custom_text}
-            </p>
-          )}
+            <div className="cart-summary-row">
+              <span>Frakt</span>
+              <span>{shipping} kr</span>
+            </div>
 
-          <div className="cart-item-quantity">
-            <button
-              className="quantity-btn"
-              onClick={() =>
-                updateQuantity(
-                  item,
-                  Math.max(1, item.quantity - 1)
-                )
-              }
-            >
-              -
-            </button>
+            <div className="cart-summary-row">
+              <span>Moms</span>
+              <span>{moms} kr</span>
+            </div>
 
-            <span>{item.quantity}</span>
-
-            <button
-              className="quantity-btn"
-              onClick={() =>
-                updateQuantity(
-                  item,
-                  item.quantity + 1
-                )
-              }
-            >
-              +
-            </button>
+            <div className="cart-summary-row total">
+              <span>Totalt</span>
+              <span>{total} kr</span>
+            </div>
           </div>
+
+          <NavLink to="/betalning" className="cart-checkout-btn">
+            Gå till betalning
+          </NavLink>
         </div>
-
-        <div className="cart-item-right">
-          <p className="cart-item-price">
-            {item.unit_price * item.quantity} kr
-          </p>
-
-          <button
-            className="cart-item-remove"
-            onClick={() => removeItem(item)}
-          >
-            Ta bort
-          </button>
-        </div>
-
       </div>
-    ))}
-  </div>
-
-  <div className="cart-summary">
-    <h2>Orderöversikt</h2>
-
-    <div className="cart-summary-rows">
-      <div className="cart-summary-row">
-        <span>Delsumma</span>
-        <span>{subtotal} kr</span>
-      </div>
-
-      <div className="cart-summary-row">
-        <span>Frakt</span>
-        <span>{shipping} kr</span>
-      </div>
-
-      <div className="cart-summary-row">
-        <span>Moms</span>
-        <span>{moms} kr</span>
-      </div>
-
-      <div className="cart-summary-row total">
-        <span>Totalt</span>
-        <span>{total} kr</span>
-      </div>
-    </div>
-
-    <NavLink to="/betalning" className="cart-checkout-btn">
-      Gå till betalning
-    </NavLink>
-  </div>
-
-</div>
     </div>
   );
 }

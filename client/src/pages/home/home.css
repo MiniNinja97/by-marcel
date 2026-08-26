@@ -193,7 +193,7 @@ margin-top: 2.5rem;
     color: var(--text);
 }
 
-.tripple-btn-item:active {
+.tripple-btn-item.active {
     background: var(--gold);
     color: #0a0a0a;
     font-weight: 600;
@@ -207,7 +207,7 @@ margin-top: 2.5rem;
     gap: 1rem;
 }
 
-.product-card1,
+/* .product-card1,
 .product-card2
 .product-card3 {
 
@@ -252,7 +252,7 @@ margin-top: 2.5rem;
 .product-card3 p:last-of-type {
     color: var(--gold);
     margin-top: 0.5rem;
-}
+} */
 
 /* avgränsaren */
 
@@ -325,7 +325,61 @@ margin-top: 2.5rem;
 
 /* kategorier */
 
+.home-product-card {
+    background: var(--bg-card);
+    border: 0.0625rem solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.25rem;
+    overflow: hidden;
 
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    padding-bottom: 1rem;
+
+    text-decoration: none;
+
+    transition: border-color 0.2s ease;
+}
+
+.home-product-card:hover {
+    border-color: rgba(201, 168, 76, 0.3);
+}
+
+.home-product-card img,
+.home-product-image-placeholder {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    background: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.home-product-card h2 {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text);
+
+    padding: 0 1rem;
+}
+
+.home-product-card p {
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    color: var(--text-muted);
+
+    padding: 0 1rem;
+}
+
+.home-product-price {
+    color: var(--gold) !important;
+    margin-top: 0.5rem;
+}
+
+.home-product-stock {
+    color: var(--gold) !important;
+}
 
 
 

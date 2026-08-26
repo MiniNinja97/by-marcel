@@ -24,6 +24,8 @@ export interface Product {
   // Leverantörsvarianter
   variants?: ProductVariant[];
 
+  text_fields?: ProductTextField[];
+
   allows_custom_photo: boolean;
   allows_custom_text: boolean;
   allows_font_selection: boolean;
@@ -80,9 +82,12 @@ export interface CartItem {
   selected_font?: FontOption;
   custom_photo?: File;
   custom_text?: string;
+  custom_texts?: Record<string, string>;
   unit_price: number;
   total_price: number;
   selected_options?: Record<string, ProductOptionValue>;
+  variant_id?: string;
+  supplier_id?: string;
 }
 
 export interface Cart {
@@ -132,6 +137,7 @@ export interface OrderItem {
   custom_photo_url?: string;
   custom_text?: string;
   selected_options?: Record<string, ProductOptionValue>;
+  custom_texts?: Record<string, string>;
 }
 
 export type OrderStatus =
@@ -160,4 +166,14 @@ export interface ProductVariant {
   options: Record<string, ProductOptionValue>;
   price: number;
   weight?: number;
+  images?: string[];
+}
+
+export interface ProductTextField {
+  id: number;
+  field_name: string;
+  display_name: string;
+  placeholder?: string;
+  max_length: number;
+  sort_order: number;
 }

@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 
 import type { Product } from "../../types";
-import { getProducts, updateProductVisibility } from "../../api/products";
+import {
+  getProducts,
+  updateProductVisibility,
+  updateProductStockStatus,
+  updateProductFeatured,
+} from "../../api/products";
 
 type SortOption = "az" | "datum" | "vikt" | "totalpris";
 
@@ -30,6 +35,50 @@ export default function AdminProducts() {
 
     loadProducts();
   }, []);
+
+  const handleToggleFeatured = async (product: Product) => {
+    try {
+      const newFeaturedValue = !product.is_featured;
+
+      await updateProductFeatured(product.id, newFeaturedValue);
+
+      setProducts((currentProducts) =>
+        currentProducts.map((p) =>
+          p.id === product.id
+            ? {
+                ...p,
+                is_featured: newFeaturedValue,
+              }
+            : p,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      alert("Kunde inte ändra utvald produkt");
+    }
+  };
+
+  const handleToggleStock = async (product: Product) => {
+    try {
+      const newStockValue = !product.is_out_of_stock;
+
+      await updateProductStockStatus(product.id, newStockValue);
+
+      setProducts((currentProducts) =>
+        currentProducts.map((p) =>
+          p.id === product.id
+            ? {
+                ...p,
+                is_out_of_stock: newStockValue,
+              }
+            : p,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      alert("Kunde inte ändra lagerstatus");
+    }
+  };
 
   const handleToggleHidden = async (product: Product) => {
     try {
@@ -538,8 +587,20 @@ export default function AdminProducts() {
                 >
                   {product.is_hidden ? "Visa" : "Dölj"}
                 </button>
-                <button className="admin-btn">Ej i lager</button>
-                <button className="admin-btn">Visa i utvalda</button>
+                <button
+                  className="admin-btn"
+                  onClick={() => handleToggleStock(product)}
+                >
+                  {product.is_out_of_stock ? "I lager" : "Ej i lager"}
+                </button>
+                <button
+                  className="admin-btn"
+                  onClick={() => handleToggleFeatured(product)}
+                >
+                  {product.is_featured
+                    ? "Ta bort från utvalda"
+                    : "Visa i utvalda"}
+                </button>
               </div>
             </div>
 
