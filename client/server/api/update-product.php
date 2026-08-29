@@ -12,7 +12,6 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
 
 require_once __DIR__ . "/../config/db.php";
 
-// Tillåt bara POST
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(405);
 
@@ -24,13 +23,11 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit;
 }
 
-// Läs JSON från React
 $data = json_decode(
     file_get_contents("php://input"),
     true
 );
 
-// Kontrollera produkt-ID
 if (!isset($data["id"])) {
     http_response_code(400);
 
@@ -45,9 +42,84 @@ if (!isset($data["id"])) {
 $productId = $data["id"];
 
 
-// -----------------------------
+// =========================================
+// ÄNDRA PRODUKTINFORMATION
+// =========================================
+
+if (
+    isset($data["name"]) &&
+    isset($data["description"]) &&
+    isset($data["base_price"]) &&
+    isset($data["weight"])
+) {
+
+    $name = trim($data["name"]);
+    $description = trim($data["description"]);
+    $basePrice = (float) $data["base_price"];
+    $weight = (float) $data["weight"];
+
+    if ($name === "" || $description === "") {
+        http_response_code(400);
+
+        echo json_encode([
+            "success" => false,
+            "message" => "Namn och beskrivning får inte vara tomma"
+        ]);
+
+        exit;
+    }
+
+    if ($basePrice < 0 || $weight < 0) {
+        http_response_code(400);
+
+        echo json_encode([
+            "success" => false,
+            "message" => "Pris och vikt får inte vara negativa"
+        ]);
+
+        exit;
+    }
+
+    $sql = "
+        UPDATE products
+        SET
+            name = ?,
+            description = ?,
+            base_price = ?,
+            weight = ?
+        WHERE id = ?
+    ";
+
+    $stmt = $conn->prepare($sql);
+
+    $stmt->bind_param(
+        "ssdds",
+        $name,
+        $description,
+        $basePrice,
+        $weight,
+        $productId
+    );
+
+    $stmt->execute();
+
+    echo json_encode([
+        "success" => true,
+        "id" => $productId,
+        "name" => $name,
+        "description" => $description,
+        "base_price" => $basePrice,
+        "weight" => $weight
+    ]);
+
+    $stmt->close();
+    exit;
+}
+
+
+// =========================================
 // DÖLJ / VISA
-// -----------------------------
+// =========================================
 
 if (isset($data["is_hidden"])) {
 
@@ -60,9 +132,9 @@ if (isset($data["is_hidden"])) {
     ";
 
 
-// -----------------------------
+// =========================================
 // I LAGER / EJ I LAGER
-// -----------------------------
+// =========================================
 
 } elseif (isset($data["is_out_of_stock"])) {
 
@@ -75,9 +147,9 @@ if (isset($data["is_hidden"])) {
     ";
 
 
-// -----------------------------
+// =========================================
 // UTVALD / INTE UTVALD
-// -----------------------------
+// =========================================
 
 } elseif (isset($data["is_featured"])) {
 
@@ -90,9 +162,9 @@ if (isset($data["is_hidden"])) {
     ";
 
 
-// -----------------------------
-// INGET GILTIGT FÄLT
-// -----------------------------
+// =========================================
+// INGEN GILTIG ÄNDRING
+// =========================================
 
 } else {
 
@@ -107,7 +179,10 @@ if (isset($data["is_hidden"])) {
 }
 
 
-// Uppdatera databasen
+// =========================================
+// UTFÖR STATUSÄNDRINGEN
+// =========================================
+
 $stmt = $conn->prepare($sql);
 
 $stmt->bind_param(
@@ -118,8 +193,6 @@ $stmt->bind_param(
 
 $stmt->execute();
 
-
-// Skicka svar tillbaka till React
 echo json_encode([
     "success" => true,
     "id" => $productId,

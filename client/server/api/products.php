@@ -133,6 +133,52 @@ if ($result) {
 
         $textFieldStmt->close();
 
+        // =========================================
+// FÄRGER
+// Bakgrundsfärg + tryckfärg
+// =========================================
+
+$colorSql = "
+    SELECT
+        pc.id,
+        pc.ral_code,
+        pc.name,
+        pc.rgb,
+        pc.hex,
+        pc.category,
+        pc.background_code,
+        pc.background_price,
+        pc.print_code,
+        pc.print_price
+    FROM product_colors pc
+    INNER JOIN product_color_links pcl
+        ON pcl.color_id = pc.id
+    WHERE pcl.product_id = ?
+    ORDER BY pc.id ASC
+";
+
+$colorStmt = $conn->prepare($colorSql);
+$colorStmt->bind_param("s", $productId);
+$colorStmt->execute();
+
+$colorResult = $colorStmt->get_result();
+
+$colors = [];
+
+while ($color = $colorResult->fetch_assoc()) {
+
+    // Priser kommer annars från MySQL som text, t.ex. "70.00".
+    // Vi gör dem till riktiga nummer.
+    $color["background_price"] = (float) $color["background_price"];
+    $color["print_price"] = (float) $color["print_price"];
+
+    $colors[] = $color;
+}
+
+$row["colors"] = $colors;
+
+$colorStmt->close();
+
 
        // =========================================
 // VARIANTER / LEVERANTÖRSARTIKLAR

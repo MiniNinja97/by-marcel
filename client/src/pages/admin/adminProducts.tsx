@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 
-import type { Product } from "../../types";
+import type { Product, ProductType } from "../../types";
 import {
   getProducts,
   updateProductVisibility,
   updateProductStockStatus,
   updateProductFeatured,
+  updateProductDetails,
+  createProduct,
+  deleteProduct,
+  createProductVariant,
 } from "../../api/products";
 
 type SortOption = "az" | "datum" | "vikt" | "totalpris";
@@ -19,6 +23,21 @@ export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [editProduct, setEditProduct] = useState({
+    name: "",
+    description: "",
+    base_price: "",
+    weight: "",
+  });
+  const [newVariant, setNewVariant] = useState({
+    id: "",
+    supplier_id: "",
+    size: "",
+    frame: true,
+    price: "",
+    weight: "",
+  });
 
   useEffect(() => {
     async function loadProducts() {
@@ -100,6 +119,8 @@ export default function AdminProducts() {
   const [newProduct, setNewProduct] = useState({
     id: "",
     name: "",
+    slug: "",
+    type: "EC" as ProductType,
     description: "",
     base_price: "",
     weight: "",
@@ -109,8 +130,20 @@ export default function AdminProducts() {
     allows_custom_photo: false,
     allows_font_selection: false,
     is_seasonal: false,
-    sizes: { standard: false, s1: false, s2: false, s3: false, none: false },
-    colors: { standard: false, c1: false, c2: false, c3: false, none: false },
+    sizes: {
+      standard: false,
+      s1: false,
+      s2: false,
+      s3: false,
+      none: false,
+    },
+    colors: {
+      standard: false,
+      c1: false,
+      c2: false,
+      c3: false,
+      none: false,
+    },
   });
 
   const filters = ["alla", "emalj", "fotoskyltar", "gravyr"];
@@ -122,6 +155,182 @@ export default function AdminProducts() {
   if (error) {
     return <p>{error}</p>;
   }
+
+  const handleSaveProduct = async (product: Product) => {
+    try {
+      const updatedProduct = {
+        name: editProduct.name.trim(),
+        description: editProduct.description.trim(),
+        base_price: Number(editProduct.base_price),
+        weight: Number(editProduct.weight),
+      };
+
+      if (
+        !updatedProduct.name ||
+        !updatedProduct.description ||
+        Number.isNaN(updatedProduct.base_price) ||
+        Number.isNaN(updatedProduct.weight)
+      ) {
+        alert("Kontrollera produktinformationen");
+        return;
+      }
+
+      await updateProductDetails(product.id, updatedProduct);
+
+      setProducts((currentProducts) =>
+        currentProducts.map((currentProduct) =>
+          currentProduct.id === product.id
+            ? {
+                ...currentProduct,
+                ...updatedProduct,
+              }
+            : currentProduct,
+        ),
+      );
+
+      setExpandedId(null);
+    } catch (error) {
+      console.error(error);
+      alert("Kunde inte spara produktändringarna");
+    }
+  };
+
+  const handleCreateProduct = async () => {
+    try {
+      if (
+        !newProduct.id.trim() ||
+        !newProduct.name.trim() ||
+        !newProduct.slug.trim() ||
+        !newProduct.description.trim() ||
+        !newProduct.material.trim() ||
+        !newProduct.base_price ||
+        !newProduct.weight
+      ) {
+        alert("Fyll i alla obligatoriska fält");
+        return;
+      }
+
+      await createProduct({
+        id: newProduct.id.trim(),
+        name: newProduct.name.trim(),
+        slug: newProduct.slug.trim(),
+        type: newProduct.type,
+        description: newProduct.description.trim(),
+        material: newProduct.material.trim(),
+        base_price: Number(newProduct.base_price),
+        weight: Number(newProduct.weight),
+        allows_custom_photo: newProduct.allows_custom_photo,
+        allows_custom_text: newProduct.allows_custom_text,
+        allows_font_selection: newProduct.allows_font_selection,
+        is_seasonal: newProduct.is_seasonal,
+      });
+
+      const updatedProducts = await getProducts();
+      setProducts(updatedProducts);
+
+      alert("Produkten skapades!");
+      setShowCreateForm(false);
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Kunde inte skapa produkten");
+      }
+    }
+  };
+
+  const handleDeleteProduct = async (product: Product) => {
+    const confirmed = window.confirm(
+      `Är du säker på att du vill ta bort "${product.name}"?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteProduct(product.id);
+
+      setProducts((currentProducts) =>
+        currentProducts.filter(
+          (currentProduct) => currentProduct.id !== product.id,
+        ),
+      );
+
+      alert("Produkten togs bort!");
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Kunde inte ta bort produkten");
+      }
+    }
+  };
+
+  const handleCreateVariant = async (product: Product) => {
+    try {
+      if (
+        !newVariant.id.trim() ||
+        !newVariant.supplier_id.trim() ||
+        !newVariant.size.trim() ||
+        !newVariant.price
+      ) {
+        alert("Fyll i variant-ID, leverantörs-ID, storlek och pris");
+        return;
+      }
+
+      const price = Number(newVariant.price);
+
+      const weight =
+        newVariant.weight.trim() !== "" ? Number(newVariant.weight) : undefined;
+
+      if (
+        Number.isNaN(price) ||
+        (weight !== undefined && Number.isNaN(weight))
+      ) {
+        alert("Kontrollera pris och vikt");
+        return;
+      }
+
+      await createProductVariant({
+        id: newVariant.id.trim(),
+        product_id: product.id,
+        supplier_id: newVariant.supplier_id.trim(),
+        price,
+        weight,
+        options: {
+          size: newVariant.size.trim(),
+          frame: newVariant.frame,
+        },
+      });
+
+      const updatedProducts = await getProducts();
+      setProducts(updatedProducts);
+
+      setNewVariant({
+        id: "",
+        supplier_id: "",
+        size: "",
+        frame: true,
+        price: "",
+        weight: "",
+      });
+
+      alert("Varianten skapades!");
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Kunde inte skapa varianten");
+      }
+    }
+  };
 
   return (
     <div className="admin-products">
@@ -237,6 +446,39 @@ export default function AdminProducts() {
               </div>
             </div>
 
+            <div className="admin-form-group">
+              <label>Produkttyp</label>
+              <select
+                className="admin-input"
+                value={newProduct.type}
+                onChange={(e) =>
+                  setNewProduct({
+                    ...newProduct,
+                    type: e.target.value as ProductType,
+                  })
+                }
+              >
+                <option value="EC">EC – Emalj Custom</option>
+                <option value="ES">ES – Emalj Standard</option>
+                <option value="OWN">OWN – Egen produkt</option>
+              </select>
+            </div>
+
+            <div className="admin-form-group">
+              <label>Slug</label>
+              <input
+                className="admin-input"
+                placeholder="gatunamnsskylt"
+                value={newProduct.slug}
+                onChange={(e) =>
+                  setNewProduct({
+                    ...newProduct,
+                    slug: e.target.value,
+                  })
+                }
+              />
+            </div>
+
             <div className="admin-create-right">
               <div className="admin-form-group">
                 <label>Material</label>
@@ -248,7 +490,7 @@ export default function AdminProducts() {
                   }
                 >
                   <option value="">Välj material</option>
-                  <option>Ek</option>
+                  <option>Emalj</option>
                   <option>Björk</option>
                   <option>Granit</option>
                   <option>Bomull</option>
@@ -495,7 +737,9 @@ export default function AdminProducts() {
           </div>
 
           <div className="admin-create-actions">
-            <button className="admin-save-btn">Spara och lägg till</button>
+            <button className="admin-save-btn" onClick={handleCreateProduct}>
+              Spara och lägg till
+            </button>
             <button className="admin-btn">Förhandsgranska</button>
             <button className="admin-btn danger">Ta bort</button>
           </div>
@@ -574,9 +818,21 @@ export default function AdminProducts() {
               <div className="admin-product-actions">
                 <button
                   className="admin-btn"
-                  onClick={() =>
-                    setExpandedId(expandedId === product.id ? null : product.id)
-                  }
+                  onClick={() => {
+                    if (expandedId === product.id) {
+                      setExpandedId(null);
+                      return;
+                    }
+
+                    setEditProduct({
+                      name: product.name,
+                      description: product.description,
+                      base_price: String(product.base_price),
+                      weight: String(product.weight),
+                    });
+
+                    setExpandedId(product.id);
+                  }}
                 >
                   Ändra
                 </button>
@@ -613,7 +869,12 @@ export default function AdminProducts() {
               </p>
               <div className="admin-image-actions">
                 <button className="admin-btn">Ladda upp</button>
-                <button className="admin-btn danger">Ta bort</button>
+                <button
+                  className="admin-btn danger"
+                  onClick={() => handleDeleteProduct(product)}
+                >
+                  Ta bort
+                </button>
                 <button className="admin-btn">Ändra ordning</button>
                 <button className="admin-btn">Ändra huvudbild</button>
               </div>
@@ -623,13 +884,28 @@ export default function AdminProducts() {
               <div className="admin-product-edit">
                 <div className="admin-form-group">
                   <label>Produktnamn</label>
-                  <input className="admin-input" defaultValue={product.name} />
+                  <input
+                    className="admin-input"
+                    value={editProduct.name}
+                    onChange={(e) =>
+                      setEditProduct({
+                        ...editProduct,
+                        name: e.target.value,
+                      })
+                    }
+                  />
                 </div>
                 <div className="admin-form-group">
                   <label>Beskrivning</label>
                   <textarea
                     className="admin-textarea"
-                    defaultValue={product.description}
+                    value={editProduct.description}
+                    onChange={(e) =>
+                      setEditProduct({
+                        ...editProduct,
+                        description: e.target.value,
+                      })
+                    }
                   />
                 </div>
                 <div className="admin-form-row">
@@ -638,7 +914,13 @@ export default function AdminProducts() {
                     <input
                       className="admin-input"
                       type="number"
-                      defaultValue={product.base_price}
+                      value={editProduct.base_price}
+                      onChange={(e) =>
+                        setEditProduct({
+                          ...editProduct,
+                          base_price: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="admin-form-group">
@@ -646,11 +928,133 @@ export default function AdminProducts() {
                     <input
                       className="admin-input"
                       type="number"
-                      defaultValue={product.weight}
+                      value={editProduct.weight}
+                      onChange={(e) =>
+                        setEditProduct({
+                          ...editProduct,
+                          weight: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
-                <button className="admin-save-btn">Spara ändringar</button>
+                <button
+                  className="admin-save-btn"
+                  onClick={() => handleSaveProduct(product)}
+                >
+                  Spara ändringar
+                </button>
+
+                {product.type === "EC" && (
+                  <div className="admin-variant-create">
+                    <h3>Lägg till variant</h3>
+
+                    <div className="admin-form-row">
+                      <div className="admin-form-group">
+                        <label>Variant-ID</label>
+                        <input
+                          className="admin-input"
+                          placeholder="EC.SG1.10"
+                          value={newVariant.id}
+                          onChange={(e) =>
+                            setNewVariant({
+                              ...newVariant,
+                              id: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Leverantörs-ID</label>
+                        <input
+                          className="admin-input"
+                          placeholder="SG-10"
+                          value={newVariant.supplier_id}
+                          onChange={(e) =>
+                            setNewVariant({
+                              ...newVariant,
+                              supplier_id: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-row">
+                      <div className="admin-form-group">
+                        <label>Storlek</label>
+                        <input
+                          className="admin-input"
+                          placeholder="90 x 15 cm"
+                          value={newVariant.size}
+                          onChange={(e) =>
+                            setNewVariant({
+                              ...newVariant,
+                              size: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Ram</label>
+                        <select
+                          className="admin-input"
+                          value={newVariant.frame ? "true" : "false"}
+                          onChange={(e) =>
+                            setNewVariant({
+                              ...newVariant,
+                              frame: e.target.value === "true",
+                            })
+                          }
+                        >
+                          <option value="true">Med ram</option>
+                          <option value="false">Utan ram</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="admin-form-row">
+                      <div className="admin-form-group">
+                        <label>Pris (kr)</label>
+                        <input
+                          className="admin-input"
+                          type="number"
+                          value={newVariant.price}
+                          onChange={(e) =>
+                            setNewVariant({
+                              ...newVariant,
+                              price: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label>Vikt (g)</label>
+                        <input
+                          className="admin-input"
+                          type="number"
+                          value={newVariant.weight}
+                          onChange={(e) =>
+                            setNewVariant({
+                              ...newVariant,
+                              weight: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      className="admin-save-btn"
+                      onClick={() => handleCreateVariant(product)}
+                    >
+                      Lägg till variant
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

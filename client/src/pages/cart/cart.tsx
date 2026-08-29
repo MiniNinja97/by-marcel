@@ -38,7 +38,7 @@ export default function Cart() {
         <div className="cart-items">
           {items.map((item) => (
             <div
-              key={`${item.product.id}-${JSON.stringify(item.selected_options)}-${item.custom_text ?? ""}`}
+              key={`${item.product.id}-${item.variant_id}-${item.selected_background_color?.id ?? ""}-${item.selected_print_color?.id ?? ""}-${JSON.stringify(item.custom_texts)}`}
               className="cart-item"
             >
               <div className="cart-item-img">
@@ -56,14 +56,24 @@ export default function Cart() {
                 <h3>{item.product.name}</h3>
 
                 <p className="cart-item-specs">
-                  {[
-                    item.selected_size,
-                    item.selected_color?.name,
-                    item.selected_shape,
-                  ]
+                  {[item.selected_size, item.selected_shape]
                     .filter(Boolean)
-                    .join(" . ")}
+                    .join(" · ")}
                 </p>
+
+                {item.selected_background_color && (
+  <p className="cart-item-text">
+    Bakgrundsfärg: {item.selected_background_color.name} (
+    {item.selected_background_color.ral_code})
+  </p>
+)}
+
+{item.selected_print_color && (
+  <p className="cart-item-text">
+    Tryckfärg: {item.selected_print_color.name} (
+    {item.selected_print_color.ral_code})
+  </p>
+)}
 
                 {item.custom_texts &&
                   Object.entries(item.custom_texts).map(([fieldName, text]) => {
@@ -142,7 +152,7 @@ export default function Cart() {
             </div>
           </div>
 
-          <NavLink to="/betalning" className="cart-checkout-btn">
+          <NavLink to="/payment" className="cart-checkout-btn">
             Gå till betalning
           </NavLink>
         </div>

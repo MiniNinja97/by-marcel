@@ -39,10 +39,18 @@ export interface Product {
 }
 
 export interface ProductColor {
-  name: string;
-  hex: string;
-  price_modifier: number;
-  is_special: boolean;
+    id: number;
+    ral_code: string;
+    name: string;
+    rgb: string;
+    hex: string;
+    category: "Basis" | "Plus" | "Exklusiv";
+
+    background_code: string;
+    background_price: number;
+
+    print_code: string;
+    print_price: number;
 }
 
 /*
@@ -88,6 +96,9 @@ export interface CartItem {
   selected_options?: Record<string, ProductOptionValue>;
   variant_id?: string;
   supplier_id?: string;
+
+  selected_background_color?: ProductColor;
+  selected_print_color?: ProductColor;
 }
 
 export interface Cart {
@@ -123,21 +134,45 @@ export interface Order {
 
 export interface OrderItem {
   id: string;
+
   order_id: string;
+
   product_id: string;
+
   product_name: string;
+
   supplier_id?: string;
+
   quantity: number;
+
   unit_price: number;
+
   weight: number;
+
   selected_size?: string;
+
   selected_shape?: string;
+
   selected_color?: ProductColor;
+
+ selected_background_color?: OrderColor;
+selected_print_color?: OrderColor;
+
   selected_font?: FontOption;
+
   custom_photo_url?: string;
+
   custom_text?: string;
+
   selected_options?: Record<string, ProductOptionValue>;
+
   custom_texts?: Record<string, string>;
+}
+export interface OrderColor {
+  name: string;
+  ral_code: string;
+  supplier_code: string;
+  price: number;
 }
 
 export type OrderStatus =

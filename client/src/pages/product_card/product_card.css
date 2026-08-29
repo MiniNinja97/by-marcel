@@ -309,3 +309,95 @@
     border-color: var(--gold);
     color: var(--gold);
 }
+
+/* 
+   FÄRGVAL
+ */
+
+ .product-color-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.color-options {
+  /* display: grid;
+  grid-template-columns: repeat(2, 1fr); */
+  display: flex;
+    flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.color-option {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  padding: 0.6rem;
+
+  background: transparent;
+  border: 0.0625rem solid #444;
+
+  color: inherit;
+  text-align: left;
+
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.color-option:hover {
+  border-color: #c9a84c;
+}
+
+.color-option.selected {
+  border-color: #c9a84c;
+  background: rgba(201, 168, 76, 0.08);
+}
+
+.color-swatch {
+  width: 2rem;
+  height: 2rem;
+
+  flex-shrink: 0;
+
+  border: 0.0625rem solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+}
+
+.color-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.color-name {
+  font-weight: 500;
+}
+
+.color-details {
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  opacity: 0.65;
+}
+
+.color-group {
+  margin-top: 1rem;
+}
+
+.color-group:first-of-type {
+  margin-top: 0.75rem;
+}
+
+.color-group-title {
+  margin: 0 0 0.5rem;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}

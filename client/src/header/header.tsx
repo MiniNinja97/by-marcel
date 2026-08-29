@@ -16,7 +16,7 @@ export default function Header  () {
                 <ul className="header__nav">
                     <li><NavLink to="/produkter">Produkter</NavLink></li>
                     
-                    <li><NavLink to="/about">Om oss</NavLink></li>
+                    <li><NavLink to="/about">Bakom kulisserna</NavLink></li>
 
                     <li><NavLink to="/contact">Kontakt</NavLink></li>
                 </ul>

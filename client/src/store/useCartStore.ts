@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { CartItem, Product, ProductColor } from "../types";
+import type { CartItem } from "../types";
 
 interface CartStore {
   items: CartItem[];
@@ -18,12 +18,18 @@ export const useCartStore = create<CartStore>((set, get) => ({
   addItem: (newItem) => {
     set((state) => {
       const existing = state.items.find(
-        (item) =>
-          item.product.id === newItem.product.id &&
-          JSON.stringify(item.selected_options) ===
-            JSON.stringify(newItem.selected_options) &&
-          item.custom_text === newItem.custom_text,
-      );
+  (item) =>
+    item.product.id === newItem.product.id &&
+    item.variant_id === newItem.variant_id &&
+    JSON.stringify(item.selected_options) ===
+      JSON.stringify(newItem.selected_options) &&
+    JSON.stringify(item.custom_texts) ===
+      JSON.stringify(newItem.custom_texts) &&
+    item.selected_background_color?.id ===
+      newItem.selected_background_color?.id &&
+    item.selected_print_color?.id ===
+      newItem.selected_print_color?.id,
+);
 
       if (existing) {
         return {

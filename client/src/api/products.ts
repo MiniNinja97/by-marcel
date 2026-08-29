@@ -28,6 +28,13 @@ export async function getProducts(): Promise<Product[]> {
     is_out_of_stock: Boolean(Number(product.is_out_of_stock)),
     is_featured: Boolean(Number(product.is_featured)),
 
+    colors: product.colors?.map((color: any) => ({
+    ...color,
+    id: Number(color.id),
+    background_price: Number(color.background_price),
+    print_price: Number(color.print_price),
+})) ?? [],
+
     variants:
       product.variants?.map((variant: any) => ({
         ...variant,
@@ -105,4 +112,146 @@ export async function updateProductFeatured(
     if (!response.ok) {
         throw new Error('Kunde inte uppdatera utvald produkt')
     }
+}
+
+
+interface UpdateProductDetails {
+  name: string;
+  description: string;
+  base_price: number;
+  weight: number;
+}
+
+export async function updateProductDetails(
+  id: string,
+  details: UpdateProductDetails,
+): Promise<void> {
+  const response = await fetch(
+    "https://www.bymarcel.se/Server/api/update-product.php",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+        ...details,
+      }),
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message ?? "Kunde inte uppdatera produkten",
+    );
+  }
+}
+
+export interface CreateProductData {
+  id: string;
+  name: string;
+  slug: string;
+  type: "EC" | "ES" | "OWN";
+  description: string;
+  material: string;
+  base_price: number;
+  weight: number;
+  allows_custom_photo: boolean;
+  allows_custom_text: boolean;
+  allows_font_selection: boolean;
+  is_seasonal: boolean;
+}
+
+interface CreateProductResponse {
+  success: boolean;
+  message: string;
+  product_id: string;
+}
+
+export async function createProduct(
+  product: CreateProductData,
+): Promise<CreateProductResponse> {
+  const response = await fetch(
+    "https://www.bymarcel.se/Server/api/create-product.php",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(product),
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Kunde inte skapa produkten");
+  }
+
+  return data;
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  const response = await fetch(
+    "https://www.bymarcel.se/Server/api/delete-product.php",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+      }),
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Kunde inte ta bort produkten",
+    );
+  }
+}
+
+export interface CreateProductVariantData {
+  id: string;
+  product_id: string;
+  supplier_id: string;
+  price: number;
+  weight?: number;
+  options: Record<string, string | number | boolean>;
+}
+
+interface CreateProductVariantResponse {
+  success: boolean;
+  message: string;
+  variant_id: string;
+}
+
+export async function createProductVariant(
+  variant: CreateProductVariantData,
+): Promise<CreateProductVariantResponse> {
+  const response = await fetch(
+    "https://www.bymarcel.se/Server/api/create-product-variant.php",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(variant),
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Kunde inte skapa produktvarianten",
+    );
+  }
+
+  return data;
 }

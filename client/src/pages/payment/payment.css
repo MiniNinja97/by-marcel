@@ -1,0 +1,224 @@
+.payment {
+    min-height: 100vh;
+    padding: 7rem 2.5rem 5rem;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.payment-container {
+    width: 100%;
+    max-width: 70rem;
+    margin: 0 auto;
+}
+
+.payment-header {
+    margin-bottom: 3rem;
+}
+
+.payment-header h1 {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 0.75rem;
+}
+
+.payment-header p {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+
+/* LAYOUT */
+
+.payment-layout {
+    display: grid;
+    grid-template-columns: 1fr 22rem;
+    gap: 3rem;
+    align-items: start;
+}
+
+
+/* KUNDUPPGIFTER */
+
+.payment-form {
+    background: var(--bg-card);
+    border: 0.0625rem solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.25rem;
+    padding: 2rem;
+}
+
+.payment-form h2 {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 300;
+    margin-bottom: 2rem;
+}
+
+.payment-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+.payment-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.payment-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.payment-field label {
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    letter-spacing: 0.12rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.payment-field input {
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.03);
+    border: 0.0625rem solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    padding: 0.9rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.payment-field input:focus {
+    border-color: var(--gold);
+}
+
+
+/* ORDERÖVERSIKT */
+
+.payment-summary {
+    background: var(--bg-card);
+    border: 0.0625rem solid rgba(201, 168, 76, 0.2);
+    border-radius: 0.25rem;
+    padding: 2rem;
+    position: sticky;
+    top: 6rem;
+}
+
+.payment-summary h2 {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+}
+
+.payment-summary-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.payment-summary-row.total {
+    margin-top: 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 0.0625rem solid rgba(201, 168, 76, 0.2);
+
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.payment-summary-row.total span:last-child {
+    color: var(--gold);
+}
+
+
+/* FELMEDDELANDE */
+
+.payment-error {
+    margin-top: 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+}
+
+
+/* KNAPP */
+
+.payment-button {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 1rem 1.5rem;
+
+    background: var(--gold);
+    border: 0.0625rem solid var(--gold);
+    border-radius: 0.25rem;
+
+    color: #0a0a0a;
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.15rem;
+    text-transform: uppercase;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-button:hover:not(:disabled) {
+    background: transparent;
+    color: var(--gold);
+}
+
+.payment-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* TESTLÄGE */
+
+.payment-test-notice {
+    margin-bottom: 2rem;
+    padding: 1rem;
+
+    border: 0.0625rem solid rgba(201, 168, 76, 0.2);
+    border-radius: 0.25rem;
+
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    color: var(--gold-muted);
+}
+
+
+/* MOBIL */
+
+@media (max-width: 800px) {
+    .payment {
+        padding: 6rem 1.25rem 3rem;
+    }
+
+    .payment-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-summary {
+        position: static;
+    }
+
+    .payment-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-field.full-width {
+        grid-column: auto;
+    }
+}

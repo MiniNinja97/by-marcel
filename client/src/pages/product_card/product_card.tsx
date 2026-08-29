@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, NavLink } from "react-router-dom";
 import { getProducts } from "../../api/products";
-import type { Product, ProductVariant } from "../../types";
+import type { Product, ProductVariant, ProductColor } from "../../types";
 import { useCartStore } from "../../store/useCartStore";
 import "./product_card.css";
 
@@ -26,6 +26,25 @@ export default function Product() {
   const [customTexts, setCustomTexts] = useState<Record<string, string>>({});
   const [customPhoto, setCustomPhoto] = useState<File | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [backgroundColor, setBackgroundColor] = useState<ProductColor | null>(
+    null,
+  );
+  const colorGroups = [
+  {
+    category: "Basis",
+    title: "Basfärg",
+  },
+  {
+    category: "Plus",
+    title: "Plus",
+  },
+  {
+    category: "Exklusiv",
+    title: "Exklusiv",
+  },
+] as const;
+
+  const [printColor, setPrintColor] = useState<ProductColor | null>(null);
 
   // Hämta produkten från API
   useEffect(() => {
@@ -91,7 +110,13 @@ export default function Product() {
 
   // Visa variantens pris om en variant hittats.
   // Annars visas produktens grundpris.
-  const displayedPrice = selectedVariant?.price ?? product?.base_price ?? 0;
+  const variantPrice = selectedVariant?.price ?? product?.base_price ?? 0;
+
+  const backgroundColorPrice = backgroundColor?.background_price ?? 0;
+
+  const printColorPrice = printColor?.print_price ?? 0;
+
+  const displayedPrice = variantPrice + backgroundColorPrice + printColorPrice;
 
   const displayedImages =
     selectedVariant?.images && selectedVariant.images.length > 0
@@ -103,26 +128,39 @@ export default function Product() {
   }, [selectedVariant?.id]);
 
   const handleAddToCart = () => {
-    if (!product || !selectedVariant || product.is_out_of_stock) return;
+    if (
+      !product ||
+      !selectedVariant ||
+      product.is_out_of_stock ||
+      !backgroundColor ||
+      !printColor
+    ) {
+      return;
+    }
 
     addItem({
-      product: product,
-      quantity: quantity,
-      variant_id: selectedVariant.id,
-      supplier_id: selectedVariant.supplier_id,
+  product: product,
+  quantity: quantity,
+  variant_id: selectedVariant.id,
+  supplier_id: selectedVariant.supplier_id,
 
-      selected_size: selectedOptions.size,
+  selected_background_color: backgroundColor,
+  selected_print_color: printColor,
 
-      custom_texts: customTexts,
-      custom_photo: customPhoto || undefined,
+  selected_size: selectedOptions.size,
 
-      unit_price: selectedVariant.price,
-      total_price: selectedVariant.price * quantity,
+  custom_texts: customTexts,
+  custom_photo: customPhoto || undefined,
 
-      selected_options: selectedOptions,
-    });
+  unit_price: displayedPrice,
+  total_price: displayedPrice * quantity,
+
+  selected_options: selectedOptions,
+});
 
     setSelectedOptions({});
+    setBackgroundColor(null);
+    setPrintColor(null);
     setCustomTexts({});
     setCustomPhoto(null);
     setQuantity(1);
@@ -237,6 +275,113 @@ export default function Product() {
               </select>
             </div>
           ))}
+          <div className="product-color-columns">
+            {/* Bakgrundsfärg */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="product-option">
+                <label>Bakgrundsfärg</label>
+
+                {colorGroups.map((group) => {
+                  const colors = product.colors?.filter(
+                    (color) => color.category === group.category,
+                  );
+
+                  if (!colors || colors.length === 0) {
+                    return null;
+                  }
+
+                  return (
+                    <div className="color-group" key={group.category}>
+                      <p className="color-group-title">{group.title}</p>
+
+                      <div className="color-options">
+                        {colors.map((color) => (
+                          <button
+                            key={color.id}
+                            type="button"
+                            className={`color-option ${
+                              backgroundColor?.id === color.id ? "selected" : ""
+                            }`}
+                            onClick={() => setBackgroundColor(color)}
+                            title={`${color.name} (${color.ral_code})`}
+                          >
+                            <span
+                              className="color-swatch"
+                              style={{ backgroundColor: color.hex }}
+                            />
+
+                            <span className="color-info">
+                              <span className="color-name">{color.name}</span>
+
+                              <span className="color-details">
+                                {color.ral_code}
+
+                                {color.background_price > 0 &&
+                                  ` · +${color.background_price} kr`}
+                              </span>
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Tryckfärg = text + eventuell ram */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="product-option">
+                <label>Tryckfärg (text och ram)</label>
+
+                {colorGroups.map((group) => {
+                  const colors = product.colors?.filter(
+                    (color) => color.category === group.category,
+                  );
+
+                  if (!colors || colors.length === 0) {
+                    return null;
+                  }
+
+                  return (
+                    <div className="color-group" key={group.category}>
+                      <p className="color-group-title">{group.title}</p>
+
+                      <div className="color-options">
+                        {colors.map((color) => (
+                          <button
+                            key={color.id}
+                            type="button"
+                            className={`color-option ${
+                              printColor?.id === color.id ? "selected" : ""
+                            }`}
+                            onClick={() => setPrintColor(color)}
+                            title={`${color.name} (${color.ral_code})`}
+                          >
+                            <span
+                              className="color-swatch"
+                              style={{ backgroundColor: color.hex }}
+                            />
+
+                            <span className="color-info">
+                              <span className="color-name">{color.name}</span>
+
+                              <span className="color-details">
+                                {color.ral_code}
+
+                                {color.print_price > 0 &&
+                                  ` · +${color.print_price} kr`}
+                              </span>
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           {/* Om kombinationen inte finns */}
           {allOptionsSelected && !selectedVariant && (
@@ -321,7 +466,12 @@ export default function Product() {
           <button
             className="add-to-cart-btn"
             onClick={handleAddToCart}
-            disabled={!selectedVariant || product.is_out_of_stock}
+            disabled={
+              !selectedVariant ||
+              product.is_out_of_stock ||
+              !backgroundColor ||
+              !printColor
+            }
           >
             {product.is_out_of_stock ? "Ej i lager" : "Lägg till i kundkorgen"}
           </button>

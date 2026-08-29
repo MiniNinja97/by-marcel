@@ -58,28 +58,30 @@ while ($row = $result->fetch_assoc()) {
     // Hämta produkterna som tillhör ordern
     // -----------------------------------------
 
-    $itemSql = "
-        SELECT
-            id,
-            product_id,
-            product_name,
-            supplier_id,
-            quantity,
-            unit_price,
-            weight,
-            selected_size,
-            selected_shape,
-            selected_color,
-            selected_font,
-            selected_options,
-            custom_photo_url,
-            custom_text,
-            custom_texts
+   $itemSql = "
+    SELECT
+        id,
+        product_id,
+        product_name,
+        supplier_id,
+        quantity,
+        unit_price,
+        weight,
+        selected_size,
+        selected_shape,
+        selected_color,
+        selected_background_color,
+        selected_print_color,
+        selected_font,
+        selected_options,
+        custom_photo_url,
+        custom_text,
+        custom_texts
 
-        FROM order_items
+    FROM order_items
 
-        WHERE order_id = ?
-    ";
+    WHERE order_id = ?
+";
 
     $itemStmt = $conn->prepare($itemSql);
     $itemStmt->bind_param("s", $orderId);
@@ -92,15 +94,25 @@ while ($row = $result->fetch_assoc()) {
     while ($item = $itemResult->fetch_assoc()) {
 
         // JSON från databasen -> PHP-array -> JSON till React
-        $item["selected_options"] =
-            $item["selected_options"] !== null
-                ? json_decode($item["selected_options"], true)
-                : null;
+       $item["selected_options"] =
+    $item["selected_options"] !== null
+        ? json_decode($item["selected_options"], true)
+        : null;
 
-        $item["custom_texts"] =
-            $item["custom_texts"] !== null
-                ? json_decode($item["custom_texts"], true)
-                : null;
+$item["selected_background_color"] =
+    $item["selected_background_color"] !== null
+        ? json_decode($item["selected_background_color"], true)
+        : null;
+
+$item["selected_print_color"] =
+    $item["selected_print_color"] !== null
+        ? json_decode($item["selected_print_color"], true)
+        : null;
+
+$item["custom_texts"] =
+    $item["custom_texts"] !== null
+        ? json_decode($item["custom_texts"], true)
+        : null;
 
         // Gör numeriska värden numeriska i JSON
         $item["quantity"] = (int) $item["quantity"];

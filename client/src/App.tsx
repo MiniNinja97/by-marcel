@@ -8,6 +8,7 @@ import Contact from './pages/contact/contact'
 import Product from './pages/product_card/product_card'
 import Cart from './pages/cart/cart'
 import Admin from './pages/admin/admin'
+import Payment from "./pages/payment/payment";
 
 import './styles/global.css'
 import './App.css'
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/contact" element={<Contact/>} />
         <Route path="/korg" element={<Cart />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/payment" element={<Payment />} />
       </Routes>
       </main>
       <Footer />

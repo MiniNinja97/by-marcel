@@ -236,13 +236,15 @@ try {
             selected_size,
             selected_shape,
             selected_color,
+            selected_background_color,
+            selected_print_color,
             selected_font,
             selected_options,
             custom_photo_url,
             custom_text,
             custom_texts
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ";
 
     $itemStmt = $conn->prepare($itemSql);
@@ -263,10 +265,30 @@ try {
         $selectedSize = $item["selected_size"] ?? null;
         $selectedShape = $item["selected_shape"] ?? null;
         $selectedColor = $item["selected_color"] ?? null;
+
+        $selectedBackgroundColor =
+            isset($item["selected_background_color"])
+                ? json_encode(
+                    $item["selected_background_color"],
+                    JSON_UNESCAPED_UNICODE
+                )
+                : null;
+
+        $selectedPrintColor =
+            isset($item["selected_print_color"])
+                ? json_encode(
+                    $item["selected_print_color"],
+                    JSON_UNESCAPED_UNICODE
+                )
+                : null;
+
         $selectedFont = $item["selected_font"] ?? null;
 
         $selectedOptions = isset($item["selected_options"])
-            ? json_encode($item["selected_options"])
+            ? json_encode(
+                $item["selected_options"],
+                JSON_UNESCAPED_UNICODE
+            )
             : null;
 
         // Bilduppladdning tar vi separat senare
@@ -276,11 +298,14 @@ try {
         $customText = $item["custom_text"] ?? null;
 
         $customTexts = isset($item["custom_texts"])
-            ? json_encode($item["custom_texts"])
+            ? json_encode(
+                $item["custom_texts"],
+                JSON_UNESCAPED_UNICODE
+            )
             : null;
 
         $itemStmt->bind_param(
-            "sssssidddsssssss",
+            "sssssiddssssssssss",
             $itemId,
             $orderId,
             $productId,
@@ -292,6 +317,8 @@ try {
             $selectedSize,
             $selectedShape,
             $selectedColor,
+            $selectedBackgroundColor,
+            $selectedPrintColor,
             $selectedFont,
             $selectedOptions,
             $customPhotoUrl,
