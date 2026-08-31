@@ -26,6 +26,7 @@ export default function Product() {
   const [customTexts, setCustomTexts] = useState<Record<string, string>>({});
   const [customPhoto, setCustomPhoto] = useState<File | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [cartError, setCartError] = useState("");
   const [backgroundColor, setBackgroundColor] = useState<ProductColor | null>(
     null,
   );
@@ -128,51 +129,93 @@ export default function Product() {
   }, [selectedVariant?.id]);
 
   const handleAddToCart = () => {
-    if (!product || product.is_out_of_stock) {
-      return;
+  setCartError("");
+
+  if (!product || product.is_out_of_stock) {
+    return;
+  }
+
+  const isCustomEnamel = product.type === "EC";
+  const requiresVariant = isCustomEnamel;
+  const requiresColors =
+    isCustomEnamel && (product.colors?.length ?? 0) > 0;
+
+  // Kontrollera produktval, t.ex. storlek och ram
+  if (requiresVariant && !selectedVariant) {
+    const missingOptions =
+      product.options
+        ?.filter(
+          (option) =>
+            selectedOptions[option.option_name] === undefined,
+        )
+        .map((option) => option.display_name) ?? [];
+
+    if (missingOptions.length > 0) {
+      setCartError(
+        `Välj ${missingOptions
+          .map((option) => option.toLowerCase())
+          .join(" och ")} innan du lägger produkten i kundkorgen.`,
+      );
+    } else {
+      setCartError(
+        "Den valda kombinationen är inte tillgänglig.",
+      );
     }
 
-    const isCustomEnamel = product.type === "EC";
-    const requiresVariant = isCustomEnamel;
-    const requiresColors =
-      isCustomEnamel && (product.colors?.length ?? 0) > 0;
+    return;
+  }
 
-    if (requiresVariant && !selectedVariant) {
-      return;
-    }
+  // Kontrollera färger
+  if (requiresColors && !backgroundColor && !printColor) {
+    setCartError(
+      "Välj bakgrundsfärg och tryckfärg innan du lägger produkten i kundkorgen.",
+    );
+    return;
+  }
 
-    if (requiresColors && (!backgroundColor || !printColor)) {
-      return;
-    }
+  if (requiresColors && !backgroundColor) {
+    setCartError(
+      "Välj en bakgrundsfärg innan du lägger produkten i kundkorgen.",
+    );
+    return;
+  }
 
-    addItem({
-      product,
-      quantity,
-      variant_id: selectedVariant?.id,
-      supplier_id: selectedVariant?.supplier_id ?? product.supplier_id,
+  if (requiresColors && !printColor) {
+    setCartError(
+      "Välj en tryckfärg innan du lägger produkten i kundkorgen.",
+    );
+    return;
+  }
 
-      selected_background_color: backgroundColor ?? undefined,
-      selected_print_color: printColor ?? undefined,
+  addItem({
+    product,
+    quantity,
+    variant_id: selectedVariant?.id,
+    supplier_id: selectedVariant?.supplier_id ?? product.supplier_id,
 
-      selected_size: selectedOptions.size,
+    selected_background_color: backgroundColor ?? undefined,
+    selected_print_color: printColor ?? undefined,
 
-      custom_texts: customTexts,
-      custom_photo: customPhoto || undefined,
+    selected_size: selectedOptions.size,
 
-      unit_price: displayedPrice,
-      total_price: displayedPrice * quantity,
+    custom_texts: customTexts,
+    custom_photo: customPhoto || undefined,
 
-      selected_options: selectedOptions,
-    });
+    unit_price: displayedPrice,
+    total_price: displayedPrice * quantity,
 
-    setSelectedOptions({});
-    setBackgroundColor(null);
-    setPrintColor(null);
-    setCustomTexts({});
-    setCustomPhoto(null);
-    setQuantity(1);
-    setSelectedImage(0);
-  };
+    selected_options: selectedOptions,
+  });
+
+  setSelectedOptions({});
+  setBackgroundColor(null);
+  setPrintColor(null);
+  setCustomTexts({});
+  setCustomPhoto(null);
+  setQuantity(1);
+  setSelectedImage(0);
+  setCartError("");
+};
 
   if (loading) {
     return (
@@ -196,7 +239,7 @@ export default function Product() {
 
   const isCustomEnamel = product.type === "EC";
   const requiresVariant = isCustomEnamel;
-  const requiresColors = isCustomEnamel && (product.colors?.length ?? 0) > 0;
+  
 
   // Har kunden gjort alla val?
   const allOptionsSelected =
@@ -473,18 +516,23 @@ export default function Product() {
             </div>
           </div>
 
-          {/* Lägg i kundkorgen */}
-          <button
-            className="add-to-cart-btn"
-            onClick={handleAddToCart}
-            disabled={
-              product.is_out_of_stock ||
-              (requiresVariant && !selectedVariant) ||
-              (requiresColors && (!backgroundColor || !printColor))
-            }
-          >
-            {product.is_out_of_stock ? "Ej i lager" : "Lägg till i kundkorgen"}
-          </button>
+          {/* Felmeddelande när obligatoriska val saknas */}
+{cartError && (
+  <div className="product-cart-error">
+    {cartError}
+  </div>
+)}
+
+{/* Lägg i kundkorgen */}
+<button
+  className="add-to-cart-btn"
+  onClick={handleAddToCart}
+  disabled={product.is_out_of_stock}
+>
+  {product.is_out_of_stock
+    ? "Ej i lager"
+    : "Lägg till i kundkorgen"}
+</button>
         </div>
       </div>
     </div>
