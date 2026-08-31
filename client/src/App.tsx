@@ -1,38 +1,85 @@
-import {HashRouter, Router, Route, Routes} from 'react-router-dom'
-import Header from './header/header'
-import Footer from './footer/footer'
-import Home from './pages/home/home'
-import About from './pages/about/about'
-import Products from './pages/products/products'
-import Contact from './pages/contact/contact'
-import Product from './pages/product_card/product_card'
-import Cart from './pages/cart/cart'
-import Admin from './pages/admin/admin'
+import {
+  HashRouter,
+  Route,
+  Routes,
+} from "react-router-dom";
+
+import Header from "./header/header";
+import Footer from "./footer/footer";
+
+import Home from "./pages/home/home";
+import About from "./pages/about/about";
+import Products from "./pages/products/products";
+import Contact from "./pages/contact/contact";
+import Product from "./pages/product_card/product_card";
+import Cart from "./pages/cart/cart";
 import Payment from "./pages/payment/payment";
 
-import './styles/global.css'
-import './App.css'
+import AdminRoute from "./pages/admin/adminRoute";
+
+import "./styles/global.css";
+import "./App.css";
 
 export default function App() {
-
-  return(
+  return (
     <HashRouter>
       <Header />
+
       <main>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/produkter" element={<Products />} />
-        <Route path="/produkt/:id" element={<Product />} />
-<Route path="/produkter/:kategori" element={<Products />} />
-<Route path="/produkter/:kategori/:underkategori" element={<Products />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact/>} />
-        <Route path="/korg" element={<Cart />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/payment" element={<Payment />} />
-      </Routes>
+        <Routes>
+          <Route
+            path="/"
+            element={<Home />}
+          />
+
+          <Route
+            path="/produkter"
+            element={<Products />}
+          />
+
+          <Route
+            path="/produkt/:id"
+            element={<Product />}
+          />
+
+          <Route
+            path="/produkter/:kategori"
+            element={<Products />}
+          />
+
+          <Route
+            path="/produkter/:kategori/:underkategori"
+            element={<Products />}
+          />
+
+          <Route
+            path="/about"
+            element={<About />}
+          />
+
+          <Route
+            path="/contact"
+            element={<Contact />}
+          />
+
+          <Route
+            path="/korg"
+            element={<Cart />}
+          />
+
+          <Route
+            path="/admin"
+            element={<AdminRoute />}
+          />
+
+          <Route
+            path="/payment"
+            element={<Payment />}
+          />
+        </Routes>
       </main>
+
       <Footer />
-      
-    </HashRouter>  )
+    </HashRouter>
+  );
 }

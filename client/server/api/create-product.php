@@ -5,248 +5,246 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
-// Tillåt CORS preflight
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     http_response_code(200);
     exit;
 }
 
-require_once __DIR__ . "/../config/db.php";
-
-
-// -----------------------------------------
-// Läs JSON från React
-// -----------------------------------------
-
-$data = json_decode(file_get_contents("php://input"), true);
-
-if (!$data) {
-    http_response_code(400);
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    http_response_code(405);
 
     echo json_encode([
         "success" => false,
-        "message" => "Ingen produktdata skickades"
+        "message" => "Endast POST är tillåtet"
     ]);
 
     exit;
 }
 
+try {
 
-// -----------------------------------------
-// Hämta produktdata
-// -----------------------------------------
+    require_once __DIR__ . "/../config/db.php";
 
-$id = trim($data["id"] ?? "");
-$name = trim($data["name"] ?? "");
-$slug = trim($data["slug"] ?? "");
-$type = trim($data["type"] ?? "");
-$description = trim($data["description"] ?? "");
-$material = trim($data["material"] ?? "");
+    // -----------------------------------------
+    // Läs JSON från React
+    // -----------------------------------------
 
-$basePrice = (float) ($data["base_price"] ?? 0);
-$weight = (float) ($data["weight"] ?? 0);
+    $rawData = file_get_contents("php://input");
+    $data = json_decode($rawData, true);
 
-$allowsCustomPhoto = !empty($data["allows_custom_photo"]) ? 1 : 0;
-$allowsCustomText = !empty($data["allows_custom_text"]) ? 1 : 0;
-$allowsFontSelection = !empty($data["allows_font_selection"]) ? 1 : 0;
-$isSeasonal = !empty($data["is_seasonal"]) ? 1 : 0;
+    if (!is_array($data)) {
+        http_response_code(400);
 
+        echo json_encode([
+            "success" => false,
+            "message" => "Ingen giltig produktdata skickades"
+        ]);
 
-// -----------------------------------------
-// Kontrollera obligatoriska fält
-// -----------------------------------------
+        exit;
+    }
 
-if (
-    $id === "" ||
-    $name === "" ||
-    $slug === "" ||
-    $type === "" ||
-    $description === "" ||
-    $material === ""
-) {
-    http_response_code(400);
+    // -----------------------------------------
+    // Hämta produktdata
+    // -----------------------------------------
 
-    echo json_encode([
-        "success" => false,
-        "message" => "Alla obligatoriska fält måste fyllas i"
-    ]);
+    $id = trim($data["id"] ?? "");
+    $name = trim($data["name"] ?? "");
+    $slug = trim($data["slug"] ?? "");
+    $type = trim($data["type"] ?? "");
+    $description = trim($data["description"] ?? "");
+    $material = trim($data["material"] ?? "");
 
-    exit;
-}
+    $basePrice = (float) ($data["base_price"] ?? 0);
+    $weight = (float) ($data["weight"] ?? 0);
 
+    $allowsCustomPhoto =
+        !empty($data["allows_custom_photo"]) ? 1 : 0;
 
-// -----------------------------------------
-// Kontrollera pris och vikt
-// -----------------------------------------
+    $allowsCustomText =
+        !empty($data["allows_custom_text"]) ? 1 : 0;
 
-if ($basePrice < 0 || $weight < 0) {
-    http_response_code(400);
+    $allowsFontSelection =
+        !empty($data["allows_font_selection"]) ? 1 : 0;
 
-    echo json_encode([
-        "success" => false,
-        "message" => "Pris och vikt får inte vara negativa"
-    ]);
+    $isSeasonal =
+        !empty($data["is_seasonal"]) ? 1 : 0;
 
-    exit;
-}
+    // -----------------------------------------
+    // Kontrollera obligatoriska fält
+    // -----------------------------------------
 
+    if (
+        $id === "" ||
+        $name === "" ||
+        $slug === "" ||
+        $type === "" ||
+        $description === "" ||
+        $material === ""
+    ) {
+        http_response_code(400);
 
-// -----------------------------------------
-// Kontrollera produkttyp
-// -----------------------------------------
+        echo json_encode([
+            "success" => false,
+            "message" => "Alla obligatoriska fält måste fyllas i"
+        ]);
 
-if (!in_array($type, ["EC", "ES", "OWN"], true)) {
-    http_response_code(400);
+        exit;
+    }
 
-    echo json_encode([
-        "success" => false,
-        "message" => "Ogiltig produkttyp"
-    ]);
+    // -----------------------------------------
+    // Kontrollera pris och vikt
+    // -----------------------------------------
 
-    exit;
-}
+    if ($basePrice < 0 || $weight < 0) {
+        http_response_code(400);
 
+        echo json_encode([
+            "success" => false,
+            "message" => "Pris och vikt får inte vara negativa"
+        ]);
 
-// -----------------------------------------
-// Kontrollera om produkt-ID redan finns
-// -----------------------------------------
+        exit;
+    }
 
-$checkStmt = $conn->prepare("
-    SELECT id
-    FROM products
-    WHERE id = ?
-");
+    // -----------------------------------------
+    // Kontrollera produkttyp
+    // -----------------------------------------
 
-if (!$checkStmt) {
-    http_response_code(500);
+    if (!in_array($type, ["EC", "ES", "OWN"], true)) {
+        http_response_code(400);
 
-    echo json_encode([
-        "success" => false,
-        "message" => "Kunde inte förbereda kontrollen",
-        "error" => $conn->error
-    ]);
+        echo json_encode([
+            "success" => false,
+            "message" => "Ogiltig produkttyp"
+        ]);
 
-    exit;
-}
+        exit;
+    }
 
-$checkStmt->bind_param("s", $id);
+    // -----------------------------------------
+    // Kontrollera om produkt-ID redan finns
+    // -----------------------------------------
 
-if (!$checkStmt->execute()) {
-    http_response_code(500);
+    $checkStmt = $conn->prepare("
+        SELECT id
+        FROM products
+        WHERE id = ?
+        LIMIT 1
+    ");
 
-    echo json_encode([
-        "success" => false,
-        "message" => "Kunde inte kontrollera produkt-ID",
-        "error" => $checkStmt->error
-    ]);
+    if (!$checkStmt) {
+        throw new Exception(
+            "Kunde inte förbereda ID-kontrollen: " . $conn->error
+        );
+    }
+
+    $checkStmt->bind_param("s", $id);
+
+    if (!$checkStmt->execute()) {
+        throw new Exception(
+            "Kunde inte kontrollera produkt-ID: " . $checkStmt->error
+        );
+    }
+
+    /*
+     * store_result används i stället för get_result.
+     * Det fungerar bättre mellan olika PHP/MySQL-installationer.
+     */
+    $checkStmt->store_result();
+
+    if ($checkStmt->num_rows > 0) {
+
+        $checkStmt->close();
+
+        http_response_code(409);
+
+        echo json_encode([
+            "success" => false,
+            "message" => "Det finns redan en produkt med detta ID"
+        ]);
+
+        exit;
+    }
 
     $checkStmt->close();
-    exit;
-}
 
-$existingProduct = $checkStmt->get_result();
+    // -----------------------------------------
+    // Skapa produkten
+    // -----------------------------------------
 
-if ($existingProduct->num_rows > 0) {
-    http_response_code(409);
+    $stmt = $conn->prepare("
+        INSERT INTO products (
+            id,
+            name,
+            slug,
+            description,
+            material,
+            product_type,
+            base_price,
+            allows_custom_photo,
+            allows_custom_text,
+            allows_font_selection,
+            is_seasonal,
+            weight
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ");
 
-    echo json_encode([
-        "success" => false,
-        "message" => "Det finns redan en produkt med detta ID"
-    ]);
+    if (!$stmt) {
+        throw new Exception(
+            "Kunde inte förbereda INSERT: " . $conn->error
+        );
+    }
 
-    $checkStmt->close();
-    exit;
-}
+    // -----------------------------------------
+    // Koppla värden
+    // -----------------------------------------
 
-$checkStmt->close();
+    $stmt->bind_param(
+        "ssssssdiiiid",
+        $id,
+        $name,
+        $slug,
+        $description,
+        $material,
+        $type,
+        $basePrice,
+        $allowsCustomPhoto,
+        $allowsCustomText,
+        $allowsFontSelection,
+        $isSeasonal,
+        $weight
+    );
 
+    // -----------------------------------------
+    // Spara produkten
+    // -----------------------------------------
 
-// -----------------------------------------
-// Skapa produkten
-// -----------------------------------------
-// OBS:
-// React använder namnet "type".
-// Databasen använder kolumnen "product_type".
-// -----------------------------------------
-
-$stmt = $conn->prepare("
-    INSERT INTO products (
-        id,
-        name,
-        slug,
-        description,
-        material,
-        product_type,
-        base_price,
-        allows_custom_photo,
-        allows_custom_text,
-        allows_font_selection,
-        is_seasonal,
-        weight
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-");
-
-if (!$stmt) {
-    http_response_code(500);
-
-    echo json_encode([
-        "success" => false,
-        "message" => "Kunde inte förbereda INSERT",
-        "error" => $conn->error
-    ]);
-
-    exit;
-}
-
-
-// -----------------------------------------
-// Koppla värden till SQL-frågan
-// -----------------------------------------
-
-$stmt->bind_param(
-    "ssssssdiiiid",
-    $id,
-    $name,
-    $slug,
-    $description,
-    $material,
-    $type,
-    $basePrice,
-    $allowsCustomPhoto,
-    $allowsCustomText,
-    $allowsFontSelection,
-    $isSeasonal,
-    $weight
-);
-
-
-// -----------------------------------------
-// Spara produkten
-// -----------------------------------------
-
-if (!$stmt->execute()) {
-    http_response_code(500);
-
-    echo json_encode([
-        "success" => false,
-        "message" => "Kunde inte skapa produkten",
-        "error" => $stmt->error
-    ]);
+    if (!$stmt->execute()) {
+        throw new Exception(
+            "Kunde inte skapa produkten: " . $stmt->error
+        );
+    }
 
     $stmt->close();
-    exit;
+
+    // -----------------------------------------
+    // Klart
+    // -----------------------------------------
+
+    echo json_encode([
+        "success" => true,
+        "message" => "Produkten skapades",
+        "product_id" => $id
+    ]);
+
+} catch (Throwable $error) {
+
+    http_response_code(500);
+
+    echo json_encode([
+        "success" => false,
+        "message" => "Serverfel vid skapande av produkt",
+        "error" => $error->getMessage()
+    ]);
 }
-
-$stmt->close();
-
-
-// -----------------------------------------
-// Klart
-// -----------------------------------------
-
-echo json_encode([
-    "success" => true,
-    "message" => "Produkten skapades",
-    "product_id" => $id
-]);

@@ -133,6 +133,7 @@ export async function updateProductDetails(
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify({
         id,
         ...details,
@@ -184,10 +185,39 @@ export async function createProduct(
     },
   );
 
-  const data = await response.json();
+  const responseText = await response.text();
+
+  let data: any = null;
+
+  if (responseText) {
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.error(
+        "Servern skickade ett ogiltigt svar:",
+        responseText,
+      );
+
+      throw new Error(
+        `Serverfel (${response.status}). Servern skickade inte giltig JSON.`,
+      );
+    }
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || "Kunde inte skapa produkten");
+    console.error("Fel från create-product.php:", data);
+
+    throw new Error(
+      data?.error ||
+      data?.message ||
+      `Kunde inte skapa produkten (${response.status})`,
+    );
+  }
+
+  if (!data) {
+    throw new Error(
+      "Produkten verkar ha skapats men servern skickade inget svar.",
+    );
   }
 
   return data;
@@ -201,6 +231,10 @@ export async function deleteProduct(id: string): Promise<void> {
       headers: {
         "Content-Type": "application/json",
       },
+
+      // Skickar med admin-sessionen
+      credentials: "include",
+
       body: JSON.stringify({
         id,
       }),

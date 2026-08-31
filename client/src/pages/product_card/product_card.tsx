@@ -128,35 +128,42 @@ export default function Product() {
   }, [selectedVariant?.id]);
 
   const handleAddToCart = () => {
-    if (
-      !product ||
-      !selectedVariant ||
-      product.is_out_of_stock ||
-      !backgroundColor ||
-      !printColor
-    ) {
+    if (!product || product.is_out_of_stock) {
+      return;
+    }
+
+    const isCustomEnamel = product.type === "EC";
+    const requiresVariant = isCustomEnamel;
+    const requiresColors =
+      isCustomEnamel && (product.colors?.length ?? 0) > 0;
+
+    if (requiresVariant && !selectedVariant) {
+      return;
+    }
+
+    if (requiresColors && (!backgroundColor || !printColor)) {
       return;
     }
 
     addItem({
-  product: product,
-  quantity: quantity,
-  variant_id: selectedVariant.id,
-  supplier_id: selectedVariant.supplier_id,
+      product,
+      quantity,
+      variant_id: selectedVariant?.id,
+      supplier_id: selectedVariant?.supplier_id ?? product.supplier_id,
 
-  selected_background_color: backgroundColor,
-  selected_print_color: printColor,
+      selected_background_color: backgroundColor ?? undefined,
+      selected_print_color: printColor ?? undefined,
 
-  selected_size: selectedOptions.size,
+      selected_size: selectedOptions.size,
 
-  custom_texts: customTexts,
-  custom_photo: customPhoto || undefined,
+      custom_texts: customTexts,
+      custom_photo: customPhoto || undefined,
 
-  unit_price: displayedPrice,
-  total_price: displayedPrice * quantity,
+      unit_price: displayedPrice,
+      total_price: displayedPrice * quantity,
 
-  selected_options: selectedOptions,
-});
+      selected_options: selectedOptions,
+    });
 
     setSelectedOptions({});
     setBackgroundColor(null);
@@ -186,6 +193,10 @@ export default function Product() {
   if (!product) {
     return null;
   }
+
+  const isCustomEnamel = product.type === "EC";
+  const requiresVariant = isCustomEnamel;
+  const requiresColors = isCustomEnamel && (product.colors?.length ?? 0) > 0;
 
   // Har kunden gjort alla val?
   const allOptionsSelected =
@@ -384,7 +395,7 @@ export default function Product() {
           </div>
 
           {/* Om kombinationen inte finns */}
-          {allOptionsSelected && !selectedVariant && (
+          {requiresVariant && allOptionsSelected && !selectedVariant && (
             <p className="variant-unavailable">
               Den valda kombinationen är inte tillgänglig.
             </p>
@@ -467,10 +478,9 @@ export default function Product() {
             className="add-to-cart-btn"
             onClick={handleAddToCart}
             disabled={
-              !selectedVariant ||
               product.is_out_of_stock ||
-              !backgroundColor ||
-              !printColor
+              (requiresVariant && !selectedVariant) ||
+              (requiresColors && (!backgroundColor || !printColor))
             }
           >
             {product.is_out_of_stock ? "Ej i lager" : "Lägg till i kundkorgen"}
