@@ -1,51 +1,64 @@
 import { useEffect, useState } from "react";
 import { useParams, NavLink } from "react-router-dom";
 import { getProducts } from "../../api/products";
-import type { Product, ProductVariant, ProductColor } from "../../types";
+import type {
+  Product,
+  ProductVariant,
+  ProductColor,
+} from "../../types";
 import { useCartStore } from "../../store/useCartStore";
+import { useLanguage } from "../../context/languageContext";
 import "./product_card.css";
 
 export default function Product() {
   const { id } = useParams();
   const { addItem } = useCartStore();
+  const { language } = useLanguage();
 
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] =
+    useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedImage, setSelectedImage] =
+    useState(0);
 
-  // Här sparas alla val kunden gör.
-  // Exempel:
-  // size: "33 x 8 cm"
-  // frame: "true"
-  const [selectedOptions, setSelectedOptions] = useState<
-    Record<string, string>
-  >({});
+  const [selectedOptions, setSelectedOptions] =
+    useState<Record<string, string>>({});
 
-  const [customTexts, setCustomTexts] = useState<Record<string, string>>({});
-  const [customPhoto, setCustomPhoto] = useState<File | null>(null);
+  const [customTexts, setCustomTexts] =
+    useState<Record<string, string>>({});
+
+  const [customPhoto, setCustomPhoto] =
+    useState<File | null>(null);
+
   const [quantity, setQuantity] = useState(1);
   const [cartError, setCartError] = useState("");
-  const [backgroundColor, setBackgroundColor] = useState<ProductColor | null>(
-    null,
-  );
-  const colorGroups = [
-  {
-    category: "Basis",
-    title: "Basfärg",
-  },
-  {
-    category: "Plus",
-    title: "Plus",
-  },
-  {
-    category: "Exklusiv",
-    title: "Exklusiv",
-  },
-] as const;
 
-  const [printColor, setPrintColor] = useState<ProductColor | null>(null);
+  const [backgroundColor, setBackgroundColor] =
+    useState<ProductColor | null>(null);
+
+  const [printColor, setPrintColor] =
+    useState<ProductColor | null>(null);
+
+  const colorGroups = [
+    {
+      category: "Basis",
+      title:
+        language === "sv" ? "Basfärg" : "Base",
+    },
+    {
+      category: "Plus",
+      title: "Plus",
+    },
+    {
+      category: "Exklusiv",
+      title:
+        language === "sv"
+          ? "Exklusiv"
+          : "Exclusive",
+    },
+  ] as const;
 
   // Hämta produkten från API
   useEffect(() => {
@@ -54,173 +67,402 @@ export default function Product() {
         const products = await getProducts();
 
         const foundProduct = products.find(
-          (product) => product.id === id && !product.is_hidden,
+          (product) =>
+            product.id === id &&
+            !product.is_hidden,
         );
 
         if (!foundProduct) {
-          setError("Produkten kunde inte hittas");
+          setError(
+            language === "sv"
+              ? "Produkten kunde inte hittas"
+              : "The product could not be found",
+          );
           return;
         }
 
         setProduct(foundProduct);
       } catch (error) {
         console.error(error);
-        setError("Kunde inte hämta produkten");
+
+        setError(
+          language === "sv"
+            ? "Kunde inte hämta produkten"
+            : "Could not load the product",
+        );
       } finally {
         setLoading(false);
       }
     }
 
     loadProduct();
-  }, [id]);
+  }, [id, language]);
 
-  // Körs när kunden väljer exempelvis storlek eller ram
-  const handleOptionChange = (optionName: string, value: string) => {
-    setSelectedOptions((previous) => ({
-      ...previous,
-      [optionName]: value,
-    }));
+  /*
+   * Hämtar de värden som faktiskt är möjliga för
+   * ett produktval utifrån tidigare gjorda val.
+   *
+   * Exempel EC.PE:
+   *
+   * Form = Rund
+   *
+   * Då kommer Storlek bara innehålla storlekar
+   * från varianter där shape === "round".
+   */
+  const getAvailableOptionValues = (
+    optionName: string,
+  ): Set<string> => {
+    if (
+      !product ||
+      !product.options ||
+      !product.variants
+    ) {
+      return new Set<string>();
+    }
+
+    const currentOptionIndex =
+      product.options.findIndex(
+        (option) =>
+          option.option_name === optionName,
+      );
+
+    if (currentOptionIndex === -1) {
+      return new Set<string>();
+    }
+
+    // Bara val som ligger FÖRE det aktuella valet
+    // ska påverka vilka värden som visas.
+    const previousOptions =
+      product.options.slice(
+        0,
+        currentOptionIndex,
+      );
+
+    const matchingVariants =
+      product.variants.filter((variant) => {
+        return previousOptions.every(
+          (previousOption) => {
+            const selectedValue =
+              selectedOptions[
+                previousOption.option_name
+              ];
+
+            // Har kunden inte valt detta ännu
+            // filtrerar vi inte på det.
+            if (
+              selectedValue === undefined ||
+              selectedValue === ""
+            ) {
+              return true;
+            }
+
+            const variantValue =
+              variant.options[
+                previousOption.option_name
+              ];
+
+            return (
+              String(variantValue) ===
+              String(selectedValue)
+            );
+          },
+        );
+      });
+
+    const availableValues = new Set<string>();
+
+    matchingVariants.forEach((variant) => {
+      const value =
+        variant.options[optionName];
+
+      if (value !== undefined && value !== null) {
+        availableValues.add(String(value));
+      }
+    });
+
+    return availableValues;
+  };
+
+  // Kunden ändrar exempelvis Form eller Storlek
+  const handleOptionChange = (
+    optionName: string,
+    value: string,
+  ) => {
+    if (!product?.options) {
+      return;
+    }
+
+    const changedOptionIndex =
+      product.options.findIndex(
+        (option) =>
+          option.option_name === optionName,
+      );
+
+    setSelectedOptions((previous) => {
+      const updated: Record<string, string> = {
+        ...previous,
+        [optionName]: value,
+      };
+
+      /*
+       * Om kunden ändrar ett tidigare val måste
+       * alla efterföljande val nollställas.
+       *
+       * Exempel:
+       * Rektangel → 30 x 20 cm
+       *
+       * Kunden byter sedan till Rund.
+       *
+       * Då får 30 x 20 cm inte ligga kvar.
+       */
+      product.options?.forEach(
+        (option, index) => {
+          if (index > changedOptionIndex) {
+            delete updated[
+              option.option_name
+            ];
+          }
+        },
+      );
+
+      return updated;
+    });
+
+    setCartError("");
   };
 
   // Leta efter varianten som matchar kundens val
-  const selectedVariant: ProductVariant | undefined = product?.variants?.find(
+  const selectedVariant:
+    | ProductVariant
+    | undefined = product?.variants?.find(
     (variant) => {
       if (!product.options) {
         return false;
       }
 
-      // Kontrollera först att kunden gjort alla val
-      const allOptionsSelected = product.options.every(
-        (option) => selectedOptions[option.option_name] !== undefined,
-      );
+      const allOptionsSelected =
+        product.options.every(
+          (option) =>
+            selectedOptions[
+              option.option_name
+            ] !== undefined,
+        );
 
       if (!allOptionsSelected) {
         return false;
       }
 
-      // Kontrollera sedan om varianten matchar valen
-      return product.options.every((option) => {
-        const selectedValue = selectedOptions[option.option_name];
+      return product.options.every(
+        (option) => {
+          const selectedValue =
+            selectedOptions[
+              option.option_name
+            ];
 
-        const variantValue = variant.options[option.option_name];
+          const variantValue =
+            variant.options[
+              option.option_name
+            ];
 
-        return String(variantValue) === selectedValue;
-      });
+          return (
+            String(variantValue) ===
+            String(selectedValue)
+          );
+        },
+      );
     },
   );
 
-  // Visa variantens pris om en variant hittats.
-  // Annars visas produktens grundpris.
-  const variantPrice = selectedVariant?.price ?? product?.base_price ?? 0;
+  const variantPrice =
+    selectedVariant?.price ??
+    product?.base_price ??
+    0;
 
-  const backgroundColorPrice = backgroundColor?.background_price ?? 0;
+  const backgroundColorPrice =
+    backgroundColor?.background_price ?? 0;
 
-  const printColorPrice = printColor?.print_price ?? 0;
+  const printColorPrice =
+    printColor?.print_price ?? 0;
 
-  const displayedPrice = variantPrice + backgroundColorPrice + printColorPrice;
+  const displayedPrice =
+    variantPrice +
+    backgroundColorPrice +
+    printColorPrice;
 
   const displayedImages =
-    selectedVariant?.images && selectedVariant.images.length > 0
+    selectedVariant?.images &&
+    selectedVariant.images.length > 0
       ? selectedVariant.images
       : (product?.images ?? []);
 
+  // Byter varianten bild börjar vi på första bilden
   useEffect(() => {
     setSelectedImage(0);
   }, [selectedVariant?.id]);
 
   const handleAddToCart = () => {
-  setCartError("");
+    setCartError("");
 
-  if (!product || product.is_out_of_stock) {
-    return;
-  }
-
-  const isCustomEnamel = product.type === "EC";
-  const requiresVariant = isCustomEnamel;
-  const requiresColors =
-    isCustomEnamel && (product.colors?.length ?? 0) > 0;
-
-  // Kontrollera produktval, t.ex. storlek och ram
-  if (requiresVariant && !selectedVariant) {
-    const missingOptions =
-      product.options
-        ?.filter(
-          (option) =>
-            selectedOptions[option.option_name] === undefined,
-        )
-        .map((option) => option.display_name) ?? [];
-
-    if (missingOptions.length > 0) {
-      setCartError(
-        `Välj ${missingOptions
-          .map((option) => option.toLowerCase())
-          .join(" och ")} innan du lägger produkten i kundkorgen.`,
-      );
-    } else {
-      setCartError(
-        "Den valda kombinationen är inte tillgänglig.",
-      );
+    if (
+      !product ||
+      product.is_out_of_stock
+    ) {
+      return;
     }
 
-    return;
-  }
+    const isCustomEnamel =
+      product.type === "EC";
 
-  // Kontrollera färger
-  if (requiresColors && !backgroundColor && !printColor) {
-    setCartError(
-      "Välj bakgrundsfärg och tryckfärg innan du lägger produkten i kundkorgen.",
-    );
-    return;
-  }
+    const requiresVariant =
+      isCustomEnamel;
 
-  if (requiresColors && !backgroundColor) {
-    setCartError(
-      "Välj en bakgrundsfärg innan du lägger produkten i kundkorgen.",
-    );
-    return;
-  }
+    const requiresColors =
+      isCustomEnamel &&
+      (product.colors?.length ?? 0) > 0;
 
-  if (requiresColors && !printColor) {
-    setCartError(
-      "Välj en tryckfärg innan du lägger produkten i kundkorgen.",
-    );
-    return;
-  }
+    // Kontrollera produktval
+    if (
+      requiresVariant &&
+      !selectedVariant
+    ) {
+      const missingOptions =
+        product.options
+          ?.filter(
+            (option) =>
+              selectedOptions[
+                option.option_name
+              ] === undefined,
+          )
+          .map(
+            (option) =>
+              option.display_name,
+          ) ?? [];
 
-  addItem({
-    product,
-    quantity,
-    variant_id: selectedVariant?.id,
-    supplier_id: selectedVariant?.supplier_id ?? product.supplier_id,
+      if (missingOptions.length > 0) {
+        if (language === "sv") {
+          setCartError(
+            `Välj ${missingOptions
+              .map((option) =>
+                option.toLowerCase(),
+              )
+              .join(
+                " och ",
+              )} innan du lägger produkten i kundkorgen.`,
+          );
+        } else {
+          setCartError(
+            `Please select ${missingOptions
+              .map((option) =>
+                option.toLowerCase(),
+              )
+              .join(
+                " and ",
+              )} before adding the product to your cart.`,
+          );
+        }
+      } else {
+        setCartError(
+          language === "sv"
+            ? "Den valda kombinationen är inte tillgänglig."
+            : "The selected combination is not available.",
+        );
+      }
 
-    selected_background_color: backgroundColor ?? undefined,
-    selected_print_color: printColor ?? undefined,
+      return;
+    }
 
-    selected_size: selectedOptions.size,
+    // Kontrollera färger
+    if (
+      requiresColors &&
+      !backgroundColor &&
+      !printColor
+    ) {
+      setCartError(
+        language === "sv"
+          ? "Välj bakgrundsfärg och tryckfärg innan du lägger produkten i kundkorgen."
+          : "Select a background colour and print colour before adding the product to your cart.",
+      );
 
-    custom_texts: customTexts,
-    custom_photo: customPhoto || undefined,
+      return;
+    }
 
-    unit_price: displayedPrice,
-    total_price: displayedPrice * quantity,
+    if (
+      requiresColors &&
+      !backgroundColor
+    ) {
+      setCartError(
+        language === "sv"
+          ? "Välj en bakgrundsfärg innan du lägger produkten i kundkorgen."
+          : "Select a background colour before adding the product to your cart.",
+      );
 
-    selected_options: selectedOptions,
-  });
+      return;
+    }
 
-  setSelectedOptions({});
-  setBackgroundColor(null);
-  setPrintColor(null);
-  setCustomTexts({});
-  setCustomPhoto(null);
-  setQuantity(1);
-  setSelectedImage(0);
-  setCartError("");
-};
+    if (
+      requiresColors &&
+      !printColor
+    ) {
+      setCartError(
+        language === "sv"
+          ? "Välj en tryckfärg innan du lägger produkten i kundkorgen."
+          : "Select a print colour before adding the product to your cart.",
+      );
+
+      return;
+    }
+
+    addItem({
+      product,
+      quantity,
+
+      variant_id: selectedVariant?.id,
+
+      supplier_id:
+        selectedVariant?.supplier_id ??
+        product.supplier_id,
+
+      selected_background_color:
+        backgroundColor ?? undefined,
+
+      selected_print_color:
+        printColor ?? undefined,
+
+      selected_size:
+        selectedOptions.size,
+
+      custom_texts: customTexts,
+
+      custom_photo:
+        customPhoto || undefined,
+
+      unit_price: displayedPrice,
+
+      total_price:
+        displayedPrice * quantity,
+
+      selected_options:
+        selectedOptions,
+    });
+
+    setSelectedOptions({});
+    setBackgroundColor(null);
+    setPrintColor(null);
+    setCustomTexts({});
+    setCustomPhoto(null);
+    setQuantity(1);
+    setSelectedImage(0);
+    setCartError("");
+  };
 
   if (loading) {
     return (
       <div className="product-page">
-        <p>Laddar produkt...</p>
+        <p>
+          {language === "sv"
+            ? "Laddar produkt..."
+            : "Loading product..."}
+        </p>
       </div>
     );
   }
@@ -237,21 +479,29 @@ export default function Product() {
     return null;
   }
 
-  const isCustomEnamel = product.type === "EC";
-  const requiresVariant = isCustomEnamel;
-  
+  const isCustomEnamel =
+    product.type === "EC";
 
-  // Har kunden gjort alla val?
+  const requiresVariant =
+    isCustomEnamel;
+
   const allOptionsSelected =
     product.options?.every(
-      (option) => selectedOptions[option.option_name] !== undefined,
+      (option) =>
+        selectedOptions[
+          option.option_name
+        ] !== undefined,
     ) ?? true;
 
   return (
     <div className="product-page">
       {/* Breadcrumb */}
       <nav className="breadcrumb">
-        <NavLink to="/produkter">Produkter</NavLink>
+        <NavLink to="/produkter">
+          {language === "sv"
+            ? "Produkter"
+            : "Products"}
+        </NavLink>
 
         <span>—</span>
 
@@ -262,7 +512,9 @@ export default function Product() {
         {/* Vänster — bilder + beskrivning */}
         <div className="product-left">
           <div className="product-main-img">
-            {displayedImages[selectedImage] ? (
+            {displayedImages[
+              selectedImage
+            ] ? (
               <img
                 src={`https://www.bymarcel.se${displayedImages[selectedImage]}`}
                 alt={product.name}
@@ -273,266 +525,478 @@ export default function Product() {
           </div>
 
           {/* Små produktbilder */}
-          {displayedImages.length > 1 && (
+          {displayedImages.length >
+            1 && (
             <div className="product-thumbnails">
-              {displayedImages.map((image, index) => (
-                <div
-                  key={index}
-                  className={`product-thumbnail ${
-                    selectedImage === index ? "active" : ""
-                  }`}
-                  onClick={() => setSelectedImage(index)}
-                >
-                  <img
-                    src={`https://www.bymarcel.se${image}`}
-                    alt={`${product.name} ${index + 1}`}
-                  />
-                </div>
-              ))}
+              {displayedImages.map(
+                (image, index) => (
+                  <div
+                    key={index}
+                    className={`product-thumbnail ${
+                      selectedImage === index
+                        ? "active"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      setSelectedImage(
+                        index,
+                      )
+                    }
+                  >
+                    <img
+                      src={`https://www.bymarcel.se${image}`}
+                      alt={`${product.name} ${index + 1}`}
+                    />
+                  </div>
+                ),
+              )}
             </div>
           )}
 
-          <p className="product-description">{product.description}</p>
+          <p className="product-description">
+            {product.description}
+          </p>
         </div>
 
         {/* Höger — info + val */}
         <div className="product-right">
           <div className="product-info">
-            <h1 className="product-name">{product.name}</h1>
+            <h1 className="product-name">
+              {product.name}
+            </h1>
 
-            <p className="product-technique">{product.material}</p>
+            <p className="product-technique">
+              {product.material}
+            </p>
           </div>
 
           {/* Pris */}
-          <p className="product-price">{displayedPrice} kr</p>
+          <p className="product-price">
+            {displayedPrice} SEK
+          </p>
 
           {/* Dynamiska produktval */}
-          {product.options?.map((option) => (
-            <div className="product-option" key={option.id}>
-              <label>{option.display_name}</label>
+          {product.options?.map(
+            (option) => {
+              const availableValues =
+                getAvailableOptionValues(
+                  option.option_name,
+                );
 
-              <select
-                value={selectedOptions[option.option_name] ?? ""}
-                onChange={(event) =>
-                  handleOptionChange(option.option_name, event.target.value)
-                }
-              >
-                <option value="" disabled>
-                  Välj {option.display_name.toLowerCase()}
-                </option>
+              const filteredValues =
+                option.values.filter(
+                  (value) =>
+                    availableValues.has(
+                      String(
+                        value.value,
+                      ),
+                    ),
+                );
 
-                {option.values.map((value) => (
-                  <option key={value.value} value={value.value}>
-                    {value.display_value}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
+              return (
+                <div
+                  className="product-option"
+                  key={option.id}
+                >
+                  <label>
+                    {option.display_name}
+                  </label>
+
+                  <select
+                    value={
+                      selectedOptions[
+                        option.option_name
+                      ] ?? ""
+                    }
+                    onChange={(event) =>
+                      handleOptionChange(
+                        option.option_name,
+                        event.target.value,
+                      )
+                    }
+                  >
+                    <option
+                      value=""
+                      disabled
+                    >
+                      {language === "sv"
+                        ? `Välj ${option.display_name.toLowerCase()}`
+                        : `Select ${option.display_name.toLowerCase()}`}
+                    </option>
+
+                    {filteredValues.map(
+                      (value) => (
+                        <option
+                          key={
+                            value.value
+                          }
+                          value={
+                            value.value
+                          }
+                        >
+                          {
+                            value.display_value
+                          }
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </div>
+              );
+            },
+          )}
+
           <div className="product-color-columns">
             {/* Bakgrundsfärg */}
-            {product.colors && product.colors.length > 0 && (
-              <div className="product-option">
-                <label>Bakgrundsfärg</label>
+            {product.colors &&
+              product.colors.length >
+                0 && (
+                <div className="product-option">
+                  <label>
+                    {language === "sv"
+                      ? "Bakgrundsfärg"
+                      : "Background colour"}
+                  </label>
 
-                {colorGroups.map((group) => {
-                  const colors = product.colors?.filter(
-                    (color) => color.category === group.category,
-                  );
+                  {colorGroups.map(
+                    (group) => {
+                      const colors =
+                        product.colors?.filter(
+                          (color) =>
+                            color.category ===
+                            group.category,
+                        );
 
-                  if (!colors || colors.length === 0) {
-                    return null;
-                  }
+                      if (
+                        !colors ||
+                        colors.length === 0
+                      ) {
+                        return null;
+                      }
 
-                  return (
-                    <div className="color-group" key={group.category}>
-                      <p className="color-group-title">{group.title}</p>
+                      return (
+                        <div
+                          className="color-group"
+                          key={
+                            group.category
+                          }
+                        >
+                          <p className="color-group-title">
+                            {group.title}
+                          </p>
 
-                      <div className="color-options">
-                        {colors.map((color) => (
-                          <button
-                            key={color.id}
-                            type="button"
-                            className={`color-option ${
-                              backgroundColor?.id === color.id ? "selected" : ""
-                            }`}
-                            onClick={() => setBackgroundColor(color)}
-                            title={`${color.name} (${color.ral_code})`}
-                          >
-                            <span
-                              className="color-swatch"
-                              style={{ backgroundColor: color.hex }}
-                            />
+                          <div className="color-options">
+                            {colors.map(
+                              (color) => (
+                                <button
+                                  key={
+                                    color.id
+                                  }
+                                  type="button"
+                                  className={`color-option ${
+                                    backgroundColor?.id ===
+                                    color.id
+                                      ? "selected"
+                                      : ""
+                                  }`}
+                                  onClick={() =>
+                                    setBackgroundColor(
+                                      color,
+                                    )
+                                  }
+                                  title={`${color.name} (${color.ral_code})`}
+                                >
+                                  <span
+                                    className="color-swatch"
+                                    style={{
+                                      backgroundColor:
+                                        color.hex,
+                                    }}
+                                  />
 
-                            <span className="color-info">
-                              <span className="color-name">{color.name}</span>
+                                  <span className="color-info">
+                                    <span className="color-name">
+                                      {
+                                        color.name
+                                      }
+                                    </span>
 
-                              <span className="color-details">
-                                {color.ral_code}
+                                    <span className="color-details">
+                                      {
+                                        color.ral_code
+                                      }
 
-                                {color.background_price > 0 &&
-                                  ` · +${color.background_price} kr`}
-                              </span>
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                                      {color.background_price >
+                                        0 &&
+                                        ` · +${color.background_price} SEK`}
+                                    </span>
+                                  </span>
+                                </button>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              )}
 
-            {/* Tryckfärg = text + eventuell ram */}
-            {product.colors && product.colors.length > 0 && (
-              <div className="product-option">
-                <label>Tryckfärg (text och ram)</label>
+            {/* Tryckfärg */}
+            {product.colors &&
+              product.colors.length >
+                0 && (
+                <div className="product-option">
+                  <label>
+                    {language === "sv"
+                      ? "Tryckfärg (text och ram)"
+                      : "Print colour (text and frame)"}
+                  </label>
 
-                {colorGroups.map((group) => {
-                  const colors = product.colors?.filter(
-                    (color) => color.category === group.category,
-                  );
+                  {colorGroups.map(
+                    (group) => {
+                      const colors =
+                        product.colors?.filter(
+                          (color) =>
+                            color.category ===
+                            group.category,
+                        );
 
-                  if (!colors || colors.length === 0) {
-                    return null;
-                  }
+                      if (
+                        !colors ||
+                        colors.length === 0
+                      ) {
+                        return null;
+                      }
 
-                  return (
-                    <div className="color-group" key={group.category}>
-                      <p className="color-group-title">{group.title}</p>
+                      return (
+                        <div
+                          className="color-group"
+                          key={
+                            group.category
+                          }
+                        >
+                          <p className="color-group-title">
+                            {group.title}
+                          </p>
 
-                      <div className="color-options">
-                        {colors.map((color) => (
-                          <button
-                            key={color.id}
-                            type="button"
-                            className={`color-option ${
-                              printColor?.id === color.id ? "selected" : ""
-                            }`}
-                            onClick={() => setPrintColor(color)}
-                            title={`${color.name} (${color.ral_code})`}
-                          >
-                            <span
-                              className="color-swatch"
-                              style={{ backgroundColor: color.hex }}
-                            />
+                          <div className="color-options">
+                            {colors.map(
+                              (color) => (
+                                <button
+                                  key={
+                                    color.id
+                                  }
+                                  type="button"
+                                  className={`color-option ${
+                                    printColor?.id ===
+                                    color.id
+                                      ? "selected"
+                                      : ""
+                                  }`}
+                                  onClick={() =>
+                                    setPrintColor(
+                                      color,
+                                    )
+                                  }
+                                  title={`${color.name} (${color.ral_code})`}
+                                >
+                                  <span
+                                    className="color-swatch"
+                                    style={{
+                                      backgroundColor:
+                                        color.hex,
+                                    }}
+                                  />
 
-                            <span className="color-info">
-                              <span className="color-name">{color.name}</span>
+                                  <span className="color-info">
+                                    <span className="color-name">
+                                      {
+                                        color.name
+                                      }
+                                    </span>
 
-                              <span className="color-details">
-                                {color.ral_code}
+                                    <span className="color-details">
+                                      {
+                                        color.ral_code
+                                      }
 
-                                {color.print_price > 0 &&
-                                  ` · +${color.print_price} kr`}
-                              </span>
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                                      {color.print_price >
+                                        0 &&
+                                        ` · +${color.print_price} SEK`}
+                                    </span>
+                                  </span>
+                                </button>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              )}
           </div>
 
           {/* Om kombinationen inte finns */}
-          {requiresVariant && allOptionsSelected && !selectedVariant && (
-            <p className="variant-unavailable">
-              Den valda kombinationen är inte tillgänglig.
-            </p>
-          )}
+          {requiresVariant &&
+            allOptionsSelected &&
+            !selectedVariant && (
+              <p className="variant-unavailable">
+                {language === "sv"
+                  ? "Den valda kombinationen är inte tillgänglig."
+                  : "The selected combination is not available."}
+              </p>
+            )}
 
           {/* Bilduppladdning */}
           {product.allows_custom_photo && (
             <div className="product-option">
-              <label>Infoga bild</label>
+              <label>
+                {language === "sv"
+                  ? "Infoga bild"
+                  : "Upload image"}
+              </label>
 
               <label className="upload-btn">
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(event) =>
-                    setCustomPhoto(event.target.files?.[0] ?? null)
+                    setCustomPhoto(
+                      event.target.files?.[
+                        0
+                      ] ?? null,
+                    )
                   }
                 />
                 📎
               </label>
 
               {customPhoto && (
-                <p className="upload-filename">{customPhoto.name}</p>
+                <p className="upload-filename">
+                  {customPhoto.name}
+                </p>
               )}
             </div>
           )}
 
           {/* Egen text */}
           {product.allows_custom_text &&
-            product.text_fields?.map((field) => (
-              <div className="product-option" key={field.id}>
-                <label>{field.display_name}</label>
+            product.text_fields?.map(
+              (field) => (
+                <div
+                  className="product-option"
+                  key={field.id}
+                >
+                  <label>
+                    {field.display_name}
+                  </label>
 
-                <div className="gravyr-box">
-                  <textarea
-                    value={customTexts[field.field_name] ?? ""}
-                    onChange={(event) =>
-                      setCustomTexts((previous) => ({
-                        ...previous,
-                        [field.field_name]: event.target.value,
-                      }))
-                    }
-                    maxLength={field.max_length}
-                    placeholder={field.placeholder ?? ""}
-                    rows={2}
-                  />
+                  <div className="gravyr-box">
+                    <textarea
+                      value={
+                        customTexts[
+                          field.field_name
+                        ] ?? ""
+                      }
+                      onChange={(
+                        event,
+                      ) =>
+                        setCustomTexts(
+                          (previous) => ({
+                            ...previous,
+                            [field.field_name]:
+                              event.target
+                                .value,
+                          }),
+                        )
+                      }
+                      maxLength={
+                        field.max_length
+                      }
+                      placeholder={
+                        field.placeholder ??
+                        ""
+                      }
+                      rows={2}
+                    />
 
-                  <p className="gravyr-hint">Max {field.max_length} tecken</p>
+                    <p className="gravyr-hint">
+                      {language === "sv"
+                        ? `Max ${field.max_length} tecken`
+                        : `Max ${field.max_length} characters`}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ),
+            )}
 
           {/* Antal */}
           <div className="product-option">
-            <label>Antal</label>
+            <label>
+              {language === "sv"
+                ? "Antal"
+                : "Quantity"}
+            </label>
 
             <div className="quantity-row">
               <button
                 className="quantity-btn"
                 onClick={() =>
-                  setQuantity((quantity) => Math.max(1, quantity - 1))
+                  setQuantity(
+                    (quantity) =>
+                      Math.max(
+                        1,
+                        quantity - 1,
+                      ),
+                  )
                 }
               >
                 −
               </button>
 
-              <span className="quantity-value">{quantity}</span>
+              <span className="quantity-value">
+                {quantity}
+              </span>
 
               <button
                 className="quantity-btn"
-                onClick={() => setQuantity((quantity) => quantity + 1)}
+                onClick={() =>
+                  setQuantity(
+                    (quantity) =>
+                      quantity + 1,
+                  )
+                }
               >
                 +
               </button>
             </div>
           </div>
 
-          {/* Felmeddelande när obligatoriska val saknas */}
-{cartError && (
-  <div className="product-cart-error">
-    {cartError}
-  </div>
-)}
+          {/* Felmeddelande */}
+          {cartError && (
+            <div className="product-cart-error">
+              {cartError}
+            </div>
+          )}
 
-{/* Lägg i kundkorgen */}
-<button
-  className="add-to-cart-btn"
-  onClick={handleAddToCart}
-  disabled={product.is_out_of_stock}
->
-  {product.is_out_of_stock
-    ? "Ej i lager"
-    : "Lägg till i kundkorgen"}
-</button>
+          {/* Lägg i kundkorgen */}
+          <button
+            className="add-to-cart-btn"
+            onClick={handleAddToCart}
+            disabled={
+              product.is_out_of_stock
+            }
+          >
+            {product.is_out_of_stock
+              ? language === "sv"
+                ? "Ej i lager"
+                : "Out of stock"
+              : language === "sv"
+                ? "Lägg till i kundkorgen"
+                : "Add to cart"}
+          </button>
         </div>
       </div>
     </div>

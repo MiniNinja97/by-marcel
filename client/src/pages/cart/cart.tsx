@@ -1,5 +1,6 @@
 import { useCartStore } from "../../store/useCartStore";
 import { NavLink } from "react-router-dom";
+import { useLanguage } from "../../context/languageContext";
 import "./cart.css";
 
 export default function Cart() {
@@ -10,6 +11,8 @@ export default function Cart() {
     getTotalPrice,
     getTotalItems,
   } = useCartStore();
+
+  const { language } = useLanguage();
 
   const subtotal = getTotalPrice();
 
@@ -22,19 +25,35 @@ export default function Cart() {
   const total = subtotal + shipping;
 
   const formatPrice = (price: number) => {
-    return `${new Intl.NumberFormat("sv-SE").format(price)} SEK`;
+    const locale =
+      language === "sv" ? "sv-SE" : "en-GB";
+
+    return `${new Intl.NumberFormat(locale).format(price)} SEK`;
   };
 
   if (items.length === 0) {
     return (
       <div className="cart">
         <div className="cart-empty">
-          <h1>Din korg</h1>
+          <h1>
+            {language === "sv"
+              ? "Din korg"
+              : "Your cart"}
+          </h1>
 
-          <p>Din korg är tom</p>
+          <p>
+            {language === "sv"
+              ? "Din korg är tom"
+              : "Your cart is empty"}
+          </p>
 
-          <NavLink to="/produkter" className="cart-empty-btn">
-            Utforska sortimentet
+          <NavLink
+            to="/produkter"
+            className="cart-empty-btn"
+          >
+            {language === "sv"
+              ? "Utforska sortimentet"
+              : "Explore our products"}
           </NavLink>
         </div>
       </div>
@@ -44,20 +63,32 @@ export default function Cart() {
   return (
     <div className="cart">
       <div className="cart-header">
-        <h1>Din Korg</h1>
+        <h1>
+          {language === "sv"
+            ? "Din Korg"
+            : "Your Cart"}
+        </h1>
 
         <p>
           {getTotalItems()}{" "}
-          {getTotalItems() === 1 ? "produkt" : "produkter"}
+          {language === "sv"
+            ? getTotalItems() === 1
+              ? "produkt"
+              : "produkter"
+            : getTotalItems() === 1
+              ? "product"
+              : "products"}
         </p>
       </div>
 
       <div className="cart-layout">
         <div className="cart-items">
           {items.map((item) => {
-            const selectedVariant = item.product.variants?.find(
-              (variant) => variant.id === item.variant_id,
-            );
+            const selectedVariant =
+              item.product.variants?.find(
+                (variant) =>
+                  variant.id === item.variant_id,
+              );
 
             const cartImage =
               selectedVariant?.images?.[0] ??
@@ -83,36 +114,68 @@ export default function Cart() {
                   <h3>{item.product.name}</h3>
 
                   <p className="cart-item-specs">
-                    {[item.selected_size, item.selected_shape]
+                    {[
+                      item.selected_size,
+                      item.selected_shape,
+                    ]
                       .filter(Boolean)
                       .join(" · ")}
                   </p>
 
                   {item.selected_background_color && (
                     <p className="cart-item-text">
-                      Bakgrundsfärg:{" "}
-                      {item.selected_background_color.name} (
-                      {item.selected_background_color.ral_code})
+                      {language === "sv"
+                        ? "Bakgrundsfärg"
+                        : "Background colour"}
+                      :{" "}
+                      {
+                        item
+                          .selected_background_color
+                          .name
+                      }{" "}
+                      (
+                      {
+                        item
+                          .selected_background_color
+                          .ral_code
+                      }
+                      )
                     </p>
                   )}
 
                   {item.selected_print_color && (
                     <p className="cart-item-text">
-                      Tryckfärg:{" "}
-                      {item.selected_print_color.name} (
-                      {item.selected_print_color.ral_code})
+                      {language === "sv"
+                        ? "Tryckfärg"
+                        : "Print colour"}
+                      :{" "}
+                      {
+                        item
+                          .selected_print_color
+                          .name
+                      }{" "}
+                      (
+                      {
+                        item
+                          .selected_print_color
+                          .ral_code
+                      }
+                      )
                     </p>
                   )}
 
                   {item.custom_texts &&
-                    Object.entries(item.custom_texts).map(
+                    Object.entries(
+                      item.custom_texts,
+                    ).map(
                       ([fieldName, text]) => {
                         if (!text) return null;
 
                         const textField =
                           item.product.text_fields?.find(
                             (field) =>
-                              field.field_name === fieldName,
+                              field.field_name ===
+                              fieldName,
                           );
 
                         return (
@@ -163,15 +226,20 @@ export default function Cart() {
                 <div className="cart-item-right">
                   <p className="cart-item-price">
                     {formatPrice(
-                      item.unit_price * item.quantity,
+                      item.unit_price *
+                        item.quantity,
                     )}
                   </p>
 
                   <button
                     className="cart-item-remove"
-                    onClick={() => removeItem(item)}
+                    onClick={() =>
+                      removeItem(item)
+                    }
                   >
-                    Ta bort
+                    {language === "sv"
+                      ? "Ta bort"
+                      : "Remove"}
                   </button>
                 </div>
               </div>
@@ -180,26 +248,54 @@ export default function Cart() {
         </div>
 
         <div className="cart-summary">
-          <h2>Orderöversikt</h2>
+          <h2>
+            {language === "sv"
+              ? "Orderöversikt"
+              : "Order summary"}
+          </h2>
 
           <div className="cart-summary-rows">
             <div className="cart-summary-row">
-              <span>Delsumma</span>
-              <span>{formatPrice(subtotal)}</span>
+              <span>
+                {language === "sv"
+                  ? "Delsumma"
+                  : "Subtotal"}
+              </span>
+
+              <span>
+                {formatPrice(subtotal)}
+              </span>
             </div>
 
             <div className="cart-summary-row">
-              <span>Frakt</span>
-              <span>{formatPrice(shipping)}</span>
+              <span>
+                {language === "sv"
+                  ? "Frakt"
+                  : "Shipping"}
+              </span>
+
+              <span>
+                {formatPrice(shipping)}
+              </span>
             </div>
 
             <div className="cart-summary-row">
-              <span>Moms (25 %)</span>
+              <span>
+                {language === "sv"
+                  ? "Moms (25 %)"
+                  : "VAT (25%)"}
+              </span>
+
               <span>{formatPrice(moms)}</span>
             </div>
 
             <div className="cart-summary-row total">
-              <span>Totalt</span>
+              <span>
+                {language === "sv"
+                  ? "Totalt"
+                  : "Total"}
+              </span>
+
               <span>{formatPrice(total)}</span>
             </div>
           </div>
@@ -208,7 +304,9 @@ export default function Cart() {
             to="/payment"
             className="cart-checkout-btn"
           >
-            Gå till betalning
+            {language === "sv"
+              ? "Gå till betalning"
+              : "Proceed to checkout"}
           </NavLink>
         </div>
       </div>

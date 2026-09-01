@@ -3,16 +3,37 @@ import { useParams, NavLink } from "react-router-dom";
 import "./products.css";
 import { getProducts } from "../../api/products";
 import type { Product } from "../../types";
+import { useLanguage } from "../../context/languageContext";
 
-// Hårdkodad menystruktur tills kategorierna kopplas till databasen
 const categories = [
   {
-    name: "Emalj",
+    name: {
+      sv: "Emalj",
+      en: "Enamel",
+    },
     slug: "emalj",
     subcategories: [
-      { name: "Fotosyltar", slug: "fotosyltar" },
-      { name: "Husnummer", slug: "husnummer" },
-      { name: "WC skyltar", slug: "wc-skyltar" },
+      {
+        name: {
+          sv: "Fotosyltar",
+          en: "Photo signs",
+        },
+        slug: "fotosyltar",
+      },
+      {
+        name: {
+          sv: "Husnummer",
+          en: "House numbers",
+        },
+        slug: "husnummer",
+      },
+      {
+        name: {
+          sv: "WC skyltar",
+          en: "WC signs",
+        },
+        slug: "wc-skyltar",
+      },
     ],
   },
 ];
@@ -21,6 +42,7 @@ const PRODUCTS_PER_PAGE = 6;
 
 export default function Products() {
   const { kategori, underkategori } = useParams();
+  const { language } = useLanguage();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState<Product[]>([]);
@@ -35,30 +57,39 @@ export default function Products() {
         setProducts(data);
       } catch (error) {
         console.error(error);
-        setError("Kunde inte hämta produkter");
+
+        setError(
+          language === "sv"
+            ? "Kunde inte hämta produkter"
+            : "Could not load products",
+        );
       } finally {
         setLoading(false);
       }
     }
 
     loadProducts();
-  }, []);
+  }, [language]);
 
   /*
-        Vi filtrerar inte på kategori ännu.
+    Vi filtrerar inte på kategori ännu.
 
-        Den gamla mock-datan hade:
-        category
-        subcategory
+    Den gamla mock-datan hade:
+    category
+    subcategory
 
-        men de finns ännu inte på vår riktiga Product/databasmodell.
+    men de finns ännu inte på vår riktiga Product/databasmodell.
 
-        Därför visar vi tills vidare alla produkter från databasen.
-    */
-  const filteredProducts = products.filter((product) => !product.is_hidden);
+    Därför visar vi tills vidare alla produkter från databasen.
+  */
+  const filteredProducts = products.filter(
+    (product) => !product.is_hidden,
+  );
 
   // Pagination
-  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+  const totalPages = Math.ceil(
+    filteredProducts.length / PRODUCTS_PER_PAGE,
+  );
 
   const visibleProducts = filteredProducts.slice(
     (currentPage - 1) * PRODUCTS_PER_PAGE,
@@ -70,19 +101,29 @@ export default function Products() {
     (category) => category.slug === kategori,
   );
 
-  const activeSubcategory = activeCategory?.subcategories.find(
-    (subcategory) => subcategory.slug === underkategori,
-  );
+  const activeSubcategory =
+    activeCategory?.subcategories.find(
+      (subcategory) =>
+        subcategory.slug === underkategori,
+    );
 
   const pageTitle =
-    activeSubcategory?.name ?? activeCategory?.name ?? "Alla Produkter";
+    activeSubcategory?.name[language] ??
+    activeCategory?.name[language] ??
+    (language === "sv"
+      ? "Alla Produkter"
+      : "All Products");
 
   // Meddelande medan API:t laddar
   if (loading) {
     return (
       <div className="products">
         <div className="products-main">
-          <p>Laddar produkter...</p>
+          <p>
+            {language === "sv"
+              ? "Laddar produkter..."
+              : "Loading products..."}
+          </p>
         </div>
       </div>
     );
@@ -103,32 +144,45 @@ export default function Products() {
     <div className="products">
       {/* Sidomeny */}
       <aside className="products-sidebar">
-        <NavLink to="/produkter" className="sidebar-all">
-          Alla Produkter —
+        <NavLink
+          to="/produkter"
+          className="sidebar-all"
+        >
+          {language === "sv"
+            ? "Alla Produkter"
+            : "All Products"}{" "}
+          —
         </NavLink>
 
         {categories.map((category) => (
-          <div key={category.slug} className="sidebar-category">
+          <div
+            key={category.slug}
+            className="sidebar-category"
+          >
             <NavLink
               to={`/produkter/${category.slug}`}
               className="sidebar-category-link"
             >
-              {category.name} —
+              {category.name[language]} —
             </NavLink>
 
             <ul className="sidebar-subcategories">
-              {category.subcategories.map((subcategory) => (
-                <li key={subcategory.slug}>
-                  <NavLink
-                    to={`/produkter/${category.slug}/${subcategory.slug}`}
-                    className={({ isActive }) =>
-                      isActive ? "sidebar-sub-link active" : "sidebar-sub-link"
-                    }
-                  >
-                    {subcategory.name}
-                  </NavLink>
-                </li>
-              ))}
+              {category.subcategories.map(
+                (subcategory) => (
+                  <li key={subcategory.slug}>
+                    <NavLink
+                      to={`/produkter/${category.slug}/${subcategory.slug}`}
+                      className={({ isActive }) =>
+                        isActive
+                          ? "sidebar-sub-link active"
+                          : "sidebar-sub-link"
+                      }
+                    >
+                      {subcategory.name[language]}
+                    </NavLink>
+                  </li>
+                ),
+              )}
             </ul>
           </div>
         ))}
@@ -138,7 +192,12 @@ export default function Products() {
       <div className="products-main">
         <div className="products-header">
           <h1>{pageTitle}</h1>
-          <p>Fotosyltar, personlig design & husnummer</p>
+
+          <p>
+            {language === "sv"
+              ? "Fotosyltar, personlig design & husnummer"
+              : "Photo signs, personalised designs & house numbers"}
+          </p>
         </div>
 
         <div className="products-grid">
@@ -163,17 +222,27 @@ export default function Products() {
                 <p>{product.description}</p>
 
                 <span className="product-card-price">
-                  {product.base_price} kr
+                  {product.base_price} SEK
                 </span>
 
                 {product.is_out_of_stock && (
-                  <span className="product-card-stock">Ej i lager</span>
+                  <span className="product-card-stock">
+                    {language === "sv"
+                      ? "Ej i lager"
+                      : "Out of stock"}
+                  </span>
                 )}
               </div>
             </NavLink>
           ))}
 
-          {visibleProducts.length === 0 && <p>Inga produkter hittades.</p>}
+          {visibleProducts.length === 0 && (
+            <p>
+              {language === "sv"
+                ? "Inga produkter hittades."
+                : "No products found."}
+            </p>
+          )}
         </div>
 
         {/* Pagination */}
@@ -181,32 +250,45 @@ export default function Products() {
           <div className="pagination">
             <button
               className="pagination-btn"
-              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              onClick={() =>
+                setCurrentPage((page) =>
+                  Math.max(1, page - 1),
+                )
+              }
               disabled={currentPage === 1}
             >
               ‹
             </button>
 
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-              (page) => (
-                <button
-                  key={page}
-                  className={`pagination-btn ${
-                    currentPage === page ? "active" : ""
-                  }`}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </button>
-              ),
-            )}
+            {Array.from(
+              { length: totalPages },
+              (_, index) => index + 1,
+            ).map((page) => (
+              <button
+                key={page}
+                className={`pagination-btn ${
+                  currentPage === page
+                    ? "active"
+                    : ""
+                }`}
+                onClick={() =>
+                  setCurrentPage(page)
+                }
+              >
+                {page}
+              </button>
+            ))}
 
             <button
               className="pagination-btn"
               onClick={() =>
-                setCurrentPage((page) => Math.min(totalPages, page + 1))
+                setCurrentPage((page) =>
+                  Math.min(totalPages, page + 1),
+                )
               }
-              disabled={currentPage === totalPages}
+              disabled={
+                currentPage === totalPages
+              }
             >
               ›
             </button>

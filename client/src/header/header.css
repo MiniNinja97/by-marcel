@@ -80,3 +80,47 @@
     font-size: 1rem;
     color: var(--gold)
 }
+
+.header__right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.header__language {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    letter-spacing: 0.1rem;
+
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.header__language button {
+    padding: 0;
+
+    background: none;
+    border: none;
+
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.1rem;
+
+    color: rgba(255, 255, 255, 0.5);
+
+    cursor: pointer;
+
+    transition: color 0.2s ease;
+}
+
+.header__language button:hover {
+    color: var(--gold);
+}
+
+.header__language button.active {
+    color: var(--gold);
+}

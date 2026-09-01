@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../../store/useCartStore";
 import { createOrder } from "../../api/orders";
+import { useLanguage } from "../../context/languageContext";
 import "./payment.css";
 
 export default function Payment() {
   const navigate = useNavigate();
+  const { language } = useLanguage();
 
   const { items, getTotalPrice, clearCart } = useCartStore();
 
@@ -16,7 +18,9 @@ export default function Payment() {
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [zipCode, setZipCode] = useState("");
-  const [country, setCountry] = useState("Sverige");
+  const [country, setCountry] = useState(
+    language === "sv" ? "Sverige" : "Sweden",
+  );
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,20 +29,40 @@ export default function Payment() {
   const shipping = subtotal > 0 ? 79 : 0;
   const total = subtotal + shipping;
 
+  // Uppdatera standardlandet när kunden byter språk.
+  useEffect(() => {
+    setCountry((currentCountry) => {
+      if (
+        currentCountry === "Sverige" ||
+        currentCountry === "Sweden"
+      ) {
+        return language === "sv" ? "Sverige" : "Sweden";
+      }
+
+      return currentCountry;
+    });
+
+    setError("");
+  }, [language]);
+
   // Tillåter bokstäver, svenska tecken, mellanslag,
   // bindestreck och apostrof.
-  const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿÅÄÖåäö' -]+$/;
+  const nameRegex =
+    /^[A-Za-zÀ-ÖØ-öø-ÿÅÄÖåäö' -]+$/;
 
   // Enkel kontroll av e-postformat.
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   // Telefonnummer får innehålla siffror samt
   // +, mellanslag, bindestreck och parenteser.
-  const phoneRegex = /^[0-9+\-()\s]+$/;
+  const phoneRegex =
+    /^[0-9+\-()\s]+$/;
 
   // Ort och land får innehålla bokstäver,
   // mellanslag, bindestreck och apostrof.
-  const locationRegex = /^[A-Za-zÀ-ÖØ-öø-ÿÅÄÖåäö' -]+$/;
+  const locationRegex =
+    /^[A-Za-zÀ-ÖØ-öø-ÿÅÄÖåäö' -]+$/;
 
   const validateForm = () => {
     const trimmedFirstName = firstName.trim();
@@ -51,77 +75,122 @@ export default function Payment() {
     const trimmedCountry = country.trim();
 
     if (!trimmedFirstName) {
-      return "Fyll i förnamn.";
+      return language === "sv"
+        ? "Fyll i förnamn."
+        : "Enter your first name.";
     }
 
     if (!nameRegex.test(trimmedFirstName)) {
-      return "Förnamnet får endast innehålla bokstäver.";
+      return language === "sv"
+        ? "Förnamnet får endast innehålla bokstäver."
+        : "The first name may only contain letters.";
     }
 
     if (!trimmedLastName) {
-      return "Fyll i efternamn.";
+      return language === "sv"
+        ? "Fyll i efternamn."
+        : "Enter your last name.";
     }
 
     if (!nameRegex.test(trimmedLastName)) {
-      return "Efternamnet får endast innehålla bokstäver.";
+      return language === "sv"
+        ? "Efternamnet får endast innehålla bokstäver."
+        : "The last name may only contain letters.";
     }
 
     if (!trimmedEmail) {
-      return "Fyll i e-postadress.";
+      return language === "sv"
+        ? "Fyll i e-postadress."
+        : "Enter your email address.";
     }
 
     if (!emailRegex.test(trimmedEmail)) {
-      return "Ange en giltig e-postadress.";
+      return language === "sv"
+        ? "Ange en giltig e-postadress."
+        : "Enter a valid email address.";
     }
 
-    if (trimmedPhone && !phoneRegex.test(trimmedPhone)) {
-      return "Telefonnumret innehåller ogiltiga tecken.";
+    if (
+      trimmedPhone &&
+      !phoneRegex.test(trimmedPhone)
+    ) {
+      return language === "sv"
+        ? "Telefonnumret innehåller ogiltiga tecken."
+        : "The phone number contains invalid characters.";
     }
 
     if (
       trimmedPhone &&
       trimmedPhone.replace(/\D/g, "").length < 7
     ) {
-      return "Telefonnumret är för kort.";
+      return language === "sv"
+        ? "Telefonnumret är för kort."
+        : "The phone number is too short.";
     }
 
     if (!trimmedAddress) {
-      return "Fyll i adress.";
-    }
-
-    if (!/[A-Za-zÀ-ÖØ-öø-ÿÅÄÖåäö]/.test(trimmedAddress)) {
-      return "Adressen måste innehålla ett gatunamn.";
-    }
-
-    if (!/\d/.test(trimmedAddress)) {
-      return "Adressen måste innehålla ett gatunummer.";
-    }
-
-    if (!trimmedZipCode) {
-      return "Fyll i postnummer.";
+      return language === "sv"
+        ? "Fyll i adress."
+        : "Enter your address.";
     }
 
     if (
-      trimmedCountry.toLowerCase() === "sverige" &&
+      !/[A-Za-zÀ-ÖØ-öø-ÿÅÄÖåäö]/.test(
+        trimmedAddress,
+      )
+    ) {
+      return language === "sv"
+        ? "Adressen måste innehålla ett gatunamn."
+        : "The address must contain a street name.";
+    }
+
+    if (!/\d/.test(trimmedAddress)) {
+      return language === "sv"
+        ? "Adressen måste innehålla ett gatunummer."
+        : "The address must contain a street number.";
+    }
+
+    if (!trimmedZipCode) {
+      return language === "sv"
+        ? "Fyll i postnummer."
+        : "Enter your postal code.";
+    }
+
+    const isSweden =
+      trimmedCountry.toLowerCase() === "sverige" ||
+      trimmedCountry.toLowerCase() === "sweden";
+
+    if (
+      isSweden &&
       !/^\d{3}\s?\d{2}$/.test(trimmedZipCode)
     ) {
-      return "Svenskt postnummer ska innehålla 5 siffror.";
+      return language === "sv"
+        ? "Svenskt postnummer ska innehålla 5 siffror."
+        : "Swedish postal codes must contain 5 digits.";
     }
 
     if (!trimmedCity) {
-      return "Fyll i ort.";
+      return language === "sv"
+        ? "Fyll i ort."
+        : "Enter your city.";
     }
 
     if (!locationRegex.test(trimmedCity)) {
-      return "Orten innehåller ogiltiga tecken.";
+      return language === "sv"
+        ? "Orten innehåller ogiltiga tecken."
+        : "The city contains invalid characters.";
     }
 
     if (!trimmedCountry) {
-      return "Fyll i land.";
+      return language === "sv"
+        ? "Fyll i land."
+        : "Enter your country.";
     }
 
     if (!locationRegex.test(trimmedCountry)) {
-      return "Landet innehåller ogiltiga tecken.";
+      return language === "sv"
+        ? "Landet innehåller ogiltiga tecken."
+        : "The country contains invalid characters.";
     }
 
     return null;
@@ -129,7 +198,12 @@ export default function Payment() {
 
   const handleCreateOrder = async () => {
     if (items.length === 0) {
-      setError("Kundkorgen är tom.");
+      setError(
+        language === "sv"
+          ? "Kundkorgen är tom."
+          : "Your cart is empty.",
+      );
+
       return;
     }
 
@@ -149,7 +223,8 @@ export default function Payment() {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           email: email.trim(),
-          phone_number: phoneNumber.trim() || undefined,
+          phone_number:
+            phoneNumber.trim() || undefined,
           address: address.trim(),
           city: city.trim(),
           zip_code: zipCode.trim(),
@@ -169,7 +244,9 @@ export default function Payment() {
       setError(
         error instanceof Error
           ? error.message
-          : "Kunde inte skapa order",
+          : language === "sv"
+            ? "Kunde inte skapa order"
+            : "Could not create order",
       );
     } finally {
       setLoading(false);
@@ -180,23 +257,40 @@ export default function Payment() {
     <div className="payment">
       <div className="payment-container">
         <div className="payment-header">
-          <h1>Betalning</h1>
+          <h1>
+            {language === "sv"
+              ? "Betalning"
+              : "Checkout"}
+          </h1>
+
           <p>
-            Fyll i dina uppgifter för att slutföra beställningen.
+            {language === "sv"
+              ? "Fyll i dina uppgifter för att slutföra beställningen."
+              : "Enter your details to complete your order."}
           </p>
         </div>
 
         <div className="payment-test-notice">
-          Testläge — ingen betalning genomförs ännu.
+          {language === "sv"
+            ? "Testläge — ingen betalning genomförs ännu."
+            : "Test mode — no payment will be processed yet."}
         </div>
 
         <div className="payment-layout">
           <div className="payment-form">
-            <h2>Kunduppgifter</h2>
+            <h2>
+              {language === "sv"
+                ? "Kunduppgifter"
+                : "Customer details"}
+            </h2>
 
             <div className="payment-form-grid">
               <div className="payment-field">
-                <label>Förnamn</label>
+                <label>
+                  {language === "sv"
+                    ? "Förnamn"
+                    : "First name"}
+                </label>
 
                 <input
                   type="text"
@@ -209,7 +303,11 @@ export default function Payment() {
               </div>
 
               <div className="payment-field">
-                <label>Efternamn</label>
+                <label>
+                  {language === "sv"
+                    ? "Efternamn"
+                    : "Last name"}
+                </label>
 
                 <input
                   type="text"
@@ -222,7 +320,11 @@ export default function Payment() {
               </div>
 
               <div className="payment-field full-width">
-                <label>E-post</label>
+                <label>
+                  {language === "sv"
+                    ? "E-post"
+                    : "Email"}
+                </label>
 
                 <input
                   type="email"
@@ -235,7 +337,11 @@ export default function Payment() {
               </div>
 
               <div className="payment-field full-width">
-                <label>Telefonnummer</label>
+                <label>
+                  {language === "sv"
+                    ? "Telefonnummer"
+                    : "Phone number"}
+                </label>
 
                 <input
                   type="tel"
@@ -249,7 +355,11 @@ export default function Payment() {
               </div>
 
               <div className="payment-field full-width">
-                <label>Adress</label>
+                <label>
+                  {language === "sv"
+                    ? "Adress"
+                    : "Address"}
+                </label>
 
                 <input
                   type="text"
@@ -262,7 +372,11 @@ export default function Payment() {
               </div>
 
               <div className="payment-field">
-                <label>Postnummer</label>
+                <label>
+                  {language === "sv"
+                    ? "Postnummer"
+                    : "Postal code"}
+                </label>
 
                 <input
                   type="text"
@@ -276,7 +390,11 @@ export default function Payment() {
               </div>
 
               <div className="payment-field">
-                <label>Ort</label>
+                <label>
+                  {language === "sv"
+                    ? "Ort"
+                    : "City"}
+                </label>
 
                 <input
                   type="text"
@@ -289,7 +407,11 @@ export default function Payment() {
               </div>
 
               <div className="payment-field full-width">
-                <label>Land</label>
+                <label>
+                  {language === "sv"
+                    ? "Land"
+                    : "Country"}
+                </label>
 
                 <input
                   type="text"
@@ -304,20 +426,39 @@ export default function Payment() {
           </div>
 
           <div className="payment-summary">
-            <h2>Orderöversikt</h2>
+            <h2>
+              {language === "sv"
+                ? "Orderöversikt"
+                : "Order summary"}
+            </h2>
 
             <div className="payment-summary-row">
-              <span>Delsumma</span>
+              <span>
+                {language === "sv"
+                  ? "Delsumma"
+                  : "Subtotal"}
+              </span>
+
               <span>{subtotal} SEK</span>
             </div>
 
             <div className="payment-summary-row">
-              <span>Frakt</span>
+              <span>
+                {language === "sv"
+                  ? "Frakt"
+                  : "Shipping"}
+              </span>
+
               <span>{shipping} SEK</span>
             </div>
 
             <div className="payment-summary-row total">
-              <span>Totalt</span>
+              <span>
+                {language === "sv"
+                  ? "Totalt"
+                  : "Total"}
+              </span>
+
               <span>{total} SEK</span>
             </div>
 
@@ -333,8 +474,12 @@ export default function Payment() {
               disabled={loading}
             >
               {loading
-                ? "Skapar order..."
-                : "Skapa testorder"}
+                ? language === "sv"
+                  ? "Skapar order..."
+                  : "Creating order..."
+                : language === "sv"
+                  ? "Skapa testorder"
+                  : "Create test order"}
             </button>
           </div>
         </div>
