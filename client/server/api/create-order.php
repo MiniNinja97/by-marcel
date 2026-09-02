@@ -927,10 +927,10 @@ try {
     ],
 
     "success_url" =>
-        "https://www.bymarcel.se/#/betalning-klar?session_id={CHECKOUT_SESSION_ID}",
+        "http://localhost:5173/#/betalning-klar?session_id={CHECKOUT_SESSION_ID}",
 
     "cancel_url" =>
-        "https://www.bymarcel.se/#/betalning",
+        "http://localhost:5173/#/payment",
 ]);
 
     http_response_code(201);

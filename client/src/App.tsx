@@ -1,8 +1,4 @@
-import {
-  HashRouter,
-  Route,
-  Routes,
-} from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 
 import Header from "./header/header";
 import Footer from "./footer/footer";
@@ -14,6 +10,7 @@ import Contact from "./pages/contact/contact";
 import Product from "./pages/product_card/product_card";
 import Cart from "./pages/cart/cart";
 import Payment from "./pages/payment/payment";
+import PaymentSuccess from "./pages/paymentSuccess/paymentSuccess";
 
 import AdminRoute from "./pages/admin/adminRoute";
 
@@ -27,55 +24,30 @@ export default function App() {
 
       <main>
         <Routes>
-          <Route
-            path="/"
-            element={<Home />}
-          />
+          <Route path="/" element={<Home />} />
 
-          <Route
-            path="/produkter"
-            element={<Products />}
-          />
+          <Route path="/produkter" element={<Products />} />
 
-          <Route
-            path="/produkt/:id"
-            element={<Product />}
-          />
+          <Route path="/produkt/:id" element={<Product />} />
 
-          <Route
-            path="/produkter/:kategori"
-            element={<Products />}
-          />
+          <Route path="/produkter/:kategori" element={<Products />} />
 
           <Route
             path="/produkter/:kategori/:underkategori"
             element={<Products />}
           />
 
-          <Route
-            path="/about"
-            element={<About />}
-          />
+          <Route path="/about" element={<About />} />
 
-          <Route
-            path="/contact"
-            element={<Contact />}
-          />
+          <Route path="/contact" element={<Contact />} />
 
-          <Route
-            path="/korg"
-            element={<Cart />}
-          />
+          <Route path="/korg" element={<Cart />} />
 
-          <Route
-            path="/admin"
-            element={<AdminRoute />}
-          />
+          <Route path="/admin" element={<AdminRoute />} />
 
-          <Route
-            path="/payment"
-            element={<Payment />}
-          />
+          <Route path="/payment" element={<Payment />} />
+
+          <Route path="/betalning-klar" element={<PaymentSuccess />} />
         </Routes>
       </main>
 
