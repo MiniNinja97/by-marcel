@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# PHP / Composer
+vendor/
+vendor.zip
+
+# Stripe secrets
+server/config/stripe.php
+
+# Temporary Stripe test file
+server/test-stripe.php

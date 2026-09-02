@@ -215,43 +215,46 @@ export default function Payment() {
     }
 
     try {
-      setLoading(true);
-      setError("");
+  setLoading(true);
+  setError("");
 
-      const result = await createOrder(
-        {
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          email: email.trim(),
-          phone_number:
-            phoneNumber.trim() || undefined,
-          address: address.trim(),
-          city: city.trim(),
-          zip_code: zipCode.trim(),
-          country: country.trim(),
-        },
-        items,
-      );
+  // skapa order
 
-      console.log("Order skapad:", result);
+  const result = await createOrder(
+    {
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      email: email.trim(),
+      phone_number: phoneNumber.trim() || undefined,
+      address: address.trim(),
+      city: city.trim(),
+      zip_code: zipCode.trim(),
+      country: country.trim(),
+    },
+    items,
+  );
 
-      clearCart();
+  console.log("HELA RESULTATET:", JSON.stringify(result, null, 2));
+console.log("CHECKOUT URL:", result.checkout_url);
 
-      navigate("/");
-    } catch (error) {
-      console.error(error);
+  if (result.checkout_url) {
+    window.location.href = result.checkout_url;
+  }
 
-      setError(
-        error instanceof Error
-          ? error.message
-          : language === "sv"
-            ? "Kunde inte skapa order"
-            : "Could not create order",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+} catch (error) {
+  console.error(error);
+
+  setError(
+    error instanceof Error
+      ? error.message
+      : language === "sv"
+        ? "Kunde inte skapa order"
+        : "Could not create order",
+  );
+} finally {
+  setLoading(false);
+}
+};
 
   return (
     <div className="payment">

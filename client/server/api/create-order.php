@@ -11,6 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
 }
 
 require_once __DIR__ . "/../config/db.php";
+require_once __DIR__ . "/../config/stripe.php";
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(405);
@@ -900,18 +901,51 @@ try {
 
     $conn->commit();
 
+    $checkoutSession = \Stripe\Checkout\Session::create([
+    "mode" => "payment",
+
+    "customer_email" => $customer["email"],
+
+    "line_items" => [
+        [
+            "price_data" => [
+                "currency" => "sek",
+
+                "product_data" => [
+                    "name" => "Order " . $orderId,
+                ],
+
+                "unit_amount" => (int) round($totalPrice * 100),
+            ],
+
+            "quantity" => 1,
+        ],
+    ],
+
+    "metadata" => [
+        "order_id" => $orderId,
+    ],
+
+    "success_url" =>
+        "https://www.bymarcel.se/#/betalning-klar?session_id={CHECKOUT_SESSION_ID}",
+
+    "cancel_url" =>
+        "https://www.bymarcel.se/#/betalning",
+]);
+
     http_response_code(201);
 
-    echo json_encode([
-        "success" => true,
-        "message" => "Order skapad",
-        "currency" => "SEK",
-        "order_id" => $orderId,
-        "customer_id" => $customerId,
-        "subtotal" => $subtotal,
-        "shipping" => $shipping,
-        "total_price" => $totalPrice
-    ]);
+   echo json_encode([
+    "success" => true,
+    "message" => "Order skapad",
+    "currency" => "SEK",
+    "order_id" => $orderId,
+    "customer_id" => $customerId,
+    "subtotal" => $subtotal,
+    "shipping" => $shipping,
+    "total_price" => $totalPrice,
+    "checkout_url" => $checkoutSession->url
+]);
 
 
 } catch (Throwable $error) {
