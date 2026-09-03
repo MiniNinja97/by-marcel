@@ -34,8 +34,6 @@ if (!isset($stripeWebhookSecret) || $stripeWebhookSecret === "") {
     exit;
 }
 
-
-
 try {
     // Verifiera webhooken.
     $event = \Stripe\Webhook::constructEvent(
@@ -44,39 +42,63 @@ try {
         $stripeWebhookSecret
     );
 
-    // Vi reagerar när Stripe Checkout är färdig.
-    if ($event->type === "checkout.session.completed") {
+    // -----------------------------------------
+    // Betalningen är klar
+    // -----------------------------------------
+    //
+    // checkout.session.completed:
+    // Checkout avslutades. Vi uppdaterar bara
+    // ordern om Stripe redan säger "paid".
+    //
+    // checkout.session.async_payment_succeeded:
+    // En betalning som behövde mer tid har
+    // senare blivit bekräftad av Stripe.
+    // -----------------------------------------
 
+    if (
+        $event->type === "checkout.session.completed" ||
+        $event->type === "checkout.session.async_payment_succeeded"
+    ) {
         $session = $event->data->object;
 
-        // Kontrollera att betalningen verkligen är betald.
+        // Uppdatera bara när Stripe verkligen
+        // har bekräftat betalningen.
         if ($session->payment_status === "paid") {
+            $orderId =
+                $session->metadata->order_id ?? null;
 
-            $orderId = $session->metadata->order_id ?? null;
-            $paymentIntentId = $session->payment_intent ?? null;
+            $paymentIntentId =
+                $session->payment_intent ?? null;
 
             if (!$orderId) {
-                throw new Exception("Order-ID saknas i Stripe metadata.");
+                throw new Exception(
+                    "Order-ID saknas i Stripe metadata."
+                );
             }
 
-            // Uppdatera endast en order som fortfarande väntar på betalning.
-            // Det gör webhooken säker att köra flera gånger.
+            // Uppdatera endast en order som fortfarande
+            // väntar på betalning.
+            //
+            // Om Stripe skickar samma event igen,
+            // eller både completed och async-eventet,
+            // ändras inte en redan behandlad order.
             $stmt = $conn->prepare("
-    UPDATE orders
-    SET
-        status = 'processing',
-        stripe_payment_id = ?
-    WHERE id = ?
-    AND status = 'pending'
-");
+                UPDATE orders
+                SET
+                    status = 'processing',
+                    stripe_payment_id = ?
+                WHERE id = ?
+                AND status = 'pending'
+            ");
 
-$stmt->bind_param(
-    "ss",
-    $paymentIntentId,
-    $orderId
-);
+            $stmt->bind_param(
+                "ss",
+                $paymentIntentId,
+                $orderId
+            );
 
-$stmt->execute();
+            $stmt->execute();
+            $stmt->close();
         }
     }
 
@@ -87,7 +109,6 @@ $stmt->execute();
     ]);
 
 } catch (\Stripe\Exception\SignatureVerificationException $e) {
-
     http_response_code(400);
 
     echo json_encode([
@@ -96,7 +117,6 @@ $stmt->execute();
     ]);
 
 } catch (Throwable $e) {
-
     http_response_code(400);
 
     echo json_encode([

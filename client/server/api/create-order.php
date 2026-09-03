@@ -899,7 +899,7 @@ try {
     // Allt lyckades
     // -----------------------------------------
 
-    $conn->commit();
+   
 
     $checkoutSession = \Stripe\Checkout\Session::create([
     "mode" => "payment",
@@ -933,6 +933,13 @@ try {
         "http://localhost:5173/#/payment",
 ]);
 
+// -----------------------------------------
+// Stripe-sessionen skapades korrekt.
+// Nu kan ordern sparas permanent.
+// -----------------------------------------
+
+$conn->commit();
+
     http_response_code(201);
 
    echo json_encode([
@@ -961,7 +968,6 @@ try {
 
     echo json_encode([
         "success" => false,
-        "message" => "Kunde inte skapa order",
-        "error" => $error->getMessage()
+        "message" => "Kunde inte skapa order"
     ]);
 }

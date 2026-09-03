@@ -24,7 +24,6 @@ try {
     $session = \Stripe\Checkout\Session::retrieve($sessionId);
 
     $orderId = $session->metadata->order_id ?? null;
-    $paymentIntentId = $session->payment_intent ?? null;
     $stripePaid = $session->payment_status === "paid";
 
     if (!$orderId) {
@@ -86,10 +85,10 @@ try {
     ]);
 
 } catch (Throwable $e) {
-    http_response_code(400);
+    http_response_code(500);
 
     echo json_encode([
         "success" => false,
-        "error" => $e->getMessage()
+        "error" => "Ett serverfel uppstod"
     ]);
 }
