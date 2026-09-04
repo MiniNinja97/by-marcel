@@ -113,6 +113,33 @@ function getShippingRate(
     float $weightKg
 ): array {
 
+    // Bestäm vilken viktklass ordern tillhör.
+    //
+    // under 1 kg  -> < 1 kg
+    // 1-2 kg      -> 1 till och med 2 kg
+    // 2-3 kg      -> över 2 till och med 3 kg
+    // osv.
+
+    if ($weightKg < 1) {
+        $maxWeight = 1;
+    } elseif ($weightKg <= 2) {
+        $maxWeight = 2;
+    } elseif ($weightKg <= 3) {
+        $maxWeight = 3;
+    } elseif ($weightKg <= 5) {
+        $maxWeight = 5;
+    } elseif ($weightKg <= 10) {
+        $maxWeight = 10;
+    } elseif ($weightKg <= 15) {
+        $maxWeight = 15;
+    } elseif ($weightKg <= 20) {
+        $maxWeight = 20;
+    } else {
+        throw new Exception(
+            "Ingen fraktkostnad finns för orderns vikt"
+        );
+    }
+
     $sql = "
         SELECT
             carrier,
@@ -120,19 +147,16 @@ function getShippingRate(
         FROM shipping_rates
         WHERE
             region = ?
-            AND min_weight <= ?
-            AND max_weight >= ?
-        ORDER BY min_weight DESC
+            AND max_weight = ?
         LIMIT 1
     ";
 
     $stmt = $conn->prepare($sql);
 
     $stmt->bind_param(
-        "sdd",
+        "sd",
         $region,
-        $weightKg,
-        $weightKg
+        $maxWeight
     );
 
     $stmt->execute();
@@ -149,6 +173,7 @@ function getShippingRate(
     }
 
     return $rate;
+
 }
 
 

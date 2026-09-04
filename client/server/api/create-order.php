@@ -72,7 +72,8 @@ $items = $data["items"];
 $requiredCustomerFields = [
     "first_name",
     "last_name",
-    "email"
+    "email",
+    "country"
 ];
 
 foreach ($requiredCustomerFields as $field) {
@@ -138,6 +139,117 @@ function getProductColor(
     return $color ?: null;
 }
 
+// -----------------------------------------
+// Hjälpfunktion: bestäm fraktregion från land
+// -----------------------------------------
+
+function getShippingRegion(string $country): string
+{
+    $country = strtoupper(trim($country));
+
+    // Sverige
+    if (
+        $country === "SE" ||
+        $country === "SWEDEN" ||
+        $country === "SVERIGE"
+    ) {
+        return "SE";
+    }
+
+    // Norge och Island
+    if (
+        $country === "NO" ||
+        $country === "NORWAY" ||
+        $country === "NORGE" ||
+        $country === "IS" ||
+        $country === "ICELAND" ||
+        $country === "ISLAND"
+    ) {
+        return "NO_IS";
+    }
+
+    // EU-länder
+    $euCountries = [
+        "AT", "BE", "BG", "HR", "CY", "CZ", "DK",
+        "EE", "FI", "FR", "DE", "GR", "HU", "IE",
+        "IT", "LV", "LT", "LU", "MT", "NL", "PL",
+        "PT", "RO", "SK", "SI", "ES"
+    ];
+
+    if (in_array($country, $euCountries, true)) {
+        return "EU";
+    }
+
+    throw new Exception(
+        "Leverans är inte tillgänglig till valt land"
+    );
+}
+
+
+// -----------------------------------------
+// Hjälpfunktion: hämta fraktpris från DB
+// -----------------------------------------
+
+function getShippingRate(
+    mysqli $conn,
+    string $region,
+    float $weightKg
+): array {
+
+    if ($weightKg < 1) {
+        $maxWeight = 1;
+    } elseif ($weightKg <= 2) {
+        $maxWeight = 2;
+    } elseif ($weightKg <= 3) {
+        $maxWeight = 3;
+    } elseif ($weightKg <= 5) {
+        $maxWeight = 5;
+    } elseif ($weightKg <= 10) {
+        $maxWeight = 10;
+    } elseif ($weightKg <= 15) {
+        $maxWeight = 15;
+    } elseif ($weightKg <= 20) {
+        $maxWeight = 20;
+    } else {
+        throw new Exception(
+            "Ingen fraktkostnad finns för orderns vikt"
+        );
+    }
+
+    $sql = "
+        SELECT
+            carrier,
+            price
+        FROM shipping_rates
+        WHERE
+            region = ?
+            AND max_weight = ?
+        LIMIT 1
+    ";
+
+    $stmt = $conn->prepare($sql);
+
+    $stmt->bind_param(
+        "sd",
+        $region,
+        $maxWeight
+    );
+
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    $rate = $result->fetch_assoc();
+
+    $stmt->close();
+
+    if (!$rate) {
+        throw new Exception(
+            "Ingen fraktkostnad finns för orderns vikt"
+        );
+    }
+
+    return $rate;
+}
 
 // -----------------------------------------
 // Validera och räkna varje produkt
@@ -616,17 +728,47 @@ try {
 
 
     // -----------------------------------------
-    // Tillfällig frakt
-    // Byts senare mot riktig fraktlösning
-    // -----------------------------------------
+// Beräkna frakt
+// -----------------------------------------
 
-    $shipping =
-        $subtotal > 0 ? 79 : 0;
+if (
+    !isset($customer["country"]) ||
+    trim($customer["country"]) === ""
+) {
+    throw new Exception(
+        "Land måste anges för att beräkna frakt"
+    );
+}
 
-    $totalPrice =
-        $subtotal + $shipping;
+
+// Produktvikterna lagras i gram.
+// Frakttabellen använder kilogram.
+$totalWeightKg = $totalWeight / 1000;
 
 
+// Bestäm region från kundens land.
+$shippingRegion =
+    getShippingRegion($customer["country"]);
+
+
+// Hämta rätt fraktpris från databasen.
+$shippingRate =
+    getShippingRate(
+        $conn,
+        $shippingRegion,
+        $totalWeightKg
+    );
+
+
+$shipping =
+    (float) $shippingRate["price"];
+
+$shippingCarrier =
+    $shippingRate["carrier"];
+
+
+$totalPrice =
+    $subtotal + $shipping;
     // -----------------------------------------
     // Skapa ID:n
     // -----------------------------------------
