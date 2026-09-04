@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../../store/useCartStore";
 import { createOrder } from "../../api/orders";
 import { useLanguage } from "../../context/languageContext";
+import { getShipping } from "../../api/shipping";
 import "./payment.css";
 
 export default function Payment() {
-  const navigate = useNavigate();
   const { language } = useLanguage();
 
-  const { items, getTotalPrice, clearCart } = useCartStore();
+  const { items, getTotalPrice } = useCartStore();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -18,32 +17,72 @@ export default function Payment() {
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [zipCode, setZipCode] = useState("");
-  const [country, setCountry] = useState(
-    language === "sv" ? "Sverige" : "Sweden",
-  );
+  const [country, setCountry] = useState("SE");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const subtotal = getTotalPrice();
-  const shipping = subtotal > 0 ? 79 : 0;
-  const total = subtotal + shipping;
 
-  // Uppdatera standardlandet när kunden byter språk.
+  const [shipping, setShipping] = useState<number | null>(
+    null,
+  );
+
+  const [shippingLoading, setShippingLoading] =
+    useState(false);
+
+  const total =
+    subtotal + (shipping ?? 0);
+
+
+  // -----------------------------------------
+  // Rensa felmeddelande när språk ändras
+  // -----------------------------------------
+
   useEffect(() => {
-    setCountry((currentCountry) => {
-      if (
-        currentCountry === "Sverige" ||
-        currentCountry === "Sweden"
-      ) {
-        return language === "sv" ? "Sverige" : "Sweden";
-      }
-
-      return currentCountry;
-    });
-
     setError("");
   }, [language]);
+
+
+  // -----------------------------------------
+  // Hämta frakt från backend
+  // -----------------------------------------
+
+  useEffect(() => {
+    if (items.length === 0 || !country.trim()) {
+      setShipping(null);
+      return;
+    }
+
+    const loadShipping = async () => {
+      try {
+        setShippingLoading(true);
+
+        const result = await getShipping(
+          country.trim(),
+          items.map((item) => ({
+            product_id: item.product.id,
+            variant_id: item.variant_id,
+            quantity: item.quantity,
+          })),
+        );
+
+        setShipping(result.shipping);
+      } catch (error) {
+        console.error(error);
+        setShipping(null);
+      } finally {
+        setShippingLoading(false);
+      }
+    };
+
+    loadShipping();
+  }, [country, items]);
+
+
+  // -----------------------------------------
+  // Validering
+  // -----------------------------------------
 
   // Tillåter bokstäver, svenska tecken, mellanslag,
   // bindestreck och apostrof.
@@ -59,10 +98,11 @@ export default function Payment() {
   const phoneRegex =
     /^[0-9+\-()\s]+$/;
 
-  // Ort och land får innehålla bokstäver,
+  // Ort får innehålla bokstäver,
   // mellanslag, bindestreck och apostrof.
   const locationRegex =
     /^[A-Za-zÀ-ÖØ-öø-ÿÅÄÖåäö' -]+$/;
+
 
   const validateForm = () => {
     const trimmedFirstName = firstName.trim();
@@ -156,9 +196,9 @@ export default function Payment() {
         : "Enter your postal code.";
     }
 
-    const isSweden =
-      trimmedCountry.toLowerCase() === "sverige" ||
-      trimmedCountry.toLowerCase() === "sweden";
+
+    // Svenskt postnummer kontrolleras när land = SE.
+    const isSweden = trimmedCountry === "SE";
 
     if (
       isSweden &&
@@ -168,6 +208,7 @@ export default function Payment() {
         ? "Svenskt postnummer ska innehålla 5 siffror."
         : "Swedish postal codes must contain 5 digits.";
     }
+
 
     if (!trimmedCity) {
       return language === "sv"
@@ -181,20 +222,26 @@ export default function Payment() {
         : "The city contains invalid characters.";
     }
 
+
     if (!trimmedCountry) {
       return language === "sv"
-        ? "Fyll i land."
-        : "Enter your country.";
+        ? "Välj land."
+        : "Select a country.";
     }
 
-    if (!locationRegex.test(trimmedCountry)) {
+    if (!/^[A-Z]{2}$/.test(trimmedCountry)) {
       return language === "sv"
-        ? "Landet innehåller ogiltiga tecken."
-        : "The country contains invalid characters.";
+        ? "Välj ett giltigt land."
+        : "Select a valid country.";
     }
 
     return null;
   };
+
+
+  // -----------------------------------------
+  // Skapa order
+  // -----------------------------------------
 
   const handleCreateOrder = async () => {
     if (items.length === 0) {
@@ -215,50 +262,64 @@ export default function Payment() {
     }
 
     try {
-  setLoading(true);
-  setError("");
+      setLoading(true);
+      setError("");
 
-  // skapa order
+      const result = await createOrder(
+        {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          email: email.trim(),
+          phone_number:
+            phoneNumber.trim() || undefined,
+          address: address.trim(),
+          city: city.trim(),
+          zip_code: zipCode.trim(),
+          country: country.trim(),
+        },
+        items,
+      );
 
-  const result = await createOrder(
-    {
-      first_name: firstName.trim(),
-      last_name: lastName.trim(),
-      email: email.trim(),
-      phone_number: phoneNumber.trim() || undefined,
-      address: address.trim(),
-      city: city.trim(),
-      zip_code: zipCode.trim(),
-      country: country.trim(),
-    },
-    items,
-  );
+      console.log(
+        "HELA RESULTATET:",
+        JSON.stringify(result, null, 2),
+      );
 
-  console.log("HELA RESULTATET:", JSON.stringify(result, null, 2));
-console.log("CHECKOUT URL:", result.checkout_url);
+      console.log(
+        "CHECKOUT URL:",
+        result.checkout_url,
+      );
 
-  if (result.checkout_url) {
-    window.location.href = result.checkout_url;
-  }
+      if (result.checkout_url) {
+        window.location.href =
+          result.checkout_url;
+      }
 
-} catch (error) {
-  console.error(error);
+    } catch (error) {
+      console.error(error);
 
-  setError(
-    error instanceof Error
-      ? error.message
-      : language === "sv"
-        ? "Kunde inte skapa order"
-        : "Could not create order",
-  );
-} finally {
-  setLoading(false);
-}
-};
+      setError(
+        error instanceof Error
+          ? error.message
+          : language === "sv"
+            ? "Kunde inte skapa order"
+            : "Could not create order",
+      );
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  // -----------------------------------------
+  // JSX
+  // -----------------------------------------
 
   return (
     <div className="payment">
       <div className="payment-container">
+
         <div className="payment-header">
           <h1>
             {language === "sv"
@@ -273,21 +334,27 @@ console.log("CHECKOUT URL:", result.checkout_url);
           </p>
         </div>
 
+
         <div className="payment-test-notice">
           {language === "sv"
             ? "Testläge — ingen betalning genomförs ännu."
             : "Test mode — no payment will be processed yet."}
         </div>
 
+
         <div className="payment-layout">
+
           <div className="payment-form">
+
             <h2>
               {language === "sv"
                 ? "Kunduppgifter"
                 : "Customer details"}
             </h2>
 
+
             <div className="payment-form-grid">
+
               <div className="payment-field">
                 <label>
                   {language === "sv"
@@ -299,11 +366,14 @@ console.log("CHECKOUT URL:", result.checkout_url);
                   type="text"
                   value={firstName}
                   onChange={(event) =>
-                    setFirstName(event.target.value)
+                    setFirstName(
+                      event.target.value,
+                    )
                   }
                   autoComplete="given-name"
                 />
               </div>
+
 
               <div className="payment-field">
                 <label>
@@ -316,11 +386,14 @@ console.log("CHECKOUT URL:", result.checkout_url);
                   type="text"
                   value={lastName}
                   onChange={(event) =>
-                    setLastName(event.target.value)
+                    setLastName(
+                      event.target.value,
+                    )
                   }
                   autoComplete="family-name"
                 />
               </div>
+
 
               <div className="payment-field full-width">
                 <label>
@@ -333,11 +406,14 @@ console.log("CHECKOUT URL:", result.checkout_url);
                   type="email"
                   value={email}
                   onChange={(event) =>
-                    setEmail(event.target.value)
+                    setEmail(
+                      event.target.value,
+                    )
                   }
                   autoComplete="email"
                 />
               </div>
+
 
               <div className="payment-field full-width">
                 <label>
@@ -351,11 +427,14 @@ console.log("CHECKOUT URL:", result.checkout_url);
                   inputMode="tel"
                   value={phoneNumber}
                   onChange={(event) =>
-                    setPhoneNumber(event.target.value)
+                    setPhoneNumber(
+                      event.target.value,
+                    )
                   }
                   autoComplete="tel"
                 />
               </div>
+
 
               <div className="payment-field full-width">
                 <label>
@@ -368,11 +447,14 @@ console.log("CHECKOUT URL:", result.checkout_url);
                   type="text"
                   value={address}
                   onChange={(event) =>
-                    setAddress(event.target.value)
+                    setAddress(
+                      event.target.value,
+                    )
                   }
                   autoComplete="street-address"
                 />
               </div>
+
 
               <div className="payment-field">
                 <label>
@@ -386,11 +468,14 @@ console.log("CHECKOUT URL:", result.checkout_url);
                   inputMode="numeric"
                   value={zipCode}
                   onChange={(event) =>
-                    setZipCode(event.target.value)
+                    setZipCode(
+                      event.target.value,
+                    )
                   }
                   autoComplete="postal-code"
                 />
               </div>
+
 
               <div className="payment-field">
                 <label>
@@ -403,11 +488,14 @@ console.log("CHECKOUT URL:", result.checkout_url);
                   type="text"
                   value={city}
                   onChange={(event) =>
-                    setCity(event.target.value)
+                    setCity(
+                      event.target.value,
+                    )
                   }
                   autoComplete="address-level2"
                 />
               </div>
+
 
               <div className="payment-field full-width">
                 <label>
@@ -416,24 +504,69 @@ console.log("CHECKOUT URL:", result.checkout_url);
                     : "Country"}
                 </label>
 
-                <input
-                  type="text"
+                <select
                   value={country}
                   onChange={(event) =>
-                    setCountry(event.target.value)
+                    setCountry(
+                      event.target.value,
+                    )
                   }
                   autoComplete="country-name"
-                />
+                >
+                  <option value="SE">
+                    {language === "sv"
+                      ? "Sverige"
+                      : "Sweden"}
+                  </option>
+
+                  <option value="NO">
+                    {language === "sv"
+                      ? "Norge"
+                      : "Norway"}
+                  </option>
+
+                  <option value="DK">
+                    {language === "sv"
+                      ? "Danmark"
+                      : "Denmark"}
+                  </option>
+
+                  <option value="FI">
+                    Finland
+                  </option>
+
+                  <option value="IS">
+                    {language === "sv"
+                      ? "Island"
+                      : "Iceland"}
+                  </option>
+
+                  <option value="DE">
+                    {language === "sv"
+                      ? "Tyskland"
+                      : "Germany"}
+                  </option>
+
+                  <option value="NL">
+                    {language === "sv"
+                      ? "Nederländerna"
+                      : "Netherlands"}
+                  </option>
+                </select>
               </div>
+
             </div>
           </div>
 
+
           <div className="payment-summary">
+
             <h2>
               {language === "sv"
                 ? "Orderöversikt"
                 : "Order summary"}
             </h2>
+
 
             <div className="payment-summary-row">
               <span>
@@ -442,8 +575,11 @@ console.log("CHECKOUT URL:", result.checkout_url);
                   : "Subtotal"}
               </span>
 
-              <span>{subtotal} SEK</span>
+              <span>
+                {subtotal} SEK
+              </span>
             </div>
+
 
             <div className="payment-summary-row">
               <span>
@@ -452,8 +588,17 @@ console.log("CHECKOUT URL:", result.checkout_url);
                   : "Shipping"}
               </span>
 
-              <span>{shipping} SEK</span>
+              <span>
+                {shippingLoading
+                  ? language === "sv"
+                    ? "Beräknar..."
+                    : "Calculating..."
+                  : shipping !== null
+                    ? `${shipping} SEK`
+                    : "-"}
+              </span>
             </div>
+
 
             <div className="payment-summary-row total">
               <span>
@@ -462,14 +607,18 @@ console.log("CHECKOUT URL:", result.checkout_url);
                   : "Total"}
               </span>
 
-              <span>{total} SEK</span>
+              <span>
+                {total} SEK
+              </span>
             </div>
+
 
             {error && (
               <div className="payment-error">
                 {error}
               </div>
             )}
+
 
             <button
               className="payment-button"
@@ -484,6 +633,7 @@ console.log("CHECKOUT URL:", result.checkout_url);
                   ? "Skapa testorder"
                   : "Create test order"}
             </button>
+
           </div>
         </div>
       </div>
