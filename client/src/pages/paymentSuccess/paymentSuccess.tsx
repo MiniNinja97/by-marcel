@@ -9,50 +9,73 @@ export default function PaymentSuccess() {
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState("");
+
   const clearCart = useCartStore((state) => state.clearCart);
 
   useEffect(() => {
-  const sessionId = searchParams.get("session_id");
+    const sessionId = searchParams.get("session_id");
 
-  if (!sessionId) {
-    setError("Session-ID saknas.");
-    setLoading(false);
-    return;
-  }
+    if (!sessionId) {
+      setError("Session-ID saknas.");
+      setLoading(false);
+      return;
+    }
 
-  async function verifyPayment(id: string) {
-    try {
-      const response = await fetch(
-        `https://www.bymarcel.se/Server/api/verify-payment.php?session_id=${encodeURIComponent(
-          id
-        )}`
-      );
+    async function verifyPayment(id: string) {
+      const maxAttempts = 5;
 
-      const data = await response.json();
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const response = await fetch(
+            `https://www.bymarcel.se/Server/api/verify-payment.php?session_id=${encodeURIComponent(
+              id
+            )}`
+          );
 
-      if (!response.ok) {
-        throw new Error(data.error || "Kunde inte verifiera betalningen.");
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(
+              data.error || "Kunde inte verifiera betalningen."
+            );
+          }
+
+          if (data.verified) {
+            clearCart();
+            setVerified(true);
+            setLoading(false);
+            return;
+          }
+
+          if (attempt < maxAttempts) {
+            await new Promise((resolve) =>
+              setTimeout(resolve, 1000)
+            );
+          }
+        } catch (error) {
+          if (attempt === maxAttempts) {
+            if (error instanceof Error) {
+              setError(error.message);
+            } else {
+              setError("Något gick fel vid verifieringen.");
+            }
+
+            setLoading(false);
+            return;
+          }
+
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000)
+          );
+        }
       }
 
-      if (data.verified) {
-        clearCart();
-        setVerified(true);
-      } else {
-        setError("Betalningen kunde inte bekräftas ännu.");
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("Något gick fel vid verifieringen.");
-      }
-    } finally {
+      setError("Betalningen kunde inte bekräftas ännu.");
       setLoading(false);
     }
-  }
 
-  verifyPayment(sessionId);
-}, [searchParams]);
+    verifyPayment(sessionId);
+  }, [searchParams, clearCart]);
 
   if (loading) {
     return (
