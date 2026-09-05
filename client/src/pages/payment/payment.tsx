@@ -280,15 +280,7 @@ export default function Payment() {
         items,
       );
 
-      console.log(
-        "HELA RESULTATET:",
-        JSON.stringify(result, null, 2),
-      );
-
-      console.log(
-        "CHECKOUT URL:",
-        result.checkout_url,
-      );
+      
 
       if (result.checkout_url) {
         window.location.href =
@@ -296,7 +288,7 @@ export default function Payment() {
       }
 
     } catch (error) {
-      console.error(error);
+      
 
       setError(
         error instanceof Error
@@ -337,8 +329,8 @@ export default function Payment() {
 
         <div className="payment-test-notice">
           {language === "sv"
-            ? "Testläge — ingen betalning genomförs ännu."
-            : "Test mode — no payment will be processed yet."}
+            ? "Testläge — använd endast Stripe testkort."
+            : "Test mode — use Stripe test cards only."}
         </div>
 
 
@@ -623,15 +615,19 @@ export default function Payment() {
             <button
               className="payment-button"
               onClick={handleCreateOrder}
-              disabled={loading}
+              disabled={
+                loading ||
+                shippingLoading ||
+                shipping === null
+              }
             >
               {loading
                 ? language === "sv"
                   ? "Skapar order..."
                   : "Creating order..."
                 : language === "sv"
-                  ? "Skapa testorder"
-                  : "Create test order"}
+                  ? "Till betalning"
+                  : "Proceed to payment"}
             </button>
 
           </div>
