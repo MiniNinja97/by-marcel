@@ -1,205 +1,441 @@
-/*  PRODUCTS  */
+/* PRODUCTS */
 
 .products {
     display: grid;
-    grid-template-columns: 11rem 1fr;
+    grid-template-columns: 13rem minmax(0, 1fr);
+
+    width: 100%;
+    max-width: 100%;
+
     min-height: 100vh;
+
     padding-top: 1rem;
+
+    overflow-x: hidden;
 }
 
-/* SIDOMENY  */
+
+/* SIDOMENY */
 
 .products-sidebar {
     padding: 2.5rem 1.5rem;
-    border-right: 0.5px solid rgba(201, 168, 76, 0.1);
+
+    border-right:
+        0.5px solid
+        rgba(201, 168, 76, 0.1);
+
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+
+    gap: 1.75rem;
 }
+
 
 .sidebar-all {
     font-family: var(--font-serif);
-    font-size: 1.1rem;
+
+    font-size: 1.05rem;
     font-weight: 300;
+
     color: var(--text);
+
     text-decoration: none;
-    letter-spacing: 0.05rem;
+
+    letter-spacing: 0.04rem;
 }
 
-.sidebar-all:hover {
+
+.sidebar-all:hover,
+.sidebar-all.active {
     color: var(--gold);
 }
+
 
 .sidebar-category {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+
+    gap: 0.8rem;
 }
+
 
 .sidebar-category-link {
     font-family: var(--font-sans);
-    font-size: 0.7rem;
-    font-weight: 400;
+
+    font-size: 0.8rem;
+    font-weight: 500;
+
     color: var(--gold);
-    text-decoration: underline;
-    text-underline-offset: 0.2rem;
+
+    text-decoration: none;
+
     letter-spacing: 0.05rem;
 }
+
+
+.sidebar-category-link:hover,
+.sidebar-category-link.active {
+    text-decoration: underline;
+
+    text-underline-offset: 0.25rem;
+}
+
 
 .sidebar-subcategories {
     list-style: none;
+
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding-left: 1rem;
+
+    gap: 0.6rem;
+
+    padding: 0;
+    padding-left: 0.75rem;
+
+    margin: 0;
 }
+
 
 .sidebar-sub-link {
     font-family: var(--font-sans);
-    font-size: 0.65rem;
+
+    font-size: 0.68rem;
+
     color: var(--text-muted);
+
     text-decoration: none;
-    letter-spacing: 0.05rem;
+
+    letter-spacing: 0.03rem;
+
+    line-height: 1.35;
+
     transition: color 0.2s ease;
 }
+
 
 .sidebar-sub-link:hover {
     color: var(--text);
 }
 
+
 .sidebar-sub-link.active {
     color: var(--gold);
 }
 
+
 /* HUVUDINNEHÅLL */
 
 .products-main {
+    min-width: 0;
+
     padding: 2.5rem 2rem;
+
     display: flex;
     flex-direction: column;
+
     gap: 2.5rem;
 }
+
 
 .products-header {
     display: flex;
     flex-direction: column;
+
     gap: 0.5rem;
+
     text-align: center;
 }
 
+
 .products-header h1 {
     font-family: var(--font-serif);
+
     font-size: 2.5rem;
     font-weight: 300;
+
     color: var(--text);
+
+    margin: 0;
 }
+
 
 .products-header p {
     font-size: 0.75rem;
     font-weight: 300;
+
     color: var(--text-muted);
+
     letter-spacing: 0.05rem;
+
+    margin: 0;
 }
 
-/* PRODUKTGRID  */
+
+/* PRODUKTGRID */
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
     gap: 1.5rem;
+
+    width: 100%;
+
     background: var(--bg-card);
-    border: 0.5px solid rgba(255, 255, 255, 0.07);
+
+    border:
+        0.5px solid
+        rgba(255, 255, 255, 0.07);
+
     border-radius: 0.25rem;
+
     padding: 1.5rem;
+
+    box-sizing: border-box;
 }
 
+
 .product-card {
+    min-width: 0;
+
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+
+    gap: 0.8rem;
+
     text-decoration: none;
+
     cursor: pointer;
 }
 
+
 .product-card-img {
     width: 100%;
-    aspect-ratio: 1;
+
+    aspect-ratio: 1 / 1;
+
     background: #1a1a1a;
+
     border-radius: 0.25rem;
+
     overflow: hidden;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 }
+
 
 .product-card-img img {
     width: 100%;
     height: 100%;
+
     object-fit: contain;
+
     display: block;
 }
 
+
 .product-card-info {
+    min-width: 0;
+
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    padding: 0 0.25rem;
+
+    gap: 0.3rem;
+
+    padding: 0 0.15rem;
 }
+
 
 .product-card-info h3 {
     font-family: var(--font-sans);
-    font-size: 0.85rem;
+
+    font-size: 0.8rem;
     font-weight: 400;
+
     color: var(--text);
+
+    margin: 0;
+
+    overflow-wrap: break-word;
 }
 
+
 .product-card-info p {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
+
     color: var(--text-muted);
+
+    line-height: 1.45;
+
+    margin: 0;
+
+    /*
+      Visar max tre rader beskrivning
+      så korten inte blir jättelånga.
+    */
+    display: -webkit-box;
+
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
 }
+
 
 .product-card-price {
     font-family: var(--font-sans);
+
     font-size: 0.75rem;
+
     color: var(--gold);
-    margin-top: 0.5rem;
+
+    margin-top: 0.4rem;
 }
 
-/*PAGINATION */
+
+.product-card-stock {
+    font-size: 0.65rem;
+
+    color: var(--text-muted);
+}
+
+
+/* PAGINATION */
 
 .pagination {
     display: flex;
+
     align-items: center;
     justify-content: center;
+
+    flex-wrap: wrap;
+
     gap: 0.5rem;
 }
 
+
 .pagination-btn {
     background: none;
-    border: 0.5px solid rgba(255, 255, 255, 0.15);
+
+    border:
+        0.5px solid
+        rgba(255, 255, 255, 0.15);
+
     color: var(--text-muted);
+
     font-family: var(--font-sans);
+
     font-size: 0.75rem;
+
     width: 2.5rem;
     height: 2.5rem;
+
     border-radius: 0.25rem;
+
     cursor: pointer;
+
     transition: all 0.2s ease;
 }
 
+
 .pagination-btn:hover {
     border-color: var(--gold);
+
     color: var(--gold);
 }
+
 
 .pagination-btn.active {
     border-color: var(--gold);
+
     color: var(--gold);
-    background: rgba(201, 168, 76, 0.08);
+
+    background:
+        rgba(201, 168, 76, 0.08);
 }
+
 
 .pagination-btn:disabled {
     opacity: 0.3;
+
     cursor: not-allowed;
+}
+
+.pagination-dots {
+    color: var(--text-muted);
+
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+
+    width: 2rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* TABLET */
+
+@media (max-width: 1100px) {
+
+    .products-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+}
+
+
+/* MINDRE TABLET */
+
+@media (max-width: 850px) {
+
+    .products {
+        grid-template-columns: 1fr;
+    }
+
+    .products-sidebar {
+        border-right: none;
+
+        border-bottom:
+            0.5px solid
+            rgba(201, 168, 76, 0.1);
+    }
+
+    .products-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+/* MOBIL */
+
+@media (max-width: 550px) {
+
+    .products-main {
+        padding: 2rem 1rem;
+    }
+
+    .products-sidebar {
+        padding: 1.5rem 1rem;
+    }
+
+    .products-grid {
+        grid-template-columns: 1fr;
+
+        padding: 1rem;
+    }
+
+    .products-header h1 {
+        font-size: 2rem;
+    }
+
 }

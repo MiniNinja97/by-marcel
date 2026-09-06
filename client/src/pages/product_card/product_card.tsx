@@ -82,6 +82,7 @@ export default function Product() {
         }
 
         setProduct(foundProduct);
+        console.log("PRODUCT DATA:", foundProduct);
       } catch (error) {
         console.error(error);
 
@@ -97,6 +98,18 @@ export default function Product() {
 
     loadProduct();
   }, [id, language]);
+
+  // Nollställ kundval när användaren går till en annan produkt.
+  useEffect(() => {
+    setSelectedOptions({});
+    setBackgroundColor(null);
+    setPrintColor(null);
+    setCustomTexts({});
+    setCustomPhoto(null);
+    setQuantity(1);
+    setSelectedImage(0);
+    setCartError("");
+  }, [id]);
 
   /*
    * Hämtar de värden som faktiskt är möjliga för
@@ -231,47 +244,67 @@ export default function Product() {
     setCartError("");
   };
 
-  // Leta efter varianten som matchar kundens val
+  // Leta efter varianten som matchar kundens val.
+  //
+  // ES-produkter har inga kundval och ska därför använda sin
+  // enda variant automatiskt. EC-produkter matchas mot de
+  // dynamiska val som finns i product.options.
   const selectedVariant:
     | ProductVariant
-    | undefined = product?.variants?.find(
-    (variant) => {
-      if (!product.options) {
-        return false;
-      }
+    | undefined = (() => {
+    if (
+      !product?.variants ||
+      product.variants.length === 0
+    ) {
+      return undefined;
+    }
 
-      const allOptionsSelected =
-        product.options.every(
-          (option) =>
-            selectedOptions[
-              option.option_name
-            ] !== undefined,
-        );
+    const relevantOptions =
+      product.type === "EC"
+        ? (product.options ?? [])
+        : [];
 
-      if (!allOptionsSelected) {
-        return false;
-      }
+    // En produkt utan kundval ska ha exakt en variant.
+    if (relevantOptions.length === 0) {
+      return product.variants.length === 1
+        ? product.variants[0]
+        : undefined;
+    }
 
-      return product.options.every(
-        (option) => {
-          const selectedValue =
-            selectedOptions[
-              option.option_name
-            ];
-
-          const variantValue =
-            variant.options[
-              option.option_name
-            ];
-
-          return (
-            String(variantValue) ===
-            String(selectedValue)
-          );
-        },
+    const allOptionsSelected =
+      relevantOptions.every(
+        (option) =>
+          selectedOptions[
+            option.option_name
+          ] !== undefined,
       );
-    },
-  );
+
+    if (!allOptionsSelected) {
+      return undefined;
+    }
+
+    return product.variants.find(
+      (variant) =>
+        relevantOptions.every(
+          (option) => {
+            const selectedValue =
+              selectedOptions[
+                option.option_name
+              ];
+
+            const variantValue =
+              variant.options[
+                option.option_name
+              ];
+
+            return (
+              String(variantValue) ===
+              String(selectedValue)
+            );
+          },
+        ),
+    );
+  })();
 
   const variantPrice =
     selectedVariant?.price ??
@@ -279,10 +312,14 @@ export default function Product() {
     0;
 
   const backgroundColorPrice =
-    backgroundColor?.background_price ?? 0;
+    product?.type === "EC"
+      ? (backgroundColor?.background_price ?? 0)
+      : 0;
 
   const printColorPrice =
-    printColor?.print_price ?? 0;
+    product?.type === "EC"
+      ? (printColor?.print_price ?? 0)
+      : 0;
 
   const displayedPrice =
     variantPrice +
@@ -314,7 +351,7 @@ export default function Product() {
       product.type === "EC";
 
     const requiresVariant =
-      isCustomEnamel;
+      (product.variants?.length ?? 0) > 0;
 
     const requiresColors =
       isCustomEnamel &&
@@ -423,18 +460,27 @@ export default function Product() {
         product.supplier_id,
 
       selected_background_color:
-        backgroundColor ?? undefined,
+        isCustomEnamel
+          ? (backgroundColor ?? undefined)
+          : undefined,
 
       selected_print_color:
-        printColor ?? undefined,
+        isCustomEnamel
+          ? (printColor ?? undefined)
+          : undefined,
 
       selected_size:
-        selectedOptions.size,
+        isCustomEnamel
+          ? selectedOptions.size
+          : undefined,
 
-      custom_texts: customTexts,
+      custom_texts:
+        isCustomEnamel ? customTexts : {},
 
       custom_photo:
-        customPhoto || undefined,
+        isCustomEnamel
+          ? (customPhoto || undefined)
+          : undefined,
 
       unit_price: displayedPrice,
 
@@ -442,7 +488,9 @@ export default function Product() {
         displayedPrice * quantity,
 
       selected_options:
-        selectedOptions,
+        isCustomEnamel
+          ? selectedOptions
+          : {},
     });
 
     setSelectedOptions({});
@@ -483,15 +531,16 @@ export default function Product() {
     product.type === "EC";
 
   const requiresVariant =
-    isCustomEnamel;
+    (product.variants?.length ?? 0) > 0;
 
   const allOptionsSelected =
-    product.options?.every(
+    !isCustomEnamel ||
+    (product.options?.every(
       (option) =>
         selectedOptions[
           option.option_name
         ] !== undefined,
-    ) ?? true;
+    ) ?? true);
 
   return (
     <div className="product-page">
@@ -576,7 +625,8 @@ export default function Product() {
           </p>
 
           {/* Dynamiska produktval */}
-          {product.options?.map(
+          {isCustomEnamel &&
+            product.options?.map(
             (option) => {
               const availableValues =
                 getAvailableOptionValues(
@@ -648,7 +698,8 @@ export default function Product() {
 
           <div className="product-color-columns">
             {/* Bakgrundsfärg */}
-            {product.colors &&
+            {isCustomEnamel &&
+              product.colors &&
               product.colors.length >
                 0 && (
                 <div className="product-option">
@@ -743,7 +794,8 @@ export default function Product() {
               )}
 
             {/* Tryckfärg */}
-            {product.colors &&
+            {isCustomEnamel &&
+              product.colors &&
               product.colors.length >
                 0 && (
                 <div className="product-option">
@@ -850,7 +902,8 @@ export default function Product() {
             )}
 
           {/* Bilduppladdning */}
-          {product.allows_custom_photo && (
+          {isCustomEnamel &&
+            product.allows_custom_photo && (
             <div className="product-option">
               <label>
                 {language === "sv"
@@ -882,7 +935,8 @@ export default function Product() {
           )}
 
           {/* Egen text */}
-          {product.allows_custom_text &&
+          {isCustomEnamel &&
+            product.allows_custom_text &&
             product.text_fields?.map(
               (field) => (
                 <div
