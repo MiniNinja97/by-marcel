@@ -12,6 +12,10 @@ import Cart from "./pages/cart/cart";
 import Payment from "./pages/payment/payment";
 import PaymentSuccess from "./pages/paymentSuccess/paymentSuccess";
 
+import PrivacyPolicy from "./pages/privacy_policy/privacy_policy";
+import PurchaseTerms from "./pages/purchase_terms/purchase_terms";
+import ShippingReturns from "./pages/shipping_returns/shipping_returns";
+
 import AdminRoute from "./pages/admin/adminRoute";
 
 import "./styles/global.css";
@@ -48,6 +52,15 @@ export default function App() {
           <Route path="/payment" element={<Payment />} />
 
           <Route path="/betalning-klar" element={<PaymentSuccess />} />
+
+          <Route path="/integritetspolicy" element={<PrivacyPolicy />} />
+
+          <Route path="/kopevillkor" element={<PurchaseTerms />} />
+
+          <Route
+            path="/leverans-retur-reklamation"
+            element={<ShippingReturns />}
+          />
         </Routes>
       </main>
 

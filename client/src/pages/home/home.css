@@ -1,191 +1,266 @@
+/* HERO */
+
 .hero {
     position: relative;
+
     min-height: 100vh;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     overflow: hidden;
-    background: var(--bg);
+
+    background: transparent;
 }
 
-/* hero bilder */
+
+/* HERO-BILDER */
+
 .hero-slides {
     position: absolute;
     inset: 0;
+
     z-index: 0;
 }
 
 .hero-slide {
     position: absolute;
-    inset: 0; 
+    inset: 0;
+
     background-size: cover;
     background-position: center;
+
     opacity: 0;
+
     animation: heroFade 15s infinite;
-    
 }
 
-/* lägg in bilderna här sedan */
+
+/* Lägg in riktiga hero-bilder här senare */
+
 .slide-1 {
-    background-color: #10141a;
+    background-color: rgba(16, 20, 26, 0.85);
     animation-delay: 0s;
 }
 
 .slide-2 {
-    background-color: #10141a;
+    background-color: rgba(16, 20, 26, 0.85);
     animation-delay: 5s;
 }
 
 .slide-3 {
-    background-color: #10141a;
+    background-color: rgba(16, 20, 26, 0.85);
     animation-delay: 10s;
 }
+
 
 @keyframes heroFade {
     0% {
         opacity: 0;
     }
+
     8% {
         opacity: 1;
     }
+
     33% {
         opacity: 1;
     }
+
     41% {
         opacity: 0;
     }
+
     100% {
         opacity: 0;
     }
 }
 
-/* overlay ovanpå bilderna */
+
+/* MÖRK OVERLAY OVANPÅ HERO */
+
 .hero-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+
+    background: rgba(0, 0, 0, 0.58);
+
     z-index: 1;
 }
 
-/* texten ovanpå hero bilderna */
+
+/* HERO-INNEHÅLL */
 
 .hero-content {
     position: relative;
+
     z-index: 2;
+
     display: flex;
     flex-direction: column;
+
     align-items: center;
     justify-content: center;
-    gap: 2rem;
+
+    gap: 1.5rem;
+
     text-align: center;
+
     padding: 2rem;
 }
 
-/* loggan */
+
+/* LOGGA */
 
 .logo img {
     width: 40rem;
     max-width: 90vw;
 }
 
-/* text */
-.hero-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-}
+
+/* HERO-TEXT */
 
 .hero-text h2 {
     font-family: var(--font-sans);
-    font-size: 0.8rem;
+
+    font-size: 1.25rem;
     font-weight: 400;
-    letter-spacing: 0.2rem;
+
+    letter-spacing: 0.15rem;
+
     color: var(--gold);
+
     text-transform: uppercase;
 }
 
-/* knappen */
+
+/* HERO-KNAPP */
 
 .hero-button {
-    background: none;
-border: 0.0625rem solid var(--text);
-color: var(--text);
-font-family: var(--font-sans);
-font-size: 0.625rem;
-font-weight: 500;
-letter-spacing: 0.2rem;
-text-transform: uppercase;
-padding: 0.875rem 2rem;
-border-radius: 0.25rem;
-transition: all 0.2s ease;
-margin-top: 2.5rem;
+    background: rgba(14, 14, 14, 0.60);
 
+    border: 0.0625rem solid var(--gold);
+
+    color: var(--text);
+
+    font-family: var(--font-sans);
+
+    font-size: 1rem;
+    font-weight: 500;
+
+    letter-spacing: 0.12rem;
+
+    text-transform: uppercase;
+
+    padding: 0.9rem 2rem;
+
+    border-radius: 0.25rem;
+
+    transition: all 0.2s ease;
+
+    margin-top: 2rem;
 }
 
 .hero-button:hover {
     background: var(--gold);
+
     color: var(--bg);
-    font-weight: 800;
-    border: 0.0625rem solid var(--bg);
-    
+
+    font-weight: 700;
+
+    border-color: var(--gold);
 }
 
-/* home content */
+
+/* HOME CONTENT */
 
 .home-content {
     padding: 5rem 2.5rem;
+
     display: flex;
     flex-direction: column;
+
     gap: 3rem;
 }
+
+
+/* ÖVRE DEL */
 
 .home-content-top {
     display: flex;
     flex-direction: column;
+
     gap: 0.75rem;
 }
 
 #home-content-title {
     font-family: var(--font-sans);
-    font-size: 0.625rem;
+
+    font-size: 1rem;
     font-weight: 400;
-    letter-spacing: 0.2rem;
+
+    letter-spacing: 0.12rem;
+
     text-transform: uppercase;
-    color: var(--gold-muted);
+
+    color: var(--gold);
 }
 
 .home-content-top h2 {
     font-family: var(--font-serif);
-    font-size: 2rem;
+
+    font-size: 2.5rem;
     font-weight: 300;
+
     color: var(--text);
 }
 
-/* trippelknapparna */
+
+/* TRIPPELKAPPAR */
+
 .tripple-btn {
-    display: flex; 
+    display: flex;
+
     align-items: center;
+
     gap: 0;
-    background: rgba(255, 255, 255, 0.03);
-    border: 0.0625rem solid rgba(201, 168, 76, 0.2);
+
+    background: rgba(14, 14, 14, 0.60);
+
+    border:
+        0.0625rem solid
+        rgba(201, 168, 76, 0.20);
+
     border-radius: 0.25rem;
+
     padding: 0.25rem;
+
     width: fit-content;
-    align-self: flex-end
+
+    align-self: flex-end;
 }
 
 .tripple-btn-item {
     font-family: var(--font-sans);
-    font-size: 0.625rem;
+
+    font-size: 0.9rem;
     font-weight: 400;
-    letter-spacing: 0.15rem;
+
+    letter-spacing: 0.08rem;
+
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.4);
+
+    color: var(--text-muted);
+
     background: none;
+
     border: none;
-    padding: 0.5rem 1rem;
+
+    padding: 0.65rem 1rem;
+
     border-radius: 0.2rem;
+
     transition: all 0.2s ease;
 }
 
@@ -195,144 +270,175 @@ margin-top: 2.5rem;
 
 .tripple-btn-item.active {
     background: var(--gold);
+
     color: #0a0a0a;
+
     font-weight: 600;
 }
 
-/* produktkort */
+
+/* PRODUKTKORT - 3 PER RAD */
 
 .product-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-}
 
-/* .product-card1,
-.product-card2
-.product-card3 {
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
 
-    background: var(--bg-card);
-    border: o.0625rem solid rgba(255, 255, 255, 0.07);
+    gap: 1.5rem;
+
+    padding: 1.5rem;
+
+    background: rgba(14, 14, 14, 0.60);
+
+    border:
+        0.0625rem solid
+        rgba(255, 255, 255, 0.07);
+
     border-radius: 0.25rem;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding-bottom: 1rem;
-    transition: border-color 0.2s ease;
 }
 
-.product-card1:hover,
-.product-card2:hover,
-.product-card3:hover {
-    border-color: rgba(201, 168, 76, 0.3);
-}
 
-.product-card1 img,
-.product-card2 img,
-.product-card3 img {
-    width: 100%;
-    aspect-ratio: 1;
-    background: #1a1a1a;
-    object-fit: cover;
-    margin-bottom: 0.5rem;
-}
-
-.product-card1 h2,
-.product-card2 h2, 
-.product-card3 h2 {
-    font-family: var(--font-sans);
-    font-size: 0.625rem;
-    color: var(--text-muted);
-    padding: 0 1 rem;
-}
-
-.product-card1 p:last-of-type,
-.product-card2 p:last-of-type,
-.product-card3 p:last-of-type {
-    color: var(--gold);
-    margin-top: 0.5rem;
-} */
-
-/* avgränsaren */
+/* AVGRÄNSARE */
 
 .devider {
     width: 100%;
+
     height: 0.0625rem;
-    background: rgba(201, 168, 76, 0.1);
+
+    background:
+        rgba(201, 168, 76, 0.15);
+
     margin: 1rem 0;
 }
 
-/* home content */
+
+/* NEDRE HOME CONTENT - 3 PER RAD */
 
 .home-content-bottom {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 1.5rem;
+
+    padding: 1.5rem;
+
+    background: rgba(14, 14, 14, 0.60);
+
+    border:
+        0.0625rem solid
+        rgba(255, 255, 255, 0.07);
+
+    border-radius: 0.25rem;
 }
 
 .home-content-bottom h2 {
     font-family: var(--font-serif);
-    font-size: 2rem;
+
+    font-size: 2.5rem;
     font-weight: 300;
-    color: var(--text);
+
+    color: var(--gold);
+
     grid-column: 1 / -1;
 }
 
+
+/* PRODUKTKORT NEDERDEL */
+
 .product-card-bottom {
-    background: var(--bg-card);
-    border: 0.0625rem solid rgba(255, 255, 255, 0.07);
+    min-width: 0;
+
+    background: rgba(14, 14, 14, 0.60);
+
+    border:
+        0.0625rem solid
+        rgba(255, 255, 255, 0.07);
+
     border-radius: 0.25rem;
+
     overflow: hidden;
+
     display: flex;
     flex-direction: column;
+
     gap: 0.5rem;
+
     padding-bottom: 1rem;
+
     transition: border-color 0.2s ease;
 }
 
 .product-card-bottom:hover {
-    border-color: rgba(201, 168, 76, 0.3);
+    border-color:
+        rgba(201, 168, 76, 0.3);
 }
 
 .product-card-bottom img {
     width: 100%;
-    aspect-ratio: 1;
+
+    aspect-ratio: 1 / 1;
+
     background: #1a1a1a;
-    object-fit: cover;
+
+    object-fit: contain;
+
     margin-bottom: 0.5rem;
 }
 
 .product-card-bottom h2 {
     font-family: var(--font-sans);
-    font-size: 0.75rem;
+
+    font-size: 1.2rem;
     font-weight: 400;
+
     color: var(--text);
-    padding: 0 1rem;
+
+    padding: 0 0.4rem;
 }
 
 .product-card-bottom p {
     font-family: var(--font-sans);
-    font-size: 0.625rem;
+
+    font-size: 0.9rem;
+
     color: var(--text-muted);
-    padding: 0 1rem;
+
+    line-height: 1.6;
+
+    padding: 0 0.4rem;
 }
 
 .product-card-bottom p:last-of-type {
     color: var(--gold);
-    margin-top: 0.5rem;
+
+    font-size: 1rem;
+    font-weight: bold;
+
+    margin-top: 0.4rem;
 }
 
-/* kategorier */
+
+/* HOME PRODUCT CARD */
 
 .home-product-card {
-    background: var(--bg-card);
-    border: 0.0625rem solid rgba(255, 255, 255, 0.07);
+    min-width: 0;
+
+    background: rgba(14, 14, 14, 0.60);
+
+    border:
+        0.0625rem solid
+        rgba(255, 255, 255, 0.07);
+
     border-radius: 0.25rem;
+
     overflow: hidden;
 
     display: flex;
     flex-direction: column;
+
     gap: 0.5rem;
 
     padding-bottom: 1rem;
@@ -343,43 +449,120 @@ margin-top: 2.5rem;
 }
 
 .home-product-card:hover {
-    border-color: rgba(201, 168, 76, 0.3);
+    border-color:
+        rgba(201, 168, 76, 0.3);
 }
 
 .home-product-card img,
 .home-product-image-placeholder {
     width: 100%;
-    aspect-ratio: 1;
+
+    aspect-ratio: 1 / 1;
+
     object-fit: contain;
+
     background: #1a1a1a;
+
     margin-bottom: 0.5rem;
 }
 
 .home-product-card h2 {
     font-family: var(--font-sans);
-    font-size: 0.75rem;
+
+    font-size: 1.2rem;
     font-weight: 400;
+
     color: var(--text);
 
-    padding: 0 1rem;
+    padding: 0 0.4rem;
 }
 
 .home-product-card p {
     font-family: var(--font-sans);
-    font-size: 0.625rem;
+
+    font-size: 0.9rem;
+
+    line-height: 1.6;
+
     color: var(--text-muted);
 
-    padding: 0 1rem;
+    padding: 0 0.4rem;
 }
 
 .home-product-price {
     color: var(--gold) !important;
-    margin-top: 0.5rem;
+
+    font-size: 1rem !important;
+    font-weight: bold;
+
+    margin-top: 0.4rem;
 }
 
 .home-product-stock {
     color: var(--gold) !important;
+
+    font-size: 0.9rem !important;
 }
 
 
+/* TABLET */
 
+@media (max-width: 1100px) {
+
+    .product-cards,
+    .home-content-bottom {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+/* MINDRE TABLET */
+
+@media (max-width: 850px) {
+
+    .home-content {
+        padding: 4rem 1.5rem;
+    }
+
+    .tripple-btn {
+        align-self: flex-start;
+
+        flex-wrap: wrap;
+    }
+
+}
+
+
+/* MOBIL */
+
+@media (max-width: 550px) {
+
+    .hero-text h2 {
+        font-size: 1rem;
+    }
+
+    .hero-button {
+        font-size: 0.85rem;
+
+        padding: 0.8rem 1.5rem;
+    }
+
+    .home-content {
+        padding: 3rem 1rem;
+    }
+
+    .home-content-top h2,
+    .home-content-bottom h2 {
+        font-size: 2rem;
+    }
+
+    .product-cards,
+    .home-content-bottom {
+        grid-template-columns: 1fr;
+
+        padding: 1rem;
+    }
+
+}

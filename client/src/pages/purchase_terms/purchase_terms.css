@@ -1,0 +1,213 @@
+/* PURCHASE TERMS */
+
+.purchase-terms {
+    width: 100%;
+    min-height: 100vh;
+
+    padding: 5rem 2rem;
+
+    display: flex;
+    justify-content: center;
+}
+
+
+/* INNEHÅLL */
+
+.purchase-terms__content {
+    width: 100%;
+    max-width: 60rem;
+
+    background: rgba(14, 14, 14, 0.60);
+
+    border:
+        0.0625rem solid
+        rgba(255, 255, 255, 0.07);
+
+    border-radius: 0.25rem;
+
+    padding: 3rem;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 1.5rem;
+}
+
+
+/* HEADER */
+
+.purchase-terms__header {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.5rem;
+
+    padding-bottom: 1.5rem;
+
+    border-bottom:
+        0.0625rem solid
+        rgba(201, 168, 76, 0.2);
+}
+
+
+.purchase-terms__header h1 {
+    font-family: var(--font-serif);
+
+    font-size: 2.5rem;
+    font-weight: 300;
+
+    color: var(--gold);
+
+    margin: 0;
+}
+
+
+.purchase-terms__header p {
+    font-family: var(--font-sans);
+
+    font-size: 0.9rem;
+
+    color: var(--text-muted);
+
+    margin: 0;
+}
+
+
+/* SEKTIONER */
+
+.purchase-terms__content section {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.8rem;
+
+    padding-top: 1rem;
+}
+
+
+/* RUBRIKER */
+
+.purchase-terms__content h2 {
+    font-family: var(--font-serif);
+
+    font-size: 1.6rem;
+    font-weight: 400;
+
+    color: var(--gold);
+
+    margin: 0;
+}
+
+
+/* BRÖDTEXT */
+
+.purchase-terms__content p {
+    font-family: var(--font-sans);
+
+    font-size: 0.9rem;
+    font-weight: 300;
+
+    line-height: 1.7;
+
+    color: var(--text-secondary);
+
+    margin: 0;
+}
+
+
+/* FET TEXT */
+
+.purchase-terms__content strong {
+    font-weight: 500;
+
+    color: var(--text);
+}
+
+
+/* LISTOR */
+
+.purchase-terms__content ul {
+    padding-left: 1.5rem;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.4rem;
+}
+
+
+.purchase-terms__content li {
+    font-family: var(--font-sans);
+
+    font-size: 0.9rem;
+    font-weight: 300;
+
+    line-height: 1.6;
+
+    color: var(--text-secondary);
+}
+
+
+.purchase-terms__content li::marker {
+    color: var(--gold);
+}
+
+
+/* TABLET */
+
+@media (max-width: 850px) {
+
+    .purchase-terms {
+        padding: 4rem 1.5rem;
+    }
+
+
+    .purchase-terms__content {
+        padding: 2rem;
+    }
+
+
+    .purchase-terms__header h1 {
+        font-size: 2.2rem;
+    }
+
+
+    .purchase-terms__content h2 {
+        font-size: 1.4rem;
+    }
+
+}
+
+
+/* MOBIL */
+
+@media (max-width: 550px) {
+
+    .purchase-terms {
+        padding: 3rem 1rem;
+    }
+
+
+    .purchase-terms__content {
+        padding: 1.5rem;
+
+        gap: 1.25rem;
+    }
+
+
+    .purchase-terms__header h1 {
+        font-size: 2rem;
+    }
+
+
+    .purchase-terms__content h2 {
+        font-size: 1.3rem;
+    }
+
+
+    .purchase-terms__content p,
+    .purchase-terms__content li {
+        font-size: 0.85rem;
+    }
+
+}

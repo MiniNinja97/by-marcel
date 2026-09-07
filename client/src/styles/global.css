@@ -1,23 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Montserrat:wght@300;400;500;600&display=swap');
 
 :root {
-     min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+
     --gold: #C9A84C;
     --gold-muted: rgba(201, 168, 76, 0.5);
     --gold-faint: rgba(201, 168, 76, 0.2);
+
     --bg: #0a0a0a;
-    --bg-card:_#0e0e0e;
+    --bg-card: #0e0e0e;
     --bg-input: #111111;
+
     --text: #ffffff;
     --text-secondary: rgba(255, 255, 255, 0.7);
     --text-muted: rgba(255, 255, 255, 0.5);
+
     --border: rgba(201, 168, 76, 0.15);
+
     --font-serif: 'Cormorant Garamond', serif;
     --font-sans: 'Montserrat', sans-serif;
-
-
 }
 
 * {
@@ -28,17 +31,64 @@
     color: var(--text);
 }
 
-main{
-    flex: 1;
-    padding-top: 4rem;
+html {
+    min-height: 100%;
+    background: #000000;
 }
 
 body {
+    min-height: 100vh;
+
     background: var(--bg);
+
     color: var(--text);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
 
+    position: relative;
+    isolation: isolate;
+}
+
+/* Träbakgrunden */
+body::before {
+    content: "";
+
+    position: fixed;
+    inset: 0;
+
+    background-image: url("./image/IMG_4293.jpeg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    /*
+      Dämpar den röda färgen och gör
+      bakgrunden mörkare.
+    */
+    filter:
+        saturate(35%)
+        brightness(45%);
+
+    z-index: -2;
+    pointer-events: none;
+}
+
+/* Svart transparent lager ovanpå träet */
+body::after {
+    content: "";
+
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.35);
+
+    z-index: -1;
+    pointer-events: none;
+}
+
+main {
+    flex: 1;
+    padding-top: 4rem;
 }
 
 a {
@@ -46,7 +96,7 @@ a {
     color: inherit;
 }
 
-buttton {
+button {
     cursor: pointer;
     font-family: var(--font-sans);
 }

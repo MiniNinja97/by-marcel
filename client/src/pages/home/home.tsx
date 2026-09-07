@@ -119,11 +119,7 @@ export default function Home() {
           className="home-content-top"
           id="home-content-top"
         >
-          <h3 id="home-content-title">
-            {language === "sv"
-              ? "Home Content"
-              : "Home Content"}
-          </h3>
+         
 
           <h2>
             {language === "sv"
@@ -263,20 +259,7 @@ export default function Home() {
             <p>{language === "sv" ? "Pris" : "Price"}</p>
           </div>
 
-          <div className="product-card-bottom">
-            <img />
-            <h2>
-              {language === "sv"
-                ? "Produktnamn"
-                : "Product name"}
-            </h2>
-            <p>
-              {language === "sv"
-                ? "Produktbeskrivning"
-                : "Product description"}
-            </p>
-            <p>{language === "sv" ? "Pris" : "Price"}</p>
-          </div>
+          
 
           <div className="product-card-bottom">
             <img />

@@ -1,0 +1,215 @@
+/* PRIVACY POLICY */
+
+.privacy-policy {
+    width: 100%;
+    min-height: 100vh;
+
+    padding: 5rem 2rem;
+
+    display: flex;
+    justify-content: center;
+}
+
+
+/* INNEHÅLL */
+
+.privacy-policy__content {
+    width: 100%;
+    max-width: 60rem;
+
+    background: rgba(14, 14, 14, 0.60);
+
+    border:
+        0.0625rem solid
+        rgba(255, 255, 255, 0.07);
+
+    border-radius: 0.25rem;
+
+    padding: 3rem;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 1.5rem;
+}
+
+
+/* HEADER */
+
+.privacy-policy__header {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.5rem;
+
+    padding-bottom: 1.5rem;
+
+    border-bottom:
+        0.0625rem solid
+        rgba(201, 168, 76, 0.2);
+}
+
+
+.privacy-policy__header h1 {
+    font-family: var(--font-serif);
+
+    font-size: 2.5rem;
+    font-weight: 300;
+
+    color: var(--gold);
+
+    margin: 0;
+}
+
+
+.privacy-policy__header p {
+    font-family: var(--font-sans);
+
+    font-size: 0.9rem;
+
+    color: var(--text-muted);
+
+    margin: 0;
+}
+
+
+/* SEKTIONER */
+
+.privacy-policy__content section {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.8rem;
+
+    padding-top: 1rem;
+}
+
+
+/* RUBRIKER */
+
+.privacy-policy__content h2 {
+    font-family: var(--font-serif);
+
+    font-size: 1.6rem;
+    font-weight: 400;
+
+    color: var(--gold);
+
+    margin: 0;
+}
+
+
+/* BRÖDTEXT */
+
+.privacy-policy__content p {
+    font-family: var(--font-sans);
+
+    font-size: 0.9rem;
+    font-weight: 300;
+
+    line-height: 1.7;
+
+    color: var(--text-secondary);
+
+    margin: 0;
+}
+
+
+/* FET TEXT */
+
+.privacy-policy__content strong {
+    font-weight: 500;
+
+    color: var(--text);
+}
+
+
+/* LISTOR */
+
+.privacy-policy__content ul {
+    padding-left: 1.5rem;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.4rem;
+}
+
+
+.privacy-policy__content li {
+    font-family: var(--font-sans);
+
+    font-size: 0.9rem;
+    font-weight: 300;
+
+    line-height: 1.6;
+
+    color: var(--text-secondary);
+}
+
+
+/* LISTPUNKTER */
+
+.privacy-policy__content li::marker {
+    color: var(--gold);
+}
+
+
+/* TABLET */
+
+@media (max-width: 850px) {
+
+    .privacy-policy {
+        padding: 4rem 1.5rem;
+    }
+
+
+    .privacy-policy__content {
+        padding: 2rem;
+    }
+
+
+    .privacy-policy__header h1 {
+        font-size: 2.2rem;
+    }
+
+
+    .privacy-policy__content h2 {
+        font-size: 1.4rem;
+    }
+
+}
+
+
+/* MOBIL */
+
+@media (max-width: 550px) {
+
+    .privacy-policy {
+        padding: 3rem 1rem;
+    }
+
+
+    .privacy-policy__content {
+        padding: 1.5rem;
+
+        gap: 1.25rem;
+    }
+
+
+    .privacy-policy__header h1 {
+        font-size: 2rem;
+    }
+
+
+    .privacy-policy__content h2 {
+        font-size: 1.3rem;
+    }
+
+
+    .privacy-policy__content p,
+    .privacy-policy__content li {
+        font-size: 0.85rem;
+    }
+
+}
