@@ -561,3 +561,92 @@
   justify-content: flex-end;
   padding: 1rem;
 }
+
+/* ── RABATTKODER ──────────────────────────────────────── */
+
+.admin-discounts {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.admin-discount-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border: 0.5px solid rgba(201, 168, 76, 0.12);
+    border-radius: 0.25rem;
+}
+
+.admin-discount-form .admin-form-row {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.admin-discount-form input[type="checkbox"] {
+    accent-color: var(--gold);
+    cursor: pointer;
+}
+
+.admin-discount-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-discount-row {
+    display: grid;
+    grid-template-columns: 0.8fr 1.4fr 1.2fr auto;
+    gap: 2rem;
+    align-items: center;
+    padding: 1.5rem 0;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.07);
+}
+
+.admin-discount-row p {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+}
+
+.admin-discount-row strong {
+    color: var(--text);
+    font-size: 0.8rem;
+}
+
+.admin-discount-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+
+/* ── RESPONSIVE RABATTKODER ───────────────────────────── */
+
+@media (max-width: 900px) {
+    .admin-discount-form .admin-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-discount-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-discount-actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 600px) {
+    .admin-discount-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .admin-discount-actions {
+        flex-wrap: wrap;
+    }
+}

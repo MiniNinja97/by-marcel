@@ -1,11 +1,17 @@
 import { useState } from 'react'
+
 import AdminOrders from './adminOrders'
 import AdminProducts from './adminProducts'
+import AdminDiscounts from './adminDiscounts'
 import AdminAbout from './adminAbout'
 
 import './admin.css'
 
-type AdminTab = 'ordrar' | 'produkter' | 'om-oss'
+type AdminTab =
+    | 'ordrar'
+    | 'produkter'
+    | 'rabattkoder'
+    | 'om-oss'
 
 export default function Admin() {
 
@@ -25,12 +31,21 @@ export default function Admin() {
                 >
                     Ordrar
                 </button>
+
                 <button
                     className={`admin-tab ${activeTab === 'produkter' ? 'active' : ''}`}
                     onClick={() => setActiveTab('produkter')}
                 >
                     Produkter
                 </button>
+
+                <button
+                    className={`admin-tab ${activeTab === 'rabattkoder' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('rabattkoder')}
+                >
+                    Rabattkoder
+                </button>
+
                 <button
                     className={`admin-tab ${activeTab === 'om-oss' ? 'active' : ''}`}
                     onClick={() => setActiveTab('om-oss')}
@@ -41,7 +56,11 @@ export default function Admin() {
 
             <div className='admin-content'>
                 {activeTab === 'ordrar' && <AdminOrders />}
+
                 {activeTab === 'produkter' && <AdminProducts />}
+
+                {activeTab === 'rabattkoder' && <AdminDiscounts />}
+
                 {activeTab === 'om-oss' && <AdminAbout />}
             </div>
         </div>
