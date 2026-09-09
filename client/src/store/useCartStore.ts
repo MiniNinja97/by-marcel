@@ -10,10 +10,14 @@ interface CartStore {
   getTotalItems: () => number;
   getTotalPrice: () => number;
   totalWeight: () => number;
+  discountCode: string | null;
+setDiscountCode: (code: string | null) => void;
 }
 
 export const useCartStore = create<CartStore>((set, get) => ({
   items: [],
+  discountCode: null,
+  setDiscountCode: (code) => set({ discountCode: code }),
 
   addItem: (newItem) => {
     set((state) => {
@@ -64,7 +68,11 @@ export const useCartStore = create<CartStore>((set, get) => ({
     }));
   },
 
-  clearCart: () => set({ items: [] }),
+  clearCart: () =>
+  set({
+    items: [],
+    discountCode: null,
+  }),
 
   getTotalPrice: () => {
     return get().items.reduce(

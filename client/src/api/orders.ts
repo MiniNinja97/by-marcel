@@ -25,6 +25,7 @@ interface CreateOrderResponse {
 export async function createOrder(
   customer: Omit<Customer, "id">,
   items: CartItem[],
+  discountCode: string | null,
 ): Promise<CreateOrderResponse> {
   const orderItems = items.map((item) => ({
     product_id: item.product.id,
@@ -82,9 +83,10 @@ export async function createOrder(
       },
 
       body: JSON.stringify({
-        customer,
-        items: orderItems,
-      }),
+  customer,
+  items: orderItems,
+  discount_code: discountCode,
+}),
     },
   );
 

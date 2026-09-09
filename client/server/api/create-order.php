@@ -63,6 +63,9 @@ if (
 
 $customer = $data["customer"];
 $items = $data["items"];
+$discountCode = strtoupper(
+    trim($data["discount_code"] ?? "")
+);
 
 
 // -----------------------------------------
@@ -725,7 +728,129 @@ try {
         $totalWeight +=
             $weight * $quantity;
     }
+// -----------------------------------------
+// Validera rabattkod
+// -----------------------------------------
 
+$discountAmount = 0;
+
+if ($discountCode !== "") {
+
+    $discountStmt = $conn->prepare("
+        SELECT
+            code,
+            type,
+            value,
+            active,
+            valid_from,
+            valid_until,
+            minimum_order
+        FROM discount_codes
+        WHERE code = ?
+        LIMIT 1
+    ");
+
+    $discountStmt->bind_param(
+        "s",
+        $discountCode
+    );
+
+    $discountStmt->execute();
+
+    $discountResult =
+        $discountStmt->get_result();
+
+    $discount =
+        $discountResult->fetch_assoc();
+
+    $discountStmt->close();
+
+
+    if (!$discount) {
+        throw new Exception(
+            "Rabattkoden finns inte"
+        );
+    }
+
+
+    if (!(bool) $discount["active"]) {
+        throw new Exception(
+            "Rabattkoden är inte aktiv"
+        );
+    }
+
+
+    $now = new DateTime();
+
+    if (
+        $discount["valid_from"] !== null &&
+        $now < new DateTime(
+            $discount["valid_from"]
+        )
+    ) {
+        throw new Exception(
+            "Rabattkoden gäller inte ännu"
+        );
+    }
+
+
+    if (
+        $discount["valid_until"] !== null &&
+        $now > new DateTime(
+            $discount["valid_until"]
+        )
+    ) {
+        throw new Exception(
+            "Rabattkoden har gått ut"
+        );
+    }
+
+
+    $minimumOrder =
+        $discount["minimum_order"] !== null
+            ? (float) $discount["minimum_order"]
+            : null;
+
+
+    if (
+        $minimumOrder !== null &&
+        $subtotal < $minimumOrder
+    ) {
+        throw new Exception(
+            "Rabattkoden kräver ett ordervärde på minst " .
+            $minimumOrder .
+            " SEK"
+        );
+    }
+
+
+    $discountValue =
+        (float) $discount["value"];
+
+
+    if ($discount["type"] === "percent") {
+
+        $discountAmount =
+            $subtotal *
+            ($discountValue / 100);
+
+    } else {
+
+        $discountAmount =
+            $discountValue;
+    }
+
+
+    $discountAmount = min(
+        $discountAmount,
+        $subtotal
+    );
+
+    $discountAmount = round(
+        $discountAmount,
+        2
+    );
+}
 
     // -----------------------------------------
 // Beräkna frakt
@@ -768,7 +893,9 @@ $shippingCarrier =
 
 
 $totalPrice =
-    $subtotal + $shipping;
+    $subtotal
+    - $discountAmount
+    + $shipping;
     // -----------------------------------------
     // Skapa ID:n
     // -----------------------------------------
@@ -855,34 +982,38 @@ $totalPrice =
     // Ingen betalningsintegration ännu
     $stripePaymentId = null;
 
-    $orderSql = "
-        INSERT INTO orders (
-            id,
-            customer_id,
-            subtotal,
-            shipping,
-            total_weight,
-            total_price,
-            status,
-            stripe_payment_id
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ";
+   $orderSql = "
+    INSERT INTO orders (
+        id,
+        customer_id,
+        subtotal,
+        discount_code,
+        discount_amount,
+        shipping,
+        total_weight,
+        total_price,
+        status,
+        stripe_payment_id
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+";
 
     $orderStmt =
         $conn->prepare($orderSql);
 
     $orderStmt->bind_param(
-        "ssddddss",
-        $orderId,
-        $customerId,
-        $subtotal,
-        $shipping,
-        $totalWeight,
-        $totalPrice,
-        $status,
-        $stripePaymentId
-    );
+    "ssdsddddss",
+    $orderId,
+    $customerId,
+    $subtotal,
+    $discountCode,
+    $discountAmount,
+    $shipping,
+    $totalWeight,
+    $totalPrice,
+    $status,
+    $stripePaymentId
+);
 
     $orderStmt->execute();
     $orderStmt->close();
@@ -1091,8 +1222,10 @@ $conn->commit();
     "order_id" => $orderId,
     "customer_id" => $customerId,
     "subtotal" => $subtotal,
-    "shipping" => $shipping,
-    "total_price" => $totalPrice,
+"discount_code" => $discountCode,
+"discount_amount" => $discountAmount,
+"shipping" => $shipping,
+"total_price" => $totalPrice,
     "checkout_url" => $checkoutSession->url
 ]);
 

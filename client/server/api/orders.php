@@ -9,6 +9,8 @@ $sql = "
     SELECT
         orders.id,
         orders.subtotal,
+        orders.discount_code,
+orders.discount_amount,
         orders.shipping,
         orders.total_weight,
         orders.total_price,
@@ -147,6 +149,8 @@ $item["custom_texts"] =
         "items" => $items,
 
         "subtotal" => (float) $row["subtotal"],
+        "discount_code" => $row["discount_code"],
+        "discount_amount" => (float) $row["discount_amount"],
         "shipping" => (float) $row["shipping"],
         "total_weight" => (float) $row["total_weight"],
         "total_price" => (float) $row["total_price"],
