@@ -2,7 +2,7 @@
 
 .products {
     display: grid;
-    grid-template-columns: 13rem minmax(0, 1fr);
+    grid-template-columns: 16rem minmax(0, 1fr);
 
     width: 100%;
     max-width: 100%;
@@ -58,6 +58,135 @@
     flex-direction: column;
 
     gap: 0.8rem;
+}
+
+/* DROPDOWN-RADER */
+
+.sidebar-menu-row {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 0.75rem;
+
+    width: 100%;
+}
+
+.sidebar-menu-row a {
+    min-width: 0;
+
+    flex: 1;
+}
+
+
+/* PLUS / MINUS */
+
+.sidebar-toggle {
+    flex-shrink: 0;
+
+    width: 1.75rem;
+    height: 1.75rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    background: transparent;
+
+    border:
+        0.5px solid
+        rgba(201, 168, 76, 0.35);
+
+    border-radius: 0.2rem;
+
+    color: var(--gold);
+
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 300;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+    border-color: var(--gold);
+
+    background:
+        rgba(201, 168, 76, 0.08);
+}
+
+.sidebar-toggle-small {
+    width: 1.5rem;
+    height: 1.5rem;
+
+    font-size: 0.9rem;
+}
+
+
+/* PRODUKTTYPER */
+
+.sidebar-product-types {
+    display: flex;
+    flex-direction: column;
+
+    gap: 1.25rem;
+
+    padding-left: 0.75rem;
+}
+
+.sidebar-product-type {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.75rem;
+}
+
+/* PRODUKTTYPER */
+
+.sidebar-product-types {
+    display: flex;
+    flex-direction: column;
+
+    gap: 1.5rem;
+
+    padding-left: 0.5rem;
+}
+
+.sidebar-product-type {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.75rem;
+}
+
+.sidebar-type-link {
+    font-family: var(--font-sans);
+
+    font-size: 1.05rem;
+    font-weight: 500;
+
+    color: var(--text);
+
+    text-decoration: none;
+
+    letter-spacing: 0.04rem;
+
+    transition: color 0.2s ease;
+}
+
+.sidebar-type-link:hover,
+.sidebar-type-link.active {
+    color: var(--gold);
 }
 
 

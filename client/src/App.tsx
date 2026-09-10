@@ -37,7 +37,12 @@ export default function App() {
           <Route path="/produkter/:kategori" element={<Products />} />
 
           <Route
-            path="/produkter/:kategori/:underkategori"
+            path="/produkter/:kategori/:produkttyp"
+            element={<Products />}
+          />
+
+          <Route
+            path="/produkter/:kategori/:produkttyp/:underkategori"
             element={<Products />}
           />
 

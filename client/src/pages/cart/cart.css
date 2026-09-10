@@ -2,9 +2,13 @@
 
 .cart {
     padding: 2.5rem 2.5rem 4rem;
+
     display: flex;
     flex-direction: column;
+
     gap: 2rem;
+
+    flex: 1;
 }
 
 /* empty cart */
@@ -14,35 +18,44 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    min-height: 50vh;
+    gap: 1.25rem;
+
+    min-height: calc(100vh - 12rem);
+
     text-align: center;
 }
 
 .cart-empty h1 {
     font-family: var(--font-serif);
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 300;
     color: var(--text);
 }
 
 .cart-empty p {
-    font-size: 0.75rem;
-    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text);
 }
 
 .cart-empty-btn {
     margin-top: 1rem;
+
     background: none;
     border: 0.5px solid var(--gold);
     color: var(--gold);
+
     font-family: var(--font-sans);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     letter-spacing: 0.2rem;
     text-transform: uppercase;
+
     padding: 0.875rem 2rem;
     border-radius: 0.25rem;
+
     text-decoration: none;
+
     transition: all 0.2s ease;
 }
 
@@ -68,8 +81,8 @@
 }
 
 .cart-header p {
-    font-size: 0.75rem;
-    color: var(--text-muted);
+    font-size: 1.2rem;
+    color: var(--text);
 }
 
 /* layout */
@@ -126,19 +139,19 @@
 
 .cart-item-info h3 {
     font-family: var(--font-sans);
-    font-size: 0.85rem;
+    font-size: 1.4rem;
     font-weight: 400;
     color: var(--text);
 }
 
 .cart-item-specs {
-    font-size: 0.7rem;
+    font-size: 1.2rem;
     color: var(--text-muted);
 }
 
 .cart-item-text {
-    font-size: 0.7rem;
-    color: var(--text-muted);
+    font-size: 1.2rem;
+    color: var(--text);
     font-style: italic;
 }
 
@@ -182,7 +195,7 @@
     background: var(--bg-input);
     border-top: 0.5px solid rgba(255, 255, 255, 0.15);
     border-bottom: 0.5px solid rgba(255, 255, 255, 0.15);
-    font-size: 0.8rem;
+    font-size: 1.4rem;
     color: var(--text);
 }
 
@@ -195,22 +208,22 @@
 
 .cart-item-price {
     font-family: var(--font-serif);
-    font-size: 1.25rem;
+    font-size: 1.6rem;
     color: var(--gold);
 }
 
 .cart-item-remove {
     background: none;
     border: none;
-    color: var(--text-muted);
+    color: var(--text);
     font-family: var(--font-sans);
-    font-size: 0.625rem;
+    font-size: 0.8rem;
     letter-spacing: 0.1rem;
     text-transform: uppercase;
     cursor: pointer;
     transition: color 0.2s ease;
     padding: 0.25rem 0.5rem;
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border: 0.5px solid rgba(255, 255, 255, 0.322);
     border-radius: 0.2rem;
 }
 
@@ -235,7 +248,7 @@
 
 .cart-summary h2 {
     font-family: var(--font-serif);
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 300;
     color: var(--text);
 }
@@ -246,13 +259,128 @@
     gap: 0;
 }
 
+/* discount code */
+
+.cart-discount {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+
+    padding: 1rem 0;
+
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.06);
+}
+
+.cart-discount label {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.cart-discount-input {
+    display: flex;
+    width: 100%;
+}
+
+.cart-discount-input input {
+    flex: 1;
+    min-width: 0;
+
+    background: var(--bg-input);
+
+    border: 0.5px solid rgba(255, 255, 255, 0.15);
+    border-right: none;
+
+    border-radius: 0.25rem 0 0 0.25rem;
+
+    padding: 0.75rem 0.8rem;
+
+    color: var(--text);
+
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.cart-discount-input input::placeholder {
+    color: var(--text-muted);
+}
+
+.cart-discount-input input:focus {
+    border-color: var(--gold);
+}
+
+.cart-discount-input input:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.cart-discount-input button {
+    flex-shrink: 0;
+
+    background: transparent;
+
+    border: 0.5px solid var(--gold);
+
+    color: var(--gold);
+
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-weight: 400;
+
+    letter-spacing: 0.08rem;
+    text-transform: uppercase;
+
+    padding: 0.75rem 1rem;
+
+    border-radius: 0 0.25rem 0.25rem 0;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.cart-discount-input button:hover:not(:disabled) {
+    background: var(--gold);
+    color: var(--bg);
+}
+
+.cart-discount-input button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* discount messages */
+
+.cart-discount-success {
+    font-size: 0.7rem;
+    line-height: 1.5;
+
+    color: var(--gold);
+}
+
+.cart-discount-error {
+    font-size: 0.7rem;
+    line-height: 1.5;
+
+    color: #d98b8b;
+}
+
 .cart-summary-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 0;
     border-bottom: 0.5px solid rgba(255, 255, 255, 0.06);
-    font-size: 0.75rem;
+    font-size: 1rem;
     color: var(--text-muted);
 }
 
@@ -283,7 +411,7 @@
     border: 0.5px solid var(--text);
     color: var(--text);
     font-family: var(--font-serif);
-    font-size: 1.25rem;
+    font-size: 1.4rem;
     font-weight: 300;
     text-align: center;
     padding: 1rem;
@@ -296,4 +424,25 @@
 .cart-checkout-btn:hover {
     border-color: var(--gold);
     color: var(--gold);
+}
+
+@media (max-width: 550px) {
+    .cart-discount-input {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .cart-discount-input input {
+        width: 100%;
+
+        border: 0.5px solid rgba(255, 255, 255, 0.15);
+
+        border-radius: 0.25rem;
+    }
+
+    .cart-discount-input button {
+        width: 100%;
+
+        border-radius: 0.25rem;
+    }
 }

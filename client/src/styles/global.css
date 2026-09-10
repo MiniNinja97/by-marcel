@@ -1,10 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Montserrat:wght@300;400;500;600&display=swap');
 
-:root {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+/* =========================================
+   GLOBALA VARIABLER
+   ========================================= */
 
+:root {
     --gold: #C9A84C;
     --gold-muted: rgba(201, 168, 76, 0.5);
     --gold-faint: rgba(201, 168, 76, 0.2);
@@ -23,33 +23,75 @@
     --font-sans: 'Montserrat', sans-serif;
 }
 
+
+/* =========================================
+   RESET
+   ========================================= */
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: var(--font-sans);
-    color: var(--text);
+}
+
+html,
+body,
+#root {
+    min-height: 100%;
 }
 
 html {
-    min-height: 100%;
+    min-height: 100vh;
     background: #000000;
 }
 
 body {
+    margin: 0;
     min-height: 100vh;
 
     background: var(--bg);
 
     color: var(--text);
     font-family: var(--font-sans);
+
     -webkit-font-smoothing: antialiased;
 
     position: relative;
     isolation: isolate;
 }
 
-/* Träbakgrunden */
+
+/* =========================================
+   REACT ROOT / SIDLAYOUT
+   ========================================= */
+
+#root {
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+}
+
+/*
+   Main fyller allt ledigt utrymme mellan
+   header och footer.
+*/
+main {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+
+    padding-top: 4rem;
+}
+
+
+/* =========================================
+   TRÄBAKGRUND
+   ========================================= */
+
 body::before {
     content: "";
 
@@ -61,19 +103,20 @@ body::before {
     background-position: center;
     background-repeat: no-repeat;
 
-    /*
-      Dämpar den röda färgen och gör
-      bakgrunden mörkare.
-    */
     filter:
         saturate(35%)
         brightness(45%);
 
     z-index: -2;
+
     pointer-events: none;
 }
 
-/* Svart transparent lager ovanpå träet */
+
+/* =========================================
+   MÖRKT LAGER ÖVER TRÄBAKGRUNDEN
+   ========================================= */
+
 body::after {
     content: "";
 
@@ -83,13 +126,14 @@ body::after {
     background: rgba(0, 0, 0, 0.35);
 
     z-index: -1;
+
     pointer-events: none;
 }
 
-main {
-    flex: 1;
-    padding-top: 4rem;
-}
+
+/* =========================================
+   GLOBALA ELEMENT
+   ========================================= */
 
 a {
     text-decoration: none;
@@ -101,7 +145,60 @@ button {
     font-family: var(--font-sans);
 }
 
+input,
+textarea,
+select {
+    font-family: var(--font-sans);
+}
+
 img {
     max-width: 100%;
+    height: auto;
     display: block;
+}
+
+
+/* =========================================
+   RESPONSIV BAS
+   ========================================= */
+
+/*
+   Förhindrar att långa ord eller annat
+   innehåll tvingar sidan utanför skärmen.
+*/
+body {
+    overflow-x: hidden;
+}
+
+/*
+   Formelement ska aldrig bli bredare
+   än sin container.
+*/
+input,
+textarea,
+select,
+button {
+    max-width: 100%;
+}
+
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 1000px) {
+    main {
+        width: 100%;
+    }
+}
+
+
+/* =========================================
+   MOBIL
+   ========================================= */
+
+@media (max-width: 550px) {
+    main {
+        width: 100%;
+    }
 }
