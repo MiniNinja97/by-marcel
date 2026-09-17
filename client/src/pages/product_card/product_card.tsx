@@ -32,6 +32,9 @@ export default function Product() {
   const [customPhoto, setCustomPhoto] =
     useState<File | null>(null);
 
+    const [uploadFiles, setUploadFiles] =
+  useState<Record<string, File[]>>({});
+
   const [quantity, setQuantity] = useState(1);
   const [cartError, setCartError] = useState("");
 
@@ -106,6 +109,7 @@ export default function Product() {
     setPrintColor(null);
     setCustomTexts({});
     setCustomPhoto(null);
+    setUploadFiles({});
     setQuantity(1);
     setSelectedImage(0);
     setCartError("");
@@ -933,6 +937,50 @@ export default function Product() {
               )}
             </div>
           )}
+
+          {/* Dynamiska uppladdningsfält */}
+{isCustomEnamel &&
+  product.upload_fields?.map((field) => (
+    <div
+      className="product-option"
+      key={field.id}
+    >
+      <label>{field.display_name}</label>
+
+      <label className="upload-btn">
+        <input
+          type="file"
+          accept={field.allowed_extensions
+            .split(",")
+            .map((extension) => `.${extension.trim()}`)
+            .join(",")}
+          multiple={field.max_files > 1}
+          onChange={(event) => {
+            const files = Array.from(
+              event.target.files ?? [],
+            ).slice(0, field.max_files);
+
+            setUploadFiles((previous) => ({
+              ...previous,
+              [field.field_name]: files,
+            }));
+          }}
+        />
+        📎
+      </label>
+
+      {uploadFiles[field.field_name]?.map(
+        (file) => (
+          <p
+            className="upload-filename"
+            key={file.name}
+          >
+            {file.name}
+          </p>
+        ),
+      )}
+    </div>
+  ))}
 
           {/* Egen text */}
           {isCustomEnamel &&

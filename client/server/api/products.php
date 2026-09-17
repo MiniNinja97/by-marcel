@@ -134,6 +134,41 @@ if ($result) {
         $textFieldStmt->close();
 
         // =========================================
+// UPPLADDNINGSFÄLT
+// Exempel: bilder, skiss, logotyp
+// =========================================
+
+$uploadFieldSql = "
+    SELECT
+        id,
+        field_name,
+        display_name,
+        max_files,
+        allowed_extensions,
+        sort_order
+    FROM product_upload_fields
+    WHERE product_id = ?
+    ORDER BY sort_order ASC
+";
+
+$uploadFieldStmt = $conn->prepare($uploadFieldSql);
+$uploadFieldStmt->bind_param("s", $productId);
+$uploadFieldStmt->execute();
+
+$uploadFieldResult = $uploadFieldStmt->get_result();
+
+$uploadFields = [];
+
+while ($uploadField = $uploadFieldResult->fetch_assoc()) {
+    $uploadField["max_files"] = (int) $uploadField["max_files"];
+    $uploadFields[] = $uploadField;
+}
+
+$row["upload_fields"] = $uploadFields;
+
+$uploadFieldStmt->close();
+
+        // =========================================
 // FÄRGER
 // Bakgrundsfärg + tryckfärg
 // =========================================

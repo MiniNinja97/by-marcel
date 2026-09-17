@@ -95,8 +95,8 @@
 
 .admin-filter-btn {
     font-family: var(--font-sans);
-    font-size: 0.7rem;
-    color: var(--text-muted);
+    font-size: 0.9rem;
+    color: var(--text);
     background: none;
     border: 0.5px solid rgba(255, 255, 255, 0.1);
     padding: 0.4rem 1rem;
@@ -124,8 +124,8 @@
 
 .admin-sort-btn {
     font-family: var(--font-sans);
-    font-size: 0.7rem;
-    color: var(--text-muted);
+    font-size: 0.9rem;
+    color: var(--text);
     background: none;
     border: none;
     cursor: pointer;
@@ -147,7 +147,7 @@
     border: 0.5px solid rgba(255, 255, 255, 0.1);
     color: var(--text);
     font-family: var(--font-sans);
-    font-size: 0.7rem;
+    font-size: 1rem;
     padding: 0.4rem 0.875rem;
     border-radius: 0.2rem;
     outline: none;
@@ -183,12 +183,12 @@
 
 .admin-btn {
     font-family: var(--font-sans);
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     letter-spacing: 0.1rem;
     text-transform: uppercase;
     background: none;
     border: 0.5px solid rgba(255, 255, 255, 0.2);
-    color: var(--text-muted);
+    color: var(--text);
     padding: 0.4rem 0.875rem;
     border-radius: 0.2rem;
     cursor: pointer;
@@ -272,17 +272,21 @@
 .admin-orders-list {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 1rem;
 }
 
 .admin-order-row {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 1.5rem;
-    padding: 1.5rem 0;
-    border-bottom: 0.5px solid rgba(255, 255, 255, 0.07);
-    font-size: 0.75rem;
-    color: var(--text-muted);
+
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.55);
+    border: 0.5px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.25rem;
+
+    font-size: 0.85rem;
+    color: var(--text);
     line-height: 1.8;
 }
 
@@ -321,8 +325,11 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    padding: 1.5rem 0;
-    border-bottom: 0.5px solid rgba(255, 255, 255, 0.07);
+
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.55);
+    border: 0.5px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.25rem;
 }
 
 .admin-product-id strong {
@@ -338,8 +345,8 @@
 
 .admin-product-info p,
 .admin-product-flags p {
-    font-size: 0.75rem;
-    color: var(--text-muted);
+    font-size: 0.9rem;
+    color: var(--text);
     line-height: 1.8;
 }
 
@@ -592,6 +599,7 @@
 .admin-discount-list {
     display: flex;
     flex-direction: column;
+    gap: 1rem;
 }
 
 .admin-discount-row {
@@ -599,8 +607,11 @@
     grid-template-columns: 0.8fr 1.4fr 1.2fr auto;
     gap: 2rem;
     align-items: center;
-    padding: 1.5rem 0;
-    border-bottom: 0.5px solid rgba(255, 255, 255, 0.07);
+
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.55);
+    border: 0.5px solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.25rem;
 }
 
 .admin-discount-row p {

@@ -417,134 +417,121 @@ export default function Products() {
   //     ),
   // );
 
- return (
-  <div className="products">
-    {/* SIDOMENY */}
-    <ProductsSidebar
-      products={products}
-      language={language}
-      getSubcategory={getSubcategory}
-      subcategories={categories[0].subcategories}
-    />
+  return (
+    <div className="products">
+      {/* SIDOMENY */}
+      <ProductsSidebar
+        products={products}
+        language={language}
+        getSubcategory={getSubcategory}
+        subcategories={categories[0].subcategories}
+      />
 
-    {/* HUVUDINNEHÅLL */}
-    <main className="products-main">
-      <div className="products-header">
-        <h1>{pageTitle}</h1>
+      {/* HUVUDINNEHÅLL */}
+      <main className="products-main">
+        <div className="products-header">
+          <h1>{pageTitle}</h1>
 
-        <p>
-          {language === "sv"
-            ? `${filteredProducts.length} produkter`
-            : `${filteredProducts.length} products`}
-        </p>
-      </div>
-
-      <div className="products-grid">
-        {visibleProducts.map((product) => (
-          <NavLink
-            to={`/produkt/${product.id}`}
-            key={product.id}
-            className="product-card"
-          >
-            <div className="product-card-img">
-              {product.images?.[0] && (
-                <img
-                  src={`https://www.bymarcel.se${product.images[0]}`}
-                  alt={product.name}
-                />
-              )}
-            </div>
-
-            <div className="product-card-info">
-              <h3>{product.name}</h3>
-
-              <p>{product.description}</p>
-
-              <span className="product-card-price">
-                {product.base_price} SEK
-              </span>
-
-              {product.is_out_of_stock && (
-                <span className="product-card-stock">
-                  {language === "sv"
-                    ? "Ej i lager"
-                    : "Out of stock"}
-                </span>
-              )}
-            </div>
-          </NavLink>
-        ))}
-
-        {visibleProducts.length === 0 && (
           <p>
             {language === "sv"
-              ? "Inga produkter hittades."
-              : "No products found."}
+              ? `${filteredProducts.length} produkter`
+              : `${filteredProducts.length} products`}
           </p>
-        )}
-      </div>
-
-      {/* PAGINATION */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            className="pagination-btn"
-            onClick={() =>
-              setCurrentPage((page) =>
-                Math.max(1, page - 1),
-              )
-            }
-            disabled={currentPage === 1}
-          >
-            ‹
-          </button>
-
-          {getPaginationPages(
-            currentPage,
-            totalPages,
-          ).map((item, index) => {
-            if (item === "...") {
-              return (
-                <span
-                  key={`dots-${index}`}
-                  className="pagination-dots"
-                >
-                  ...
-                </span>
-              );
-            }
-
-            return (
-              <button
-                key={item}
-                className={`pagination-btn ${
-                  currentPage === item
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() =>
-                  setCurrentPage(item)
-                }
-              >
-                {item}
-              </button>
-            );
-          })}
-
-          <button
-            className="pagination-btn"
-            onClick={() =>
-              setCurrentPage((page) =>
-                Math.min(totalPages, page + 1),
-              )
-            }
-            disabled={currentPage === totalPages}
-          >
-            ›
-          </button>
         </div>
-      )}
-    </main>
-  </div>
-);
+
+        <div
+          className={`products-grid products-grid-${Math.min(
+            visibleProducts.length,
+            3,
+          )}`}
+        >
+          {visibleProducts.map((product) => (
+            <NavLink
+              to={`/produkt/${product.id}`}
+              key={product.id}
+              className="product-card"
+            >
+              <div className="product-card-img">
+                {product.images?.[0] && (
+                  <img
+                    src={`https://www.bymarcel.se${product.images[0]}`}
+                    alt={product.name}
+                  />
+                )}
+              </div>
+
+              <div className="product-card-info">
+                <h3>{product.name}</h3>
+
+                <p>{product.description}</p>
+
+                <span className="product-card-price">
+                  {product.base_price} SEK
+                </span>
+
+                {product.is_out_of_stock && (
+                  <span className="product-card-stock">
+                    {language === "sv" ? "Ej i lager" : "Out of stock"}
+                  </span>
+                )}
+              </div>
+            </NavLink>
+          ))}
+
+          {visibleProducts.length === 0 && (
+            <p>
+              {language === "sv"
+                ? "Inga produkter hittades."
+                : "No products found."}
+            </p>
+          )}
+        </div>
+
+        {/* PAGINATION */}
+        {totalPages > 1 && (
+          <div className="pagination">
+            <button
+              className="pagination-btn"
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              disabled={currentPage === 1}
+            >
+              ‹
+            </button>
+
+            {getPaginationPages(currentPage, totalPages).map((item, index) => {
+              if (item === "...") {
+                return (
+                  <span key={`dots-${index}`} className="pagination-dots">
+                    ...
+                  </span>
+                );
+              }
+
+              return (
+                <button
+                  key={item}
+                  className={`pagination-btn ${
+                    currentPage === item ? "active" : ""
+                  }`}
+                  onClick={() => setCurrentPage(item)}
+                >
+                  {item}
+                </button>
+              );
+            })}
+
+            <button
+              className="pagination-btn"
+              onClick={() =>
+                setCurrentPage((page) => Math.min(totalPages, page + 1))
+              }
+              disabled={currentPage === totalPages}
+            >
+              ›
+            </button>
+          </div>
+        )}
+      </main>
+    </div>
+  );
 }

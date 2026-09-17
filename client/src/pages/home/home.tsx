@@ -13,8 +13,7 @@ export default function Home() {
   const { language } = useLanguage();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [activeFilter, setActiveFilter] =
-    useState<HomeFilter>("featured");
+  const [activeFilter, setActiveFilter] = useState<HomeFilter>("featured");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -42,18 +41,16 @@ export default function Home() {
   }, [language]);
 
   // Dolda produkter ska aldrig visas på startsidan
-  const visibleProducts = products.filter(
-    (product) => !product.is_hidden,
-  );
+  const visibleProducts = products.filter((product) => !product.is_hidden);
 
   let displayedProducts: Product[] = [];
 
   // UTVALDA
-  if (activeFilter === "featured") {
-    displayedProducts = visibleProducts.filter(
-      (product) => product.is_featured,
-    );
-  }
+  // if (activeFilter === "featured") {
+  //   displayedProducts = visibleProducts.filter(
+  //     (product) => product.is_featured,
+  //   );
+  // }
 
   // SÄSONG
   if (activeFilter === "seasonal") {
@@ -66,13 +63,12 @@ export default function Home() {
   if (activeFilter === "new") {
     displayedProducts = [...visibleProducts].sort(
       (a, b) =>
-        new Date(b.created_at).getTime() -
-        new Date(a.created_at).getTime(),
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
   }
 
   // Vi visar maximalt tre produkter här
-  displayedProducts = displayedProducts.slice(0, 3);
+  displayedProducts = displayedProducts.slice(0, 6);
 
   return (
     <div className="home">
@@ -115,28 +111,29 @@ export default function Home() {
 
       {/* HOME CONTENT */}
       <div className="home-content" id="home-content">
-        <div
-          className="home-content-top"
-          id="home-content-top"
-        >
-         
+        <div className="home-content-top" id="home-content-top">
+          <p id="home-content-title">
+            {language === "sv"
+              ? "Personliga produkter"
+              : "Personalised products"}
+          </p>
 
           <h2>
             {language === "sv"
-              ? "Handplockat åt dig"
-              : "Handpicked for you"}
+              ? "Skapat efter dina önskemål"
+              : "Created to your wishes"}
           </h2>
 
           {/* FILTERKNAPPAR */}
           <div className="tripple-btn" id="tripple-btn">
-            <button
+            {/* <button
               className={`tripple-btn-item ${
                 activeFilter === "featured" ? "active" : ""
               }`}
               onClick={() => setActiveFilter("featured")}
             >
               {language === "sv" ? "Utvalda" : "Featured"}
-            </button>
+            </button> */}
 
             <button
               className={`tripple-btn-item ${
@@ -191,34 +188,28 @@ export default function Home() {
 
                 <p>{product.description}</p>
 
-                <p className="home-product-price">
-                  {product.base_price} SEK
-                </p>
+                <p className="home-product-price">{product.base_price} SEK</p>
 
                 {product.is_out_of_stock && (
                   <p className="home-product-stock">
-                    {language === "sv"
-                      ? "Ej i lager"
-                      : "Out of stock"}
+                    {language === "sv" ? "Ej i lager" : "Out of stock"}
                   </p>
                 )}
               </NavLink>
             ))}
 
-          {!loading &&
-            !error &&
-            displayedProducts.length === 0 && (
-              <p>
-                {language === "sv"
-                  ? "Inga produkter att visa här ännu."
-                  : "No products to display here yet."}
-              </p>
-            )}
+          {!loading && !error && displayedProducts.length === 0 && (
+            <p>
+              {language === "sv"
+                ? "Inga produkter att visa här ännu."
+                : "No products to display here yet."}
+            </p>
+          )}
         </div>
 
         <div className="devider"></div>
 
-        {/* GÖR DET PERSONLIGT */}
+        {/* GÖR DET PERSONLIGT
         <div
           className="home-content-bottom"
           id="home-content-bottom"
@@ -275,7 +266,7 @@ export default function Home() {
             </p>
             <p>{language === "sv" ? "Pris" : "Price"}</p>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

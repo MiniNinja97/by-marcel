@@ -25,6 +25,8 @@ export interface Product {
   variants?: ProductVariant[];
 
   text_fields?: ProductTextField[];
+  upload_fields?: ProductUploadField[];
+  
 
   allows_custom_photo: boolean;
   allows_custom_text: boolean;
@@ -210,5 +212,14 @@ export interface ProductTextField {
   display_name: string;
   placeholder?: string;
   max_length: number;
+  sort_order: number;
+}
+
+export interface ProductUploadField {
+  id: number;
+  field_name: string;
+  display_name: string;
+  max_files: number;
+  allowed_extensions: string;
   sort_order: number;
 }
