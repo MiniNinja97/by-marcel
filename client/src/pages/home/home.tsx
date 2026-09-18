@@ -91,8 +91,29 @@ export default function Home() {
             <div className="hero-text">
               <h2>
                 {language === "sv"
-                  ? "Handgjorda produkter"
-                  : "Handmade products"}
+  ? (
+      <>
+        Välkommen till By Marcel!
+        <br />
+        <br />
+        Här hittar du graverade tavlor, äkta emaljskyltar, glasgravyr,
+        namnskyltar, prydnader och mycket mer! <br/> <br/> Dina bilder, texter
+        och idéer blir unika produkter med en personlig prägel.
+      </>
+    )
+  : (
+      <>
+  Welcome to By Marcel!
+  <br />
+  <br />
+  Here you'll find engraved artwork, genuine enamel signs, glass engraving,
+  name signs, decorations and much more!
+  <br />
+  <br />
+  Your photos, texts and ideas are transformed into unique products with a
+  personal touch.
+</>
+    )}
               </h2>
             </div>
 

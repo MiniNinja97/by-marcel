@@ -128,10 +128,12 @@
     font-weight: 400;
 
     letter-spacing: 0.15rem;
+    line-height: 2.2rem;
 
     color: var(--gold);
 
     text-transform: uppercase;
+    max-width: 50rem;
 }
 
 

@@ -1,0 +1,238 @@
+/* ÄKTA EMALJ */
+
+.enamel-info {
+    width: calc(100% - 5rem);
+    max-width: 1200px;
+    margin: 4rem auto;
+    padding: 2.5rem;
+
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+
+    background: rgba(0, 0, 0, 0.55);
+    border: 0.0625rem solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.25rem;
+}
+
+.enamel-info h1 {
+    font-family: var(--font-serif);
+    
+    font-weight: 400;
+
+    color: var(--gold);
+}
+
+
+/* TIDSLINJE */
+
+.enamel-timeline {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.enamel-timeline img {
+    width: 100%;
+    max-width: 900px;
+    max-height: 500px;
+
+    object-fit: contain;
+    display: block;
+
+    border-radius: 0.25rem;
+}
+
+
+/* TEXT + BILD */
+
+.enamel-row {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+
+    align-items: center;
+
+    padding: 2rem 0;
+
+    border-top: 0.0625rem solid rgba(255, 255, 255, 0.07);
+}
+
+
+/* VARANNAN RAD */
+
+.enamel-row-reverse .enamel-text {
+    order: 2;
+}
+
+.enamel-row-reverse .enamel-image {
+    order: 1;
+}
+
+
+/* TEXT */
+
+.enamel-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.enamel-text h2 {
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    font-weight: 300;
+
+    color: var(--gold);
+
+    line-height: 1.25;
+}
+
+.enamel-text p {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 300;
+
+    color: var(--text);
+
+    line-height: 1.8;
+    letter-spacing: 0.03rem;
+}
+
+
+/* BILDER */
+
+.enamel-image {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.enamel-image img {
+    width: 100%;
+    max-width: 500px;
+    max-height: 360px;
+
+    object-fit: contain;
+    display: block;
+
+    border-radius: 0.25rem;
+}
+
+/* HUVUDRUBRIK */
+
+.enamel-title {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--text);
+    text-align: center;
+    letter-spacing: 0.08rem;
+    margin: 0;
+}
+
+
+/* KNAPPAR */
+
+.enamel-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.enamel-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0.75rem 1.5rem;
+
+    background: transparent;
+    border: 0.0625rem solid var(--gold);
+    border-radius: 0.25rem;
+
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.08rem;
+    text-transform: uppercase;
+
+    color: var(--gold);
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.enamel-link:hover {
+    background: var(--gold);
+    color: #0a0a0a;
+}
+
+
+/* TABLET */
+
+@media (max-width: 900px) {
+
+    .enamel-info {
+        width: calc(100% - 3rem);
+        padding: 2rem;
+    }
+
+    .enamel-row {
+        gap: 2rem;
+    }
+
+    .enamel-image img {
+        max-width: 380px;
+        max-height: 280px;
+    }
+}
+
+
+/* MOBIL */
+
+@media (max-width: 700px) {
+
+    .enamel-info {
+        width: calc(100% - 2rem);
+        margin: 2rem auto;
+        padding: 1.5rem;
+
+        gap: 2rem;
+    }
+
+    .enamel-row {
+        grid-template-columns: 1fr;
+
+        gap: 1.5rem;
+
+        padding: 2rem 0;
+    }
+
+    .enamel-row-reverse .enamel-text,
+    .enamel-row-reverse .enamel-image {
+        order: initial;
+    }
+
+    .enamel-image img {
+        max-width: 100%;
+        max-height: 300px;
+    }
+
+    .enamel-timeline img {
+        max-height: 350px;
+    }
+
+    .enamel-text h2 {
+        font-size: 1.5rem;
+    }
+}
