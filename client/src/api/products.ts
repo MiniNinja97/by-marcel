@@ -55,6 +55,7 @@ export async function updateProductVisibility(
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify({
         id: id,
         is_hidden: isHidden,
@@ -67,32 +68,33 @@ export async function updateProductVisibility(
   }
 }
 export async function updateProductStockStatus(
-    id: string,
-    isOutOfStock: boolean
+  id: string,
+  isOutOfStock: boolean,
 ): Promise<void> {
+  const response = await fetch(
+    "https://www.bymarcel.se/Server/api/update-product.php",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        id: id,
+        is_out_of_stock: isOutOfStock,
+      }),
+    },
+  );
 
-    const response = await fetch(
-        'https://www.bymarcel.se/Server/api/update-product.php',
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                id: id,
-                is_out_of_stock: isOutOfStock,
-            }),
-        }
-    )
-
-    if (!response.ok) {
-        throw new Error('Kunde inte uppdatera lagerstatus')
-    }
+  if (!response.ok) {
+    throw new Error("Kunde inte uppdatera lagerstatus");
+  }
 }
 
 export async function updateProductFeatured(
     id: string,
     isFeatured: boolean
+  
 ): Promise<void> {
 
     const response = await fetch(
@@ -102,6 +104,7 @@ export async function updateProductFeatured(
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: "include",
             body: JSON.stringify({
                 id: id,
                 is_featured: isFeatured,

@@ -18,7 +18,7 @@ export default function Contact() {
     setMessageStatus("");
 
     try {
-      const response = await fetch("/api/contact.php", {
+      const response = await fetch("https://www.bymarcel.se/Server/api/contact.php", {
         method: "POST",
         body: formData,
       });

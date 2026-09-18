@@ -23,6 +23,13 @@ const categories = [
       },
       {
         name: {
+          sv: "Gatunamnskylt",
+          en: "Street sign",
+        },
+        slug: "gatunamnskylt",
+      },
+      {
+        name: {
           sv: "Husnummer & husskyltar",
           en: "House numbers & house signs",
         },
@@ -122,11 +129,16 @@ function getSubcategory(product: Product): string {
     id.startsWith("EC.HNR") ||
     id.startsWith("EC.ISG") ||
     id.startsWith("EC.IHG") ||
-    id.startsWith("EC.SG") ||
+    // id.startsWith("EC.SG") ||
     id.startsWith("ES.HK") ||
     id.startsWith("ES.HZ")
   ) {
     return "husnummer";
+  }
+
+  // GATUNAMNSKYLT
+  if (id.startsWith("EC.SG")) {
+    return "gatunamnskylt";
   }
 
   // NAMNSKYLTAR
