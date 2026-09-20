@@ -561,6 +561,184 @@
 }
 
 
+/* =========================
+   PRODUKTKATEGORIER
+========================= */
+
+.products-category-view {
+  width: 100%;
+}
+
+.products-category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.products-category-card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--text);
+  width: 100%;
+}
+
+.products-category-card:hover {
+  transform: translateY(-0.25rem);
+}
+
+.products-category-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.55);
+  border: 0.0625rem solid var(--gold);
+  border-radius: 0.25rem;
+
+  overflow: hidden;
+}
+
+.products-category-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.products-category-card h2 {
+  margin: 1rem 0 0;
+
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 600;
+
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.08rem;
+
+  color: var(--gold);
+}
+
+/* =========================
+   EMALJ STARTVY
+========================= */
+
+.enamel-category-view {
+  width: 100%;
+  max-width: 850px;
+  margin: 2rem auto;
+  padding: 3rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+
+  background: rgba(0, 0, 0, 0.55);
+  border: 0.0625rem solid rgba(255, 255, 255, 0.07);
+  border-radius: 0.25rem;
+}
+
+.enamel-category-view h1 {
+  margin: 0 0 1.5rem;
+
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  font-weight: 300;
+  letter-spacing: 0.08rem;
+  text-transform: uppercase;
+
+  color: var(--text);
+}
+
+.enamel-category-view p {
+  max-width: 650px;
+  margin: 0;
+
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 300;
+  line-height: 1.8;
+  letter-spacing: 0.03rem;
+
+  color: var(--text-muted);
+}
+
+.enamel-category-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+
+  margin-top: 2rem;
+}
+
+.enamel-category-button {
+  min-width: 180px;
+  padding: 0.8rem 1.5rem;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0.0625rem solid var(--gold);
+  border-radius: 0.25rem;
+
+  background: transparent;
+
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.08rem;
+  text-transform: uppercase;
+
+  color: var(--gold);
+  text-decoration: none;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.enamel-category-button:hover {
+  background: var(--gold);
+  color: #0a0a0a;
+}
+
+@media (max-width: 600px) {
+  .enamel-category-view {
+    padding: 2rem 1.5rem;
+  }
+
+  .enamel-category-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .enamel-category-button {
+    width: 100%;
+  }
+}
+
+/* TABLET */
+@media (max-width: 900px) {
+  .products-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* MOBIL */
+@media (max-width: 600px) {
+  .products-category-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* TABLET */
 
 @media (max-width: 1100px) {

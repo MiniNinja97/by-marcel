@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, useParams } from "react-router-dom";
 
 import type { Product } from "../../types";
 
@@ -26,13 +26,36 @@ export default function ProductsSidebar({
   getSubcategory,
   subcategories,
 }: ProductsSidebarProps) {
-  const [isEnamelOpen, setIsEnamelOpen] =
-    useState(false);
+  const { kategori, produkttyp } = useParams();
+
+  const [isEnamelOpen, setIsEnamelOpen] = useState(
+    kategori === "emalj",
+  );
 
   const [openProductType, setOpenProductType] =
-    useState<
-      "egen-design" | "standardprodukter" | null
-    >(null);
+    useState<"egen-design" | "standardprodukter" | null>(
+      produkttyp === "egen-design" ||
+        produkttyp === "standardprodukter"
+        ? produkttyp
+        : null,
+    );
+
+  useEffect(() => {
+    if (kategori === "emalj") {
+      setIsEnamelOpen(true);
+    }
+
+    if (
+      produkttyp === "egen-design" ||
+      produkttyp === "standardprodukter"
+    ) {
+      setOpenProductType(produkttyp);
+    } else {
+      setOpenProductType(null);
+    }
+  }, [kategori, produkttyp]);
+
+  // resten av din kod...
 
   // Bara underkategorier som faktiskt har EC-produkter
   const customDesignSubcategories =
@@ -60,7 +83,7 @@ export default function ProductsSidebar({
 
   return (
     <aside className="products-sidebar">
-      {/* ALLA PRODUKTER */}
+      {/* ALLA PRODUKTER
       <NavLink
         to="/produkter"
         end
@@ -73,7 +96,7 @@ export default function ProductsSidebar({
         {language === "sv"
           ? "Alla produkter"
           : "All products"}
-      </NavLink>
+      </NavLink> */}
 
       {/* EMALJ */}
       <div className="sidebar-category">
@@ -301,6 +324,23 @@ export default function ProductsSidebar({
           {language === "sv"
             ? "Kommande produkter"
             : "Upcoming products"}
+        </NavLink>
+      </div>
+
+      {/* KOMMANDE PRODUKTER */}
+      <div className="sidebar-category">
+        <NavLink
+          to="/produkter/kommande-produkter"
+          end
+          className={({ isActive }) =>
+            isActive
+              ? "sidebar-category-link active"
+              : "sidebar-category-link"
+          }
+        >
+          {language === "sv"
+            ? "Presentkort"
+            : "Gift cards"}
         </NavLink>
       </div>
     </aside>

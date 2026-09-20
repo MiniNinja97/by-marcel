@@ -6,14 +6,14 @@ import { getProducts } from "../../api/products";
 import type { Product } from "../../types";
 import { useLanguage } from "../../context/languageContext";
 
-type HomeFilter = "featured" | "new" | "seasonal";
+type HomeFilter =  "new" | "seasonal";
 
 export default function Home() {
   const navigate = useNavigate();
   const { language } = useLanguage();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [activeFilter, setActiveFilter] = useState<HomeFilter>("featured");
+  const [activeFilter, setActiveFilter] = useState<HomeFilter>("new");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

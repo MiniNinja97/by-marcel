@@ -5,6 +5,7 @@ import { getProducts } from "../../api/products";
 import type { Product } from "../../types";
 import { useLanguage } from "../../context/languageContext";
 import ProductsSidebar from "./productsSidebar";
+import enamelImage from "./products-img/BKAE-10.jpg";
 
 const categories = [
   {
@@ -409,26 +410,6 @@ export default function Products() {
     );
   }
 
-  // const customDesignSubcategories = categories[0].subcategories.filter(
-  //   (subcategory) =>
-  //     products.some(
-  //       (product) =>
-  //         !product.is_hidden &&
-  //         product.type === "EC" &&
-  //         getSubcategory(product) === subcategory.slug,
-  //     ),
-  // );
-
-  // const standardSubcategories = categories[0].subcategories.filter(
-  //   (subcategory) =>
-  //     products.some(
-  //       (product) =>
-  //         !product.is_hidden &&
-  //         product.type === "ES" &&
-  //         getSubcategory(product) === subcategory.slug,
-  //     ),
-  // );
-
   return (
     <div className="products">
       {/* SIDOMENY */}
@@ -441,107 +422,186 @@ export default function Products() {
 
       {/* HUVUDINNEHÅLL */}
       <main className="products-main">
-        <div className="products-header">
-          <h1>{pageTitle}</h1>
+        {/* ========================================
+          KATEGORIVY
+          Visas när man går till /produkter
+      ======================================== */}
+        {!kategori && (
+          <div className="products-category-view">
+            <div className="products-header">
+              <h1>{language === "sv" ? "Produkter" : "Products"}</h1>
 
-          <p>
-            {language === "sv"
-              ? `${filteredProducts.length} produkter`
-              : `${filteredProducts.length} products`}
-          </p>
-        </div>
+              <p>
+                {language === "sv"
+                  ? "Utforska vårt sortiment"
+                  : "Explore our range"}
+              </p>
+            </div>
 
-        <div
-          className={`products-grid products-grid-${Math.min(
-            visibleProducts.length,
-            3,
-          )}`}
-        >
-          {visibleProducts.map((product) => (
-            <NavLink
-              to={`/produkt/${product.id}`}
-              key={product.id}
-              className="product-card"
-            >
-              <div className="product-card-img">
-                {product.images?.[0] && (
+            <div className="products-category-grid">
+              <NavLink to="/produkter/emalj" className="products-category-card">
+                <div className="products-category-image">
                   <img
-                    src={`https://www.bymarcel.se${product.images[0]}`}
-                    alt={product.name}
+                    src={enamelImage}
+                    alt={
+                      language === "sv" ? "Emaljprodukter" : "Enamel products"
+                    }
                   />
-                )}
-              </div>
+                </div>
 
-              <div className="product-card-info">
-                <h3>{product.name}</h3>
+                <h2>{language === "sv" ? "Emalj" : "Enamel"}</h2>
+              </NavLink>
+            </div>
+          </div>
+        )}
 
-                <p>{product.description}</p>
+        {/* ========================================
+          EMALJ STARTVY
+          Visas när man går till /produkter/emalj
+      ======================================== */}
+        {kategori === "emalj" && !produkttyp && (
+          <div className="enamel-category-view">
+            <h1>{language === "sv" ? "Emaljprodukter" : "Enamel products"}</h1>
 
-                <span className="product-card-price">
-                  {product.base_price} SEK
-                </span>
-
-                {product.is_out_of_stock && (
-                  <span className="product-card-stock">
-                    {language === "sv" ? "Ej i lager" : "Out of stock"}
-                  </span>
-                )}
-              </div>
-            </NavLink>
-          ))}
-
-          {visibleProducts.length === 0 && (
             <p>
               {language === "sv"
-                ? "Inga produkter hittades."
-                : "No products found."}
+                ? "Här hittar du både färdiga standardprodukter och emaljprodukter som du kan sätta din egen prägel på."
+                : "Here you can find both finished standard products and enamel products that you can personalise."}
             </p>
-          )}
-        </div>
 
-        {/* PAGINATION */}
-        {totalPages > 1 && (
-          <div className="pagination">
-            <button
-              className="pagination-btn"
-              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-              disabled={currentPage === 1}
-            >
-              ‹
-            </button>
+            <div className="enamel-category-buttons">
+              <NavLink
+                to="/produkter/emalj/egen-design"
+                className="enamel-category-button"
+              >
+                {language === "sv" ? "Egen design" : "Custom design"}
+              </NavLink>
 
-            {getPaginationPages(currentPage, totalPages).map((item, index) => {
-              if (item === "...") {
-                return (
-                  <span key={`dots-${index}`} className="pagination-dots">
-                    ...
-                  </span>
-                );
-              }
-
-              return (
-                <button
-                  key={item}
-                  className={`pagination-btn ${
-                    currentPage === item ? "active" : ""
-                  }`}
-                  onClick={() => setCurrentPage(item)}
-                >
-                  {item}
-                </button>
-              );
-            })}
-
-            <button
-              className="pagination-btn"
-              onClick={() =>
-                setCurrentPage((page) => Math.min(totalPages, page + 1))
-              }
-              disabled={currentPage === totalPages}
-            >
-              ›
-            </button>
+              <NavLink
+                to="/produkter/emalj/standardprodukter"
+                className="enamel-category-button"
+              >
+                {language === "sv" ? "Standardprodukter" : "Standard products"}
+              </NavLink>
+            </div>
           </div>
+        )}
+
+        {/* ========================================
+          PRODUKTVY
+          Visas först när Egen design eller
+          Standardprodukter har valts
+      ======================================== */}
+        {kategori === "emalj" && produkttyp && (
+          <>
+            <div className="products-header">
+              <h1>{pageTitle}</h1>
+
+              <p>
+                {language === "sv"
+                  ? `${filteredProducts.length} produkter`
+                  : `${filteredProducts.length} products`}
+              </p>
+            </div>
+
+            {/* PRODUKTGRID */}
+            <div
+              className={`products-grid products-grid-${Math.min(
+                visibleProducts.length,
+                3,
+              )}`}
+            >
+              {visibleProducts.map((product) => (
+                <NavLink
+                  to={`/produkt/${product.id}`}
+                  key={product.id}
+                  className="product-card"
+                >
+                  <div className="product-card-img">
+                    {product.images?.[0] && (
+                      <img
+                        src={`https://www.bymarcel.se${product.images[0]}`}
+                        alt={product.name}
+                      />
+                    )}
+                  </div>
+
+                  <div className="product-card-info">
+                    <h3>{product.name}</h3>
+
+                    <p>{product.description}</p>
+
+                    <span className="product-card-price">
+                      {product.base_price} SEK
+                    </span>
+
+                    {product.is_out_of_stock && (
+                      <span className="product-card-stock">
+                        {language === "sv" ? "Ej i lager" : "Out of stock"}
+                      </span>
+                    )}
+                  </div>
+                </NavLink>
+              ))}
+
+              {visibleProducts.length === 0 && (
+                <p>
+                  {language === "sv"
+                    ? "Inga produkter hittades."
+                    : "No products found."}
+                </p>
+              )}
+            </div>
+
+            {/* PAGINATION */}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button
+                  className="pagination-btn"
+                  onClick={() =>
+                    setCurrentPage((page) => Math.max(1, page - 1))
+                  }
+                  disabled={currentPage === 1}
+                >
+                  ‹
+                </button>
+
+                {getPaginationPages(currentPage, totalPages).map(
+                  (item, index) => {
+                    if (item === "...") {
+                      return (
+                        <span key={`dots-${index}`} className="pagination-dots">
+                          ...
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={item}
+                        className={`pagination-btn ${
+                          currentPage === item ? "active" : ""
+                        }`}
+                        onClick={() => setCurrentPage(item)}
+                      >
+                        {item}
+                      </button>
+                    );
+                  },
+                )}
+
+                <button
+                  className="pagination-btn"
+                  onClick={() =>
+                    setCurrentPage((page) => Math.min(totalPages, page + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  ›
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
