@@ -3,97 +3,113 @@
     top: 0;
     left: 0;
     right: 0;
+
     z-index: 100;
+
     display: flex;
     align-items: center;
-    flex-direction: row;
     justify-content: space-between;
-    padding: 1rem 2.5rem;
-    background: #0a0a0a;
-    border-bottom: 0.5px solid rgba(201, 168, 76, 0.2);
 
+    padding: 1rem 2.5rem;
+
+    background: #0a0a0a;
+
+    border-bottom:
+        0.5px solid rgba(201, 168, 76, 0.2);
 }
+
+
+/* LOGGA */
 
 .header__logo {
+    flex-shrink: 0;
+
     font-family: var(--font-serif);
+
     font-size: 1.5rem;
     font-weight: 300;
+
     letter-spacing: 0.25rem;
+
     color: var(--gold);
+
     text-transform: uppercase;
     text-decoration: none;
-
 }
+
+
+/* MENY */
+
+.header__menu {
+    display: flex;
+    align-items: center;
+
+    gap: 3rem;
+}
+
+
+/* NAVIGATION */
 
 .header__nav {
     display: flex;
-    flex-direction: row;
-    gap: 3rem;
-    list-style: none;
+    align-items: center;
 
+    gap: 3rem;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
 }
 
 .header__nav a {
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 650;
-  letter-spacing: 0.16rem;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  transition: color 0.2s ease;
-  list-style: none;
-  padding-right: 2rem;
+    font-family: var(--font-sans);
+
+    font-size: 0.85rem;
+    font-weight: 650;
+
+    letter-spacing: 0.16rem;
+
+    text-transform: uppercase;
+
+    color: rgba(255, 255, 255, 0.7);
+
+    text-decoration: none;
+
+    transition: color 0.2s ease;
 }
 
 .header__nav a:hover {
-  color: var(--gold);
-}
-.header__nav a.active {
-  color: var(--gold);
-}
-
-.header__cart {
-    display: flex; 
-    align-items: center;
-    gap: 0.5rem;
-    background: none;
-    border: 0.06rem solid var(--gold);
-    color: rgba(255, 255, 255, 0.7);
-    font-family: var(--font-sans);
-    font-size: 0.625rem;
-    letter-spacing: 0.125rem;
-    text-transform: uppercase;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    border-radius: 0.25rem;
-    transition: all 0.2s ease;
-
-}
-
-.header_cart:hover {
-    background: rgba(201, 168, 76, 0.2);
     color: var(--gold);
 }
 
-.header_cart-icon {
-    font-size: 1rem;
-    color: var(--gold)
+.header__nav a.active {
+    color: var(--gold);
 }
+
+
+/* HÖGER DEL */
 
 .header__right {
     display: flex;
     align-items: center;
+
     gap: 1.5rem;
 }
+
+
+/* SPRÅK */
 
 .header__language {
     display: flex;
     align-items: center;
+
     gap: 0.35rem;
 
     font-family: var(--font-sans);
+
     font-size: 0.625rem;
+
     letter-spacing: 0.1rem;
 
     color: rgba(255, 255, 255, 0.4);
@@ -106,8 +122,10 @@
     border: none;
 
     font-family: var(--font-sans);
+
     font-size: 0.625rem;
     font-weight: 600;
+
     letter-spacing: 0.1rem;
 
     color: rgba(255, 255, 255, 0.5);
@@ -117,10 +135,239 @@
     transition: color 0.2s ease;
 }
 
-.header__language button:hover {
+.header__language button:hover,
+.header__language button.active {
     color: var(--gold);
 }
 
-.header__language button.active {
+
+/* KUNDKORG */
+
+.header__cart-button {
+    display: flex;
+    align-items: center;
+
+    gap: 0.5rem;
+
+    border: 0.0625rem solid var(--gold);
+
+    color: rgba(255, 255, 255, 0.7);
+
+    font-family: var(--font-sans);
+
+    font-size: 0.7rem;
+
+    letter-spacing: 0.1rem;
+
+    text-transform: uppercase;
+    text-decoration: none;
+
+    padding: 0.5rem 1rem;
+
+    border-radius: 0.25rem;
+
+    white-space: nowrap;
+
+    transition: all 0.2s ease;
+}
+
+.header__cart-button:hover {
+    background: rgba(201, 168, 76, 0.2);
+
     color: var(--gold);
+}
+
+.header__cart-icon {
+    font-size: 1rem;
+}
+
+
+/* BURGERKNAPP - DOLD PÅ DESKTOP */
+
+.header__burger {
+    display: none;
+
+    width: 2rem;
+    height: 2rem;
+
+    padding: 0;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.3rem;
+
+    background: none;
+    border: none;
+
+    cursor: pointer;
+}
+
+.header__burger span {
+    width: 1.5rem;
+    height: 0.1rem;
+
+    background: var(--gold);
+
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+
+/* BURGER → X */
+
+.header__burger.open span:nth-child(1) {
+    transform: translateY(0.4rem) rotate(45deg);
+}
+
+.header__burger.open span:nth-child(2) {
+    opacity: 0;
+}
+
+.header__burger.open span:nth-child(3) {
+    transform: translateY(-0.4rem) rotate(-45deg);
+}
+
+
+/* TABLET */
+
+@media (max-width: 1000px) {
+
+    .header {
+        padding: 1rem 1.5rem;
+    }
+
+    .header__menu {
+        gap: 1.5rem;
+    }
+
+    .header__nav {
+        gap: 1.5rem;
+    }
+
+    .header__nav a {
+        font-size: 0.75rem;
+        letter-spacing: 0.1rem;
+    }
+}
+
+
+/* MOBIL */
+
+@media (max-width: 750px) {
+
+    .header {
+        padding: 0.9rem 1rem;
+    }
+
+
+    /* Loggan måste få plats */
+
+    .header__logo {
+        font-size: 1.15rem;
+
+        letter-spacing: 0.18rem;
+    }
+
+
+    /* Visa burger */
+
+    .header__burger {
+        display: flex;
+
+        position: relative;
+
+        z-index: 102;
+    }
+
+
+    /* Dropdown */
+
+    .header__menu {
+        position: absolute;
+
+        top: 100%;
+        left: 0;
+        right: 0;
+
+        display: none;
+
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 0;
+
+        padding: 1rem;
+
+        background: #0a0a0a;
+
+        border-top:
+            0.0625rem solid rgba(201, 168, 76, 0.15);
+
+        border-bottom:
+            0.0625rem solid rgba(201, 168, 76, 0.25);
+    }
+
+    .header__menu--open {
+        display: flex;
+    }
+
+
+    /* Menylänkar */
+
+    .header__nav {
+        width: 100%;
+
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 0;
+    }
+
+    .header__nav li {
+        width: 100%;
+    }
+
+    .header__nav a {
+        display: block;
+
+        width: 100%;
+
+        padding: 1rem 0.5rem;
+
+        font-size: 0.8rem;
+
+        border-bottom:
+            0.0625rem solid rgba(255, 255, 255, 0.06);
+    }
+
+
+    /* Språk + kundkorg */
+
+    .header__right {
+        width: 100%;
+
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 1rem;
+
+        padding-top: 1rem;
+    }
+
+    .header__language {
+        padding: 0.5rem;
+
+        justify-content: flex-start;
+    }
+
+    .header__cart-button {
+        width: 100%;
+
+        justify-content: center;
+
+        box-sizing: border-box;
+    }
 }

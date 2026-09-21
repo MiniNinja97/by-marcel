@@ -779,22 +779,180 @@
 
 @media (max-width: 550px) {
 
-    .products-main {
-        padding: 2rem 1rem;
-    }
+    .products {
+        width: 100%;
+        max-width: 100%;
 
-    .products-sidebar {
-        padding: 1.5rem 1rem;
-    }
-
-    .products-grid {
         grid-template-columns: 1fr;
 
-        padding: 1rem;
+        overflow: visible;
+    }
+
+
+    /* PRODUKTMENY - FÖLJER MED VID SCROLL */
+
+    .products-sidebar {
+        position: sticky;
+
+        /*
+          Headern ligger fixed.
+          Därför placerar vi produktmenyn direkt under den.
+        */
+        top: 3.8rem;
+
+        z-index: 50;
+
+        width: 100%;
+        max-width: 100%;
+
+        box-sizing: border-box;
+
+        padding: 0.8rem 1rem;
+
+        gap: 0.8rem;
+
+        background: rgba(5, 5, 5, 0.97);
+
+        border-right: none;
+
+        border-bottom:
+            0.0625rem solid rgba(201, 168, 76, 0.25);
+
+        /*
+          Om många kategorier öppnas får själva
+          produktmenyn scroll i stället för att
+          täcka hela mobilen.
+        */
+        max-height: 45vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+
+    /* Lite mindre text i produktmenyn */
+
+    .sidebar-category-link {
+        font-size: 1rem;
+    }
+
+    .sidebar-type-link {
+        font-size: 0.9rem;
+    }
+
+    .sidebar-sub-link {
+        font-size: 0.8rem;
+        line-height: 1.3;
+    }
+
+    .sidebar-product-types {
+        gap: 0.8rem;
+    }
+
+    .sidebar-product-type {
+        gap: 0.5rem;
+    }
+
+    .sidebar-subcategories {
+        gap: 0.4rem;
+    }
+
+
+    /* HUVUDINNEHÅLL */
+
+    .products-main {
+        width: 100%;
+        max-width: 100%;
+
+        box-sizing: border-box;
+
+        padding: 1.5rem 0.75rem;
+
+        gap: 1.5rem;
     }
 
     .products-header h1 {
-        font-size: 2rem;
+        font-size: 1.7rem;
     }
 
+    .products-header p {
+        font-size: 0.9rem;
+    }
+
+
+    /* TVÅ PRODUKTER PER RAD */
+
+    .products-grid,
+    .products-grid-1,
+    .products-grid-2,
+    .products-grid-3 {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 0.65rem;
+
+        width: 100%;
+
+        padding: 0.65rem;
+
+        box-sizing: border-box;
+    }
+
+
+    /* PRODUKTKORT */
+
+    .product-card {
+        min-width: 0;
+
+        gap: 0.5rem;
+
+        padding: 0.45rem;
+    }
+
+    .product-card-img {
+        width: 100%;
+
+        aspect-ratio: 1 / 1;
+    }
+
+    .product-card-info {
+        gap: 0.3rem;
+
+        padding: 0.25rem 0.15rem 0.35rem;
+    }
+
+    .product-card-info h3 {
+        font-size: 0.85rem;
+
+        line-height: 1.25;
+    }
+
+    .product-card-info p {
+        font-size: 0.7rem;
+
+        line-height: 1.4;
+
+        -webkit-line-clamp: 2;
+    }
+
+    .product-card-price {
+        font-size: 0.8rem;
+    }
+
+    .product-card-stock {
+        font-size: 0.6rem;
+    }
+
+
+    /* PAGINATION */
+
+    .pagination {
+        gap: 0.3rem;
+    }
+
+    .pagination-btn {
+        width: 2.2rem;
+        height: 2.2rem;
+
+        font-size: 0.75rem;
+    }
 }

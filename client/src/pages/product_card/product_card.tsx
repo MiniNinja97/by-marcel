@@ -29,6 +29,7 @@ export default function Product() {
 
   const [quantity, setQuantity] = useState(1);
   const [cartError, setCartError] = useState("");
+  const [showCartConfirmation, setShowCartConfirmation] = useState(false);
 
   const [backgroundColor, setBackgroundColor] = useState<ProductColor | null>(
     null,
@@ -361,6 +362,12 @@ export default function Product() {
       selected_options: isCustomEnamel ? selectedOptions : {},
     });
 
+    setShowCartConfirmation(true);
+
+    setTimeout(() => {
+      setShowCartConfirmation(false);
+    }, 2500);
+
     setSelectedOptions({});
     setBackgroundColor(null);
     setPrintColor(null);
@@ -404,6 +411,15 @@ export default function Product() {
 
   return (
     <div className="product-page">
+      {showCartConfirmation && (
+        <div className="cart-confirmation">
+          ✓{" "}
+          {language === "sv"
+            ? "Har lagts till i kundkorgen"
+            : "Has been added to the cart"}
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <nav className="breadcrumb">
         <NavLink to="/produkter">
@@ -500,64 +516,74 @@ export default function Product() {
               );
             })}
 
-             {/* Bilduppladdning */}
-          {isCustomEnamel && product.allows_custom_photo && (
-            <div className="product-option">
-              <label>
-                {language === "sv" ? "Infoga bild" : "Upload image"}
-              </label>
+          {/* Bilduppladdning */}
+          {isCustomEnamel &&
+            product.allows_custom_photo &&
+            (!product.upload_fields || product.upload_fields.length === 0) && (
+              <div className="product-option">
+                <label>
+                  {language === "sv" ? "Infoga bild" : "Upload image"}
+                </label>
 
-              <label className="upload-btn">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) =>
-                    setCustomPhoto(event.target.files?.[0] ?? null)
-                  }
-                />
-                📎
-              </label>
+                <label className="upload-btn">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) =>
+                      setCustomPhoto(event.target.files?.[0] ?? null)
+                    }
+                  />
+                  📎
+                </label>
 
-              {customPhoto && (
-                <p className="upload-filename">{customPhoto.name}</p>
-              )}
-            </div>
-          )}
+                {customPhoto && (
+                  <p className="upload-filename">{customPhoto.name}</p>
+                )}
+              </div>
+            )}
 
           {/* Dynamiska uppladdningsfält */}
           {isCustomEnamel &&
             product.upload_fields?.map((field) => (
               <div className="product-option" key={field.id}>
-                <label>{field.display_name}</label>
+                {Array.from({ length: field.max_files }).map((_, index) => {
+                  const fileKey = `${field.field_name}_${index}`;
 
-                <label className="upload-btn">
-                  <input
-                    type="file"
-                    accept={field.allowed_extensions
-                      .split(",")
-                      .map((extension) => `.${extension.trim()}`)
-                      .join(",")}
-                    multiple={field.max_files > 1}
-                    onChange={(event) => {
-                      const files = Array.from(event.target.files ?? []).slice(
-                        0,
-                        field.max_files,
-                      );
+                  return (
+                    <div className="product-upload-field" key={fileKey}>
+                      <label>
+                        {field.max_files > 1
+                          ? `${field.display_name} ${index + 1}`
+                          : field.display_name}
+                      </label>
 
-                      setUploadFiles((previous) => ({
-                        ...previous,
-                        [field.field_name]: files,
-                      }));
-                    }}
-                  />
-                  📎
-                </label>
+                      <label className="upload-btn">
+                        <input
+                          type="file"
+                          accept={field.allowed_extensions
+                            .split(",")
+                            .map((extension) => `.${extension.trim()}`)
+                            .join(",")}
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
 
-                {uploadFiles[field.field_name]?.map((file) => (
-                  <p className="upload-filename" key={file.name}>
-                    {file.name}
-                  </p>
-                ))}
+                            setUploadFiles((previous) => ({
+                              ...previous,
+                              [fileKey]: file ? [file] : [],
+                            }));
+                          }}
+                        />
+                        📎
+                      </label>
+
+                      {uploadFiles[fileKey]?.[0] && (
+                        <p className="upload-filename">
+                          {uploadFiles[fileKey][0].name}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             ))}
 
@@ -717,8 +743,6 @@ export default function Product() {
                 : "The selected combination is not available."}
             </p>
           )}
-
-          
 
           {/* Antal */}
           <div className="product-option">

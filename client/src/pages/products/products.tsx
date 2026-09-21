@@ -275,7 +275,7 @@ export default function Products() {
   */
   useEffect(() => {
     setCurrentPage(1);
-  }, [kategori, underkategori]);
+  }, [kategori, produkttyp, underkategori]);
 
   /*
     FILTRERING

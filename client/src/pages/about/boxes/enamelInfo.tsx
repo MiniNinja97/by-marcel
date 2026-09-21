@@ -1,4 +1,4 @@
-import { useLanguage } from "../../../context/languageContext";
+
 import { Link } from "react-router-dom";
 import "./enamelInfo.css";
 

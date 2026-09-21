@@ -29,13 +29,13 @@ export default function About() {
           </div>
         </div>
 
-        <div className="box-2">
+        {/* <div className="box-2">
           <div className="box-img">{language === "sv" ? "Bild" : "Image"}</div>
 
           <div className="box-text">
             {language === "sv" ? "Text om oss" : "Text about us"}
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="img-boxes">

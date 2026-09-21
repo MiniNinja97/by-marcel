@@ -35,7 +35,7 @@
 
 .about-boxes {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 1.5rem;
 }
 
@@ -152,4 +152,76 @@
     text-decoration: none;
     color: inherit;
     cursor: pointer;
+}
+
+/* MOBIL */
+
+@media (max-width: 550px) {
+
+    .about {
+        width: 100%;
+        max-width: 100%;
+
+        box-sizing: border-box;
+
+        padding: 3rem 1rem;
+
+        gap: 2.5rem;
+
+        overflow-x: hidden;
+    }
+
+
+    /* INTRO */
+
+    .about-start h2 {
+        font-size: 2rem;
+    }
+
+
+    /* STORA BOXAR */
+
+    .about-boxes {
+        grid-template-columns: 1fr;
+
+        gap: 1rem;
+    }
+
+    .box-1 .box-text,
+    .box-2 .box-text {
+        padding: 1.25rem;
+    }
+
+
+    /* SEX MINDRE RUTOR - TVÅ PER RAD */
+
+    .img-boxes {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 0.75rem;
+    }
+
+    .imgbox-1,
+    .imgbox-2,
+    .imgbox-3,
+    .imgbox-4,
+    .imgbox-5,
+    .imgbox-6 {
+        min-width: 0;
+    }
+
+    .imgbox-info {
+        min-width: 0;
+    }
+
+    .imgbox-info h3 {
+        font-size: 0.7rem;
+    }
+
+    .imgbox-info p {
+        font-size: 0.6rem;
+
+        line-height: 1.5;
+    }
 }
