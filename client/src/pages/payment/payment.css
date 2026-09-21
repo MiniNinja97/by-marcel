@@ -79,7 +79,8 @@
     color: var(--text-muted);
 }
 
-.payment-field input {
+.payment-field input,
+.payment-field select {
     width: 100%;
     box-sizing: border-box;
     background: rgba(255, 255, 255, 0.03);
@@ -93,8 +94,18 @@
     transition: border-color 0.2s ease;
 }
 
-.payment-field input:focus {
+.payment-field input:focus,
+.payment-field select:focus {
     border-color: var(--gold);
+}
+
+.payment-field select {
+    cursor: pointer;
+}
+
+.payment-field select option {
+    background: var(--bg-card);
+    color: var(--text);
 }
 
 
