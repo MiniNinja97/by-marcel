@@ -51,7 +51,12 @@ if ($result) {
         // =========================================
 
         $optionSql = "
-            SELECT id, option_name, display_name, sort_order
+            SELECT
+                id,
+                option_name,
+                display_name,
+                display_name_en,
+                sort_order
             FROM product_options
             WHERE product_id = ?
             ORDER BY sort_order ASC
@@ -70,7 +75,11 @@ if ($result) {
             $optionId = $option["id"];
 
             $valueSql = "
-                SELECT value, display_value, sort_order
+                SELECT
+                    value,
+                    display_value,
+                    display_value_en,
+                    sort_order
                 FROM product_option_values
                 WHERE option_id = ?
                 ORDER BY sort_order ASC
@@ -105,17 +114,19 @@ if ($result) {
         // =========================================
 
         $textFieldSql = "
-            SELECT
-                id,
-                field_name,
-                display_name,
-                placeholder,
-                max_length,
-                sort_order
-            FROM product_text_fields
-            WHERE product_id = ?
-            ORDER BY sort_order ASC
-        ";
+    SELECT
+        id,
+        field_name,
+        display_name,
+        display_name_en,
+        placeholder,
+        placeholder_en,
+        max_length,
+        sort_order
+    FROM product_text_fields
+    WHERE product_id = ?
+    ORDER BY sort_order ASC
+";
 
         $textFieldStmt = $conn->prepare($textFieldSql);
         $textFieldStmt->bind_param("s", $productId);
@@ -133,16 +144,18 @@ if ($result) {
 
         $textFieldStmt->close();
 
-        // =========================================
-// UPPLADDNINGSFÄLT
-// Exempel: bilder, skiss, logotyp
-// =========================================
 
-$uploadFieldSql = "
+        // =========================================
+        // UPPLADDNINGSFÄLT
+        // Exempel: bilder, skiss, logotyp
+        // =========================================
+
+       $uploadFieldSql = "
     SELECT
         id,
         field_name,
         display_name,
+        display_name_en,
         max_files,
         allowed_extensions,
         sort_order
@@ -151,33 +164,35 @@ $uploadFieldSql = "
     ORDER BY sort_order ASC
 ";
 
-$uploadFieldStmt = $conn->prepare($uploadFieldSql);
-$uploadFieldStmt->bind_param("s", $productId);
-$uploadFieldStmt->execute();
+        $uploadFieldStmt = $conn->prepare($uploadFieldSql);
+        $uploadFieldStmt->bind_param("s", $productId);
+        $uploadFieldStmt->execute();
 
-$uploadFieldResult = $uploadFieldStmt->get_result();
+        $uploadFieldResult = $uploadFieldStmt->get_result();
 
-$uploadFields = [];
+        $uploadFields = [];
 
-while ($uploadField = $uploadFieldResult->fetch_assoc()) {
-    $uploadField["max_files"] = (int) $uploadField["max_files"];
-    $uploadFields[] = $uploadField;
-}
+        while ($uploadField = $uploadFieldResult->fetch_assoc()) {
+            $uploadField["max_files"] = (int) $uploadField["max_files"];
+            $uploadFields[] = $uploadField;
+        }
 
-$row["upload_fields"] = $uploadFields;
+        $row["upload_fields"] = $uploadFields;
 
-$uploadFieldStmt->close();
+        $uploadFieldStmt->close();
+
 
         // =========================================
-// FÄRGER
-// Bakgrundsfärg + tryckfärg
-// =========================================
+        // FÄRGER
+        // Bakgrundsfärg + tryckfärg
+        // =========================================
 
-$colorSql = "
+      $colorSql = "
     SELECT
         pc.id,
         pc.ral_code,
         pc.name,
+        pc.name_en,
         pc.rgb,
         pc.hex,
         pc.category,
@@ -192,94 +207,96 @@ $colorSql = "
     ORDER BY pc.id ASC
 ";
 
-$colorStmt = $conn->prepare($colorSql);
-$colorStmt->bind_param("s", $productId);
-$colorStmt->execute();
+        $colorStmt = $conn->prepare($colorSql);
+        $colorStmt->bind_param("s", $productId);
+        $colorStmt->execute();
 
-$colorResult = $colorStmt->get_result();
+        $colorResult = $colorStmt->get_result();
 
-$colors = [];
+        $colors = [];
 
-while ($color = $colorResult->fetch_assoc()) {
+        while ($color = $colorResult->fetch_assoc()) {
 
-    // Priser kommer annars från MySQL som text, t.ex. "70.00".
-    // Vi gör dem till riktiga nummer.
-    $color["background_price"] = (float) $color["background_price"];
-    $color["print_price"] = (float) $color["print_price"];
+            // Priser kommer annars från MySQL som text, t.ex. "70.00".
+            // Vi gör dem till riktiga nummer.
+            $color["background_price"] = (float) $color["background_price"];
+            $color["print_price"] = (float) $color["print_price"];
 
-    $colors[] = $color;
-}
+            $colors[] = $color;
+        }
 
-$row["colors"] = $colors;
+        $row["colors"] = $colors;
 
-$colorStmt->close();
-
-
-       // =========================================
-// VARIANTER / LEVERANTÖRSARTIKLAR
-// =========================================
-
-$variantSql = "
-    SELECT id, supplier_id, price, weight, options
-    FROM product_variants
-    WHERE product_id = ?
-";
-
-$variantStmt = $conn->prepare($variantSql);
-$variantStmt->bind_param("s", $productId);
-$variantStmt->execute();
-
-$variantResult = $variantStmt->get_result();
-
-$variants = [];
-
-while ($variant = $variantResult->fetch_assoc()) {
-
-    // Gör JSON-options till en PHP-array
-    $variant["options"] = json_decode(
-        $variant["options"],
-        true
-    );
-
-    $variantId = $variant["id"];
+        $colorStmt->close();
 
 
-    // =========================================
-    // BILDER FÖR DENNA VARIANT
-    // =========================================
+        // =========================================
+        // VARIANTER / LEVERANTÖRSARTIKLAR
+        // =========================================
 
-    $variantImageSql = "
-        SELECT image_url
-        FROM product_variant_images
-        WHERE variant_id = ?
-        ORDER BY sort_order ASC
-    ";
+        $variantSql = "
+            SELECT id, supplier_id, price, weight, options
+            FROM product_variants
+            WHERE product_id = ?
+        ";
 
-    $variantImageStmt = $conn->prepare($variantImageSql);
-    $variantImageStmt->bind_param("s", $variantId);
-    $variantImageStmt->execute();
+        $variantStmt = $conn->prepare($variantSql);
+        $variantStmt->bind_param("s", $productId);
+        $variantStmt->execute();
 
-    $variantImageResult = $variantImageStmt->get_result();
+        $variantResult = $variantStmt->get_result();
 
-    $variantImages = [];
+        $variants = [];
 
-    while ($variantImage = $variantImageResult->fetch_assoc()) {
-        $variantImages[] = $variantImage["image_url"];
-    }
+        while ($variant = $variantResult->fetch_assoc()) {
 
-    $variant["images"] = $variantImages;
+            // Gör JSON-options till en PHP-array
+            $variant["options"] = json_decode(
+                $variant["options"],
+                true
+            );
 
-    $variantImageStmt->close();
+            $variantId = $variant["id"];
 
 
-    // Lägg till färdig variant
-    $variants[] = $variant;
-}
+            // =========================================
+            // BILDER FÖR DENNA VARIANT
+            // =========================================
 
-$row["variants"] = $variants;
+            $variantImageSql = "
+                SELECT image_url
+                FROM product_variant_images
+                WHERE variant_id = ?
+                ORDER BY sort_order ASC
+            ";
 
-$variantStmt->close();
+            $variantImageStmt = $conn->prepare($variantImageSql);
+            $variantImageStmt->bind_param("s", $variantId);
+            $variantImageStmt->execute();
 
+            $variantImageResult = $variantImageStmt->get_result();
+
+            $variantImages = [];
+
+            while ($variantImage = $variantImageResult->fetch_assoc()) {
+                $variantImages[] = $variantImage["image_url"];
+            }
+
+            $variant["images"] = $variantImages;
+
+            $variantImageStmt->close();
+
+
+            // Lägg till färdig variant
+            $variants[] = $variant;
+        }
+
+        $row["variants"] = $variants;
+
+        $variantStmt->close();
+
+
+        // Lägg till färdig produkt
         $products[] = $row;
     }
 }

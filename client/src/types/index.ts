@@ -6,9 +6,15 @@ export interface Product {
   id: string;
   supplier_id?: string;
   name: string;
+  name_en?: string;
+
   slug: string;
+
   description: string;
+  description_en?: string;
+
   material: string;
+  material_en?: string;
   type: ProductType;
   base_price: number;
   images: string[];
@@ -26,7 +32,6 @@ export interface Product {
 
   text_fields?: ProductTextField[];
   upload_fields?: ProductUploadField[];
-  
 
   allows_custom_photo: boolean;
   allows_custom_text: boolean;
@@ -41,18 +46,20 @@ export interface Product {
 }
 
 export interface ProductColor {
-    id: number;
-    ral_code: string;
-    name: string;
-    rgb: string;
-    hex: string;
-    category: "Basis" | "Plus" | "Exklusiv";
+  id: number;
+  ral_code: string;
+  name: string;
+  rgb: string;
+  hex: string;
+  category: "Basis" | "Plus" | "Exklusiv";
 
-    background_code: string;
-    background_price: number;
+  background_code: string;
+  background_price: number;
 
-    print_code: string;
-    print_price: number;
+  print_code: string;
+  print_price: number;
+
+  name_en?: string;
 }
 
 /*
@@ -66,6 +73,7 @@ export interface ProductOption {
   id: number;
   option_name: string;
   display_name: string;
+  display_name_en?: string;
   sort_order: number;
   values: ProductOptionChoice[];
 }
@@ -80,6 +88,7 @@ export interface ProductOption {
 export interface ProductOptionChoice {
   value: string;
   display_value: string;
+  display_value_en?: string;
   sort_order: number;
 }
 
@@ -157,8 +166,8 @@ export interface OrderItem {
 
   selected_color?: ProductColor;
 
- selected_background_color?: OrderColor;
-selected_print_color?: OrderColor;
+  selected_background_color?: OrderColor;
+  selected_print_color?: OrderColor;
 
   selected_font?: FontOption;
 
@@ -209,8 +218,13 @@ export interface ProductVariant {
 export interface ProductTextField {
   id: number;
   field_name: string;
+
   display_name: string;
+  display_name_en?: string;
+
   placeholder?: string;
+  placeholder_en?: string;
+
   max_length: number;
   sort_order: number;
 }
@@ -218,7 +232,10 @@ export interface ProductTextField {
 export interface ProductUploadField {
   id: number;
   field_name: string;
+
   display_name: string;
+  display_name_en?: string;
+
   max_files: number;
   allowed_extensions: string;
   sort_order: number;

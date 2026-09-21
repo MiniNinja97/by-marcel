@@ -19,12 +19,15 @@ import ShippingReturns from "./pages/shipping_returns/shipping_returns";
 
 import AdminRoute from "./pages/admin/adminRoute";
 
+import ScrollToTop from "./components/ScrollToTop";
+
 import "./styles/global.css";
 import "./App.css";
 
 export default function App() {
   return (
     <HashRouter>
+      <ScrollToTop />
       <Header />
 
       <main>

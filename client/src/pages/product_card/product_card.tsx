@@ -16,6 +16,8 @@ export default function Product() {
   const [error, setError] = useState("");
 
   const [selectedImage, setSelectedImage] = useState(0);
+  const [galleryImage, setGalleryImage] = useState<string | null>(null);
+  const [galleryDescription, setGalleryDescription] = useState("");
 
   const [selectedOptions, setSelectedOptions] = useState<
     Record<string, string>
@@ -249,10 +251,80 @@ export default function Product() {
     selectedVariant?.images && selectedVariant.images.length > 0
       ? selectedVariant.images
       : (product?.images ?? []);
+  const galleryImages = (() => {
+    if (!product) {
+      return [];
+    }
+
+    const images: {
+      image: string;
+      description: string;
+    }[] = [];
+
+    // Produktens vanliga startbilder
+    product.images?.forEach((image) => {
+      images.push({
+        image,
+        description:
+          language === "sv" ? product.name : product.name_en || product.name,
+      });
+    });
+
+    // Alla variantbilder
+    product.variants?.forEach((variant) => {
+      variant.images?.forEach((image) => {
+        // Lägg inte till samma bild flera gånger
+        if (images.some((item) => item.image === image)) {
+          return;
+        }
+
+        const optionDescription = product.options
+          ?.map((option) => {
+            const value = variant.options[option.option_name];
+
+            if (value === undefined || value === null) {
+              return null;
+            }
+
+            const optionValue = option.values.find(
+              (item) => String(item.value) === String(value),
+            );
+
+            const optionName =
+              language === "sv"
+                ? option.display_name
+                : option.display_name_en || option.display_name;
+
+            const optionDisplayValue = optionValue
+              ? language === "sv"
+                ? optionValue.display_value
+                : optionValue.display_value_en || optionValue.display_value
+              : value;
+
+            return `${optionName}: ${optionDisplayValue}`;
+          })
+          .filter(Boolean)
+          .join(" · ");
+
+        images.push({
+          image,
+          description:
+            optionDescription ||
+            (language === "sv"
+              ? product.name
+              : product.name_en || product.name),
+        });
+      });
+    });
+
+    return images;
+  })();
 
   // Byter varianten bild börjar vi på första bilden
   useEffect(() => {
     setSelectedImage(0);
+    setGalleryImage(null);
+    setGalleryDescription("");
   }, [selectedVariant?.id]);
 
   const handleAddToCart = () => {
@@ -275,7 +347,11 @@ export default function Product() {
           ?.filter(
             (option) => selectedOptions[option.option_name] === undefined,
           )
-          .map((option) => option.display_name) ?? [];
+          .map((option) =>
+            language === "sv"
+              ? option.display_name
+              : option.display_name_en || option.display_name,
+          ) ?? [];
 
       if (missingOptions.length > 0) {
         if (language === "sv") {
@@ -427,53 +503,84 @@ export default function Product() {
         </NavLink>
 
         <span>—</span>
-
-        <span>{product.name}</span>
+        <span>
+          {language === "sv" ? product.name : product.name_en || product.name}
+        </span>
       </nav>
 
       <div className="product-layout">
         {/* Vänster — bilder + beskrivning */}
         <div className="product-left">
+          {/* Vänster — bilder + beskrivning */}
           <div className="product-main-img">
-            {displayedImages[selectedImage] ? (
+            {galleryImage || displayedImages[selectedImage] ? (
               <img
-                src={`https://www.bymarcel.se${displayedImages[selectedImage]}`}
-                alt={product.name}
+                src={`https://www.bymarcel.se${
+                  galleryImage ?? displayedImages[selectedImage]
+                }`}
+                alt={
+                  galleryDescription ||
+                  (language === "sv"
+                    ? product.name
+                    : product.name_en || product.name)
+                }
               />
             ) : (
               <div className="product-img-placeholder" />
             )}
           </div>
 
-          {/* Små produktbilder */}
-          {displayedImages.length > 1 && (
+          {/* Beskrivning av vald galleribild */}
+          {galleryDescription && (
+            <p className="product-image-description">{galleryDescription}</p>
+          )}
+
+          {/* Produktgalleri */}
+          {galleryImages.length > 1 && (
             <div className="product-thumbnails">
-              {displayedImages.map((image, index) => (
-                <div
-                  key={index}
+              {galleryImages.map((item, index) => (
+                <button
+                  type="button"
+                  key={`${item.image}-${index}`}
                   className={`product-thumbnail ${
-                    selectedImage === index ? "active" : ""
+                    galleryImage === item.image ? "active" : ""
                   }`}
-                  onClick={() => setSelectedImage(index)}
+                  onClick={() => {
+                    setGalleryImage(item.image);
+                    setGalleryDescription(item.description);
+                  }}
+                  title={item.description}
                 >
                   <img
-                    src={`https://www.bymarcel.se${image}`}
-                    alt={`${product.name} ${index + 1}`}
+                    src={`https://www.bymarcel.se${item.image}`}
+                    alt={item.description}
                   />
-                </div>
+                </button>
               ))}
             </div>
           )}
 
-          <p className="product-description">{product.description}</p>
+          <p className="product-description">
+            {language === "sv"
+              ? product.description
+              : product.description_en || product.description}
+          </p>
         </div>
 
         {/* Höger — info + val */}
         <div className="product-right">
           <div className="product-info">
-            <h1 className="product-name">{product.name}</h1>
+            <h1 className="product-name">
+              {language === "sv"
+                ? product.name
+                : product.name_en || product.name}
+            </h1>
 
-            <p className="product-technique">{product.material}</p>
+            <p className="product-technique">
+              {language === "sv"
+                ? product.material
+                : product.material_en || product.material}
+            </p>
           </div>
 
           {/* Pris */}
@@ -492,7 +599,11 @@ export default function Product() {
 
               return (
                 <div className="product-option" key={option.id}>
-                  <label>{option.display_name}</label>
+                  <label>
+                    {language === "sv"
+                      ? option.display_name
+                      : option.display_name_en || option.display_name}
+                  </label>
 
                   <select
                     value={selectedOptions[option.option_name] ?? ""}
@@ -503,12 +614,14 @@ export default function Product() {
                     <option value="" disabled>
                       {language === "sv"
                         ? `Välj ${option.display_name.toLowerCase()}`
-                        : `Select ${option.display_name.toLowerCase()}`}
+                        : `Select ${(option.display_name_en || option.display_name).toLowerCase()}`}
                     </option>
 
                     {filteredValues.map((value) => (
                       <option key={value.value} value={value.value}>
-                        {value.display_value}
+                        {language === "sv"
+                          ? value.display_value
+                          : value.display_value_en || value.display_value}
                       </option>
                     ))}
                   </select>
@@ -553,8 +666,14 @@ export default function Product() {
                     <div className="product-upload-field" key={fileKey}>
                       <label>
                         {field.max_files > 1
-                          ? `${field.display_name} ${index + 1}`
-                          : field.display_name}
+                          ? `${
+                              language === "sv"
+                                ? field.display_name
+                                : field.display_name_en || field.display_name
+                            } ${index + 1}`
+                          : language === "sv"
+                            ? field.display_name
+                            : field.display_name_en || field.display_name}
                       </label>
 
                       <label className="upload-btn">
@@ -592,7 +711,11 @@ export default function Product() {
             product.allows_custom_text &&
             product.text_fields?.map((field) => (
               <div className="product-option" key={field.id}>
-                <label>{field.display_name}</label>
+                <label>
+                  {language === "sv"
+                    ? field.display_name
+                    : field.display_name_en || field.display_name}
+                </label>
 
                 <div className="gravyr-box">
                   <textarea
@@ -604,7 +727,11 @@ export default function Product() {
                       }))
                     }
                     maxLength={field.max_length}
-                    placeholder={field.placeholder ?? ""}
+                    placeholder={
+                      language === "sv"
+                        ? (field.placeholder ?? "")
+                        : field.placeholder_en || field.placeholder || ""
+                    }
                     rows={2}
                   />
 
@@ -647,7 +774,11 @@ export default function Product() {
                               backgroundColor?.id === color.id ? "selected" : ""
                             }`}
                             onClick={() => setBackgroundColor(color)}
-                            title={`${color.name} (${color.ral_code})`}
+                            title={`${
+                              language === "sv"
+                                ? color.name
+                                : color.name_en || color.name
+                            } (${color.ral_code})`}
                           >
                             <span
                               className="color-swatch"
@@ -657,7 +788,11 @@ export default function Product() {
                             />
 
                             <span className="color-info">
-                              <span className="color-name">{color.name}</span>
+                              <span className="color-name">
+                                {language === "sv"
+                                  ? color.name
+                                  : color.name_en || color.name}
+                              </span>
 
                               <span className="color-details">
                                 {color.ral_code}
@@ -706,7 +841,11 @@ export default function Product() {
                               printColor?.id === color.id ? "selected" : ""
                             }`}
                             onClick={() => setPrintColor(color)}
-                            title={`${color.name} (${color.ral_code})`}
+                            title={`${
+                              language === "sv"
+                                ? color.name
+                                : color.name_en || color.name
+                            } (${color.ral_code})`}
                           >
                             <span
                               className="color-swatch"
@@ -716,7 +855,11 @@ export default function Product() {
                             />
 
                             <span className="color-info">
-                              <span className="color-name">{color.name}</span>
+                              <span className="color-name">
+                                {language === "sv"
+                                  ? color.name
+                                  : color.name_en || color.name}
+                              </span>
 
                               <span className="color-details">
                                 {color.ral_code}

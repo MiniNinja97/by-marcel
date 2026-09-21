@@ -521,25 +521,31 @@ export default function Products() {
                     {product.images?.[0] && (
                       <img
                         src={`https://www.bymarcel.se${product.images[0]}`}
-                        alt={product.name}
+                        alt={
+                          language === "sv"
+                            ? product.name
+                            : product.name_en || product.name
+                        }
                       />
                     )}
                   </div>
 
                   <div className="product-card-info">
-                    <h3>{product.name}</h3>
+                    <h3>
+                      {language === "sv"
+                        ? product.name
+                        : product.name_en || product.name}
+                    </h3>
 
-                    <p>{product.description}</p>
+                    <p>
+                      {language === "sv"
+                        ? product.description
+                        : product.description_en || product.description}
+                    </p>
 
                     <span className="product-card-price">
                       {product.base_price} SEK
                     </span>
-
-                    {product.is_out_of_stock && (
-                      <span className="product-card-stock">
-                        {language === "sv" ? "Ej i lager" : "Out of stock"}
-                      </span>
-                    )}
                   </div>
                 </NavLink>
               ))}
