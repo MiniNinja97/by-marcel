@@ -3,7 +3,8 @@
 .hero {
     position: relative;
 
-    min-height: 100vh;
+    height: 80vh;
+min-height: 35rem;
 
     display: flex;
     align-items: center;
@@ -15,7 +16,7 @@
 }
 
 
-/* HERO-BILDER */
+/* HERO-SLIDES */
 
 .hero-slides {
     position: absolute;
@@ -28,47 +29,151 @@
     position: absolute;
     inset: 0;
 
-    background-size: cover;
-    background-position: center;
-
     opacity: 0;
-
-    animation: heroFade 15s infinite;
 }
 
 
-/* Lägg in riktiga hero-bilder här senare */
+/* SLIDE 1 - INTRO */
 
 .slide-1 {
     background-color: rgba(16, 20, 26, 0.85);
-    animation-delay: 0s;
+    animation: slide1Fade 20s infinite;
 }
+
+.hero-intro-slide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* SLIDE 2 */
 
 .slide-2 {
-    background-color: rgba(16, 20, 26, 0.85);
-    animation-delay: 5s;
+    animation: slide2Fade 15s infinite;
 }
+.brudpar-image {
+    object-fit: contain !important;
+    object-position: center;
+}
+
+/* SLIDE 3 */
 
 .slide-3 {
-    background-color: rgba(16, 20, 26, 0.85);
-    animation-delay: 10s;
+    animation: slide3Fade 15s infinite;
+}
+
+.slide-4 {
+    animation: slide4Fade 15s infinite;
 }
 
 
-@keyframes heroFade {
+
+/* PROMO-SLIDES */
+
+.hero-promo-slide {
+    display: flex;
+
+    width: 100%;
+    height: 100%;
+}
+
+.hero-promo-image {
+    width: 65%;
+    height: 100%;
+}
+
+.hero-promo-text {
+    width: 35%;
+    height: 100%;
+}
+
+.hero-promo-image {
+    overflow: hidden;
+    background: #000;
+}
+
+.hero-promo-image img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+}
+
+.hero-promo-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+
+    padding: 4rem;
+
+    background: #000;
+}
+
+.hero-promo-text h2 {
+    max-width: 32rem;
+
+    margin: 0;
+
+    font-family: var(--font-serif);
+
+    font-size: 2.5rem;
+    font-weight: 300;
+
+    line-height: 1.3;
+
+    color: var(--gold);
+
+    text-align: center;
+}
+
+
+/* HERO-ANIMATION */
+
+@keyframes slide1Fade {
+    0% {
+        opacity: 1;
+    }
+
+    22% {
+        opacity: 1;
+    }
+
+    25% {
+        opacity: 0;
+    }
+
+    97% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes slide2Fade {
     0% {
         opacity: 0;
     }
 
-    8% {
+    22% {
+        opacity: 0;
+    }
+
+    25% {
         opacity: 1;
     }
 
-    33% {
+    47% {
         opacity: 1;
     }
 
-    41% {
+    50% {
         opacity: 0;
     }
 
@@ -77,18 +182,53 @@
     }
 }
 
+@keyframes slide3Fade {
+    0% {
+        opacity: 0;
+    }
 
-/* MÖRK OVERLAY OVANPÅ HERO */
+    47% {
+        opacity: 0;
+    }
 
-.hero-overlay {
-    position: absolute;
-    inset: 0;
+    50% {
+        opacity: 1;
+    }
 
-    background: rgba(0, 0, 0, 0.58);
+    72% {
+        opacity: 1;
+    }
 
-    z-index: 1;
+    75% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
 }
 
+@keyframes slide4Fade {
+    0% {
+        opacity: 0;
+    }
+
+    72% {
+        opacity: 0;
+    }
+
+    75% {
+        opacity: 1;
+    }
+
+    97% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
 
 /* HERO-INNEHÅLL */
 
@@ -108,6 +248,10 @@
     text-align: center;
 
     padding: 2rem;
+}
+
+.launch-info {
+    font-size: 0.85rem;
 }
 
 
@@ -133,6 +277,7 @@
     color: var(--gold);
 
     text-transform: uppercase;
+
     max-width: 50rem;
 }
 
@@ -298,7 +443,7 @@
         rgba(255, 255, 255, 0.07);
 
     border-radius: 0.25rem;
-    
+}
 
 
 /* AVGRÄNSARE */
@@ -448,6 +593,7 @@
     text-decoration: none;
 
     transition: border-color 0.2s ease;
+
     margin-bottom: 4rem;
 }
 
@@ -459,7 +605,9 @@
 .home-product-card img,
 .home-product-image-placeholder {
     width: 100%;
+
     height: auto;
+
     aspect-ratio: 1 / 1;
 
     object-fit: contain;
@@ -496,6 +644,7 @@
     color: var(--gold) !important;
 
     font-size: 1rem !important;
+
     font-weight: bold;
 
     margin-top: 0.4rem;
@@ -535,6 +684,27 @@
         flex-wrap: wrap;
     }
 
+    .hero-promo-slide {
+    flex-direction: column;
+}
+
+.hero-promo-image {
+    width: 100%;
+    height: 65%;
+}
+
+.hero-promo-text {
+    width: 100%;
+    height: 35%;
+    padding: 2rem 1.5rem;
+}
+
+.hero-promo-text h2 {
+    font-size: 2rem;
+    max-width: 35rem;
+}
+
+
 }
 
 
@@ -568,20 +738,24 @@
         padding: 1rem;
     }
 
-} }
+}
+
 
 @media (max-width: 550px) {
 
     .home {
         width: 100%;
         max-width: 100%;
+
         overflow-x: hidden;
     }
 
-    .hero {
-        width: 100%;
-        min-height: 100svh;
-    }
+   .hero {
+    width: 100%;
+
+    height: 75svh;
+    min-height: 35rem;
+}
 
     .hero-content {
         width: 100%;
@@ -601,7 +775,9 @@
 
     .logo img {
         width: min(25rem, 90%);
+
         max-width: 100%;
+
         height: auto;
     }
 
@@ -636,6 +812,34 @@
         padding: 0.8rem 1rem;
     }
 
+
+    /* PROMO-SLIDES PÅ MOBIL */
+
+    /* .hero-promo-slide {
+        flex-direction: column;
+    }
+
+    .hero-promo-image,
+    .hero-promo-text {
+        width: 100%;
+        height: 50%;
+    }
+
+    .hero-promo-text {
+        padding: 2rem 1.25rem;
+    }
+
+    .hero-promo-text h2 {
+        font-size: 1.7rem;
+
+        max-width: 22rem;
+    } */
+
+
+
+    .hero-promo-text h2 {
+    font-size: 1.5rem;
+}
     .home-content {
         width: 100%;
         max-width: 100%;
@@ -669,6 +873,7 @@
 
     .home-product-card {
         width: 100%;
+
         min-width: 0;
 
         box-sizing: border-box;
@@ -677,14 +882,18 @@
     }
 
     .home-product-card img,
-.home-product-image-placeholder {
-    width: 100%;
-    max-width: 100%;
-    aspect-ratio: 1 / 1;
-    height: auto;
+    .home-product-image-placeholder {
+        width: 100%;
 
-    object-fit: contain;
+        max-width: 100%;
 
-    background: #1a1a1a;
-}
+        aspect-ratio: 1 / 1;
+
+        height: auto;
+
+        object-fit: contain;
+
+        background: #1a1a1a;
+    }
+
 }

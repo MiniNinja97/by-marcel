@@ -16,6 +16,13 @@ const categories = [
     slug: "emalj",
     subcategories: [
       {
+  name: {
+    sv: "Företagsskyltar",
+    en: "Company signs",
+  },
+  slug: "foretagsskyltar",
+},
+      {
         name: {
           sv: "Fotoskyltar",
           en: "Photo signs",
@@ -71,20 +78,20 @@ const categories = [
         },
         slug: "automotive",
       },
-      {
-        name: {
-          sv: "Termometrar",
-          en: "Thermometers",
-        },
-        slug: "termometrar",
-      },
-      {
-        name: {
-          sv: "Klockor",
-          en: "Clocks",
-        },
-        slug: "klockor",
-      },
+      // {
+      //   name: {
+      //     sv: "Termometrar",
+      //     en: "Thermometers",
+      //   },
+      //   slug: "termometrar",
+      // },
+      // {
+      //   name: {
+      //     sv: "Klockor",
+      //     en: "Clocks",
+      //   },
+      //   slug: "klockor",
+      // },
       {
         name: {
           sv: "Övriga emaljskyltar",
@@ -110,6 +117,11 @@ const PRODUCTS_PER_PAGE = 12;
 */
 function getSubcategory(product: Product): string {
   const id = product.id;
+
+  // FÖRETAGSSKYLTAR
+if (id.startsWith("EC.ET")) {
+  return "foretagsskyltar";
+}
 
   // FOTOSKYLTAR
   if (id.startsWith("EC.PE")) {
@@ -173,19 +185,28 @@ function getSubcategory(product: Product): string {
     return "automotive";
   }
 
-  // TERMOMETRAR
-  if (
-    id.startsWith("ES.TU") ||
-    id.startsWith("ES.TW") ||
-    id.startsWith("EC.TET")
-  ) {
-    return "termometrar";
-  }
+  // TERMOMETRAR - STANDARDPRODUKTER
+if (
+  id.startsWith("ES.TU") ||
+  id.startsWith("ES.TW")
+) {
+  return "termometrar";
+}
 
-  // KLOCKOR
-  if (id.startsWith("ES.KL") || id.startsWith("EC.KE")) {
-    return "klockor";
-  }
+// TERMOMETRAR - EGEN DESIGN
+if (id.startsWith("EC.TET")) {
+  return "ovrigt";
+}
+
+  // KLOCKOR - STANDARDPRODUKTER
+if (id.startsWith("ES.KL")) {
+  return "klockor";
+}
+
+// KLOCKOR - EGEN DESIGN
+if (id.startsWith("EC.KE")) {
+  return "ovrigt";
+}
 
   // Allt som vi ännu inte placerat
   return "ovrigt";
@@ -613,3 +634,4 @@ export default function Products() {
     </div>
   );
 }
+

@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import "./home.css";
 import logo from "../../assets/logo.png";
+import daisie from "../../assets/home/daisie.jpg";
+import brudpar from "../../assets/home/brudpar.jpg";
+import emalj from "../../assets/home/emalj.jpg";
 import { getProducts } from "../../api/products";
 import type { Product } from "../../types";
 import { useLanguage } from "../../context/languageContext";
@@ -73,64 +76,130 @@ export default function Home() {
   return (
     <div className="home">
       {/* HERO */}
-      <div className="hero" id="hero">
-        <div className="hero-slides">
-          <div className="hero-slide slide-1"></div>
-          <div className="hero-slide slide-2"></div>
-          <div className="hero-slide slide-3"></div>
+<div className="hero" id="hero">
+  <div className="hero-slides">
+
+    {/* SLIDE 1 - INTRO */}
+    <div className="hero-slide slide-1 hero-intro-slide">
+      <div className="hero-content" id="hero-content">
+        <div className="logo">
+          <img src={logo} alt="By Marcel" />
         </div>
 
-        <div className="hero-overlay"></div>
+        <div className="hero_content">
+          <div className="hero-text">
+            <h2>
+              {language === "sv" ? (
+                <>
+                  Välkommen till By Marcel
+                  <br />
+                  Designat och tillverkat i Sverige
+                  <br />
+                  <br />
+                  Med känsla för material, detaljer och kvalitet skapar vi
+                  personliga produkter i vår egen tillverkning från den första
+                  idén till den färdiga produkten!
+                  <br />
+                  <br />
+                  Dina bilder, texter och idéer blir unika produkter med en
+                  personlig prägel.
 
-        <div className="hero-content" id="hero-content">
-          <div className="logo">
-            <img src={logo} alt="By Marcel" />
+                  <p className="launch-info">
+                    Vi lanserar vårt sortiment stegvis.
+                    <br />
+                    Fler unika produkter och möjligheter tillkommer inom kort.
+                  </p>
+                </>
+              ) : (
+                <>
+                  Welcome to By Marcel
+                  <br />
+                  Designed and manufactured in Sweden
+                  <br />
+                  <br />
+                  With a passion for materials, details and quality, we create
+                  personal products in our own production – from the first idea
+                  to the finished product!
+                  <br />
+                  <br />
+                  Your photos, texts and ideas become unique products with a
+                  personal touch.
+
+                  <p className="launch-info">
+                    We are launching our range step by step.
+                    <br />
+                    More unique products and possibilities are coming soon.
+                  </p>
+                </>
+              )}
+            </h2>
           </div>
 
-          <div className="hero_content">
-            <div className="hero-text">
-              <h2>
-                {language === "sv"
-  ? (
-      <>
-        Välkommen till By Marcel!
-        <br />
-        <br />
-        Här hittar du graverade tavlor, äkta emaljskyltar, glasgravyr,
-        namnskyltar, prydnader och mycket mer! <br/> <br/> Dina bilder, texter
-        och idéer blir unika produkter med en personlig prägel.
-      </>
-    )
-  : (
-      <>
-  Welcome to By Marcel!
-  <br />
-  <br />
-  Here you'll find engraved artwork, genuine enamel signs, glass engraving,
-  name signs, decorations and much more!
-  <br />
-  <br />
-  Your photos, texts and ideas are transformed into unique products with a
-  personal touch.
-</>
-    )}
-              </h2>
-            </div>
-
-            <button
-              className="hero-button"
-              id="hero-button"
-              onClick={() => navigate("/produkter")}
-            >
-              {language === "sv"
-                ? "Utforska sortimentet"
-                : "Explore our products"}
-            </button>
-          </div>
+          <button
+            className="hero-button"
+            id="hero-button"
+            onClick={() => navigate("/produkter")}
+          >
+            {language === "sv"
+              ? "Utforska sortimentet"
+              : "Explore our products"}
+          </button>
         </div>
       </div>
+    </div>
 
-      {/* HOME CONTENT */}
+    {/* SLIDE 2 - BILDGRAVYR */}
+    <div className="hero-slide slide-2 hero-promo-slide">
+      <div className="hero-promo-image">
+        <img src={daisie} alt="Personlig bildgravyr" />
+      </div>
+
+      <div className="hero-promo-text">
+        <h2>
+          {language === "sv"
+            ? "Välj ett eget minne att föreviga med bildgravyr"
+            : "Choose a special memory to preserve with photo engraving"}
+        </h2>
+      </div>
+    </div>
+
+    {/* SLIDE 3 - PERSONLIG GÅVA */}
+    <div className="hero-slide slide-3 hero-promo-slide">
+      <div className="hero-promo-text">
+        <h2>
+          {language === "sv"
+            ? "Ge bort en personlig gåva"
+            : "Give a personal gift"}
+        </h2>
+      </div>
+
+      <div className="hero-promo-image">
+        <img
+  className="brudpar-image"
+  src={brudpar}
+  alt="Personlig gåva"
+/>
+      </div>
+    </div>
+    {/* SLIDE 4 - EMALJ */}
+<div className="hero-slide slide-4 hero-promo-slide">
+  <div className="hero-promo-image">
+    <img src={emalj} alt="Emaljprodukter från By Marcel" />
+  </div>
+
+  <div className="hero-promo-text">
+    <h2>
+      {language === "sv"
+        ? "Husnummer, företagsskyltar, klockor och fotoskyltar! Se våra emaljprodukter både färdiga exemplar och produkter med egen design."
+        : "House numbers, company signs, clocks and photo signs! Explore our enamel products both ready-made designs and products you can customize."}
+    </h2>
+  </div>
+</div>
+
+  </div>
+</div>
+
+{/* HOME CONTENT */}
       <div className="home-content" id="home-content">
         <div className="home-content-top" id="home-content-top">
           <p id="home-content-title">
