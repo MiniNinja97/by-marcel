@@ -9,7 +9,7 @@ import { getProducts } from "../../api/products";
 import type { Product } from "../../types";
 import { useLanguage } from "../../context/languageContext";
 
-type HomeFilter =  "new" | "seasonal";
+type HomeFilter = "new" | "seasonal";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -76,130 +76,105 @@ export default function Home() {
   return (
     <div className="home">
       {/* HERO */}
-<div className="hero" id="hero">
-  <div className="hero-slides">
+      <div className="hero" id="hero">
+        <div className="hero-slides">
+          {/* SLIDE 1 - INTRO */}
+          <div className="hero-slide slide-1 hero-intro-slide">
+            <div className="hero-content" id="hero-content">
+              <div className="logo">
+                <img src={logo} alt="By Marcel" />
+              </div>
 
-    {/* SLIDE 1 - INTRO */}
-    <div className="hero-slide slide-1 hero-intro-slide">
-      <div className="hero-content" id="hero-content">
-        <div className="logo">
-          <img src={logo} alt="By Marcel" />
-        </div>
+              <h2 className="hero-intro-title">
+                {language === "sv"
+                  ? "Välkommen till By Marcel"
+                  : "Welcome to By Marcel"}
+              </h2>
 
-        <div className="hero_content">
-          <div className="hero-text">
-            <h2>
-              {language === "sv" ? (
-                <>
-                  Välkommen till By Marcel
-                  <br />
-                  Designat och tillverkat i Sverige
-                  <br />
-                  <br />
-                  Med känsla för material, detaljer och kvalitet skapar vi
-                  personliga produkter i vår egen tillverkning från den första
-                  idén till den färdiga produkten!
-                  <br />
-                  <br />
-                  Dina bilder, texter och idéer blir unika produkter med en
-                  personlig prägel.
-
-                  <p className="launch-info">
-                    Vi lanserar vårt sortiment stegvis.
-                    <br />
-                    Fler unika produkter och möjligheter tillkommer inom kort.
+              <div className="hero-intro-columns">
+                <div className="hero-intro-column">
+                  <p>
+                    {language === "sv"
+                      ? "Designat och tillverkat i Sverige. Med känsla för material, detaljer och kvalitet skapar vi personliga produkter i vår egen tillverkning från den första idén till den färdiga produkten!"
+                      : "Designed and manufactured in Sweden. With a passion for materials, details and quality, we create personal products in our own production – from the first idea to the finished product!"}
                   </p>
-                </>
-              ) : (
-                <>
-                  Welcome to By Marcel
-                  <br />
-                  Designed and manufactured in Sweden
-                  <br />
-                  <br />
-                  With a passion for materials, details and quality, we create
-                  personal products in our own production – from the first idea
-                  to the finished product!
-                  <br />
-                  <br />
-                  Your photos, texts and ideas become unique products with a
-                  personal touch.
+                </div>
 
-                  <p className="launch-info">
-                    We are launching our range step by step.
-                    <br />
-                    More unique products and possibilities are coming soon.
+                <div className="hero-intro-column">
+                  <p>
+                    {language === "sv"
+                      ? "Dina bilder, texter och idéer blir unika produkter med en personlig prägel."
+                      : "Your photos, texts and ideas become unique products with a personal touch."}
                   </p>
-                </>
-              )}
-            </h2>
+                </div>
+              </div>
+
+              <p className="launch-info">
+                {language === "sv"
+                  ? "Vi lanserar vårt sortiment stegvis. Fler unika produkter och möjligheter tillkommer inom kort."
+                  : "We are launching our range step by step. More unique products and possibilities are coming soon."}
+              </p>
+            </div>
           </div>
 
-          <button
-            className="hero-button"
-            id="hero-button"
-            onClick={() => navigate("/produkter")}
-          >
-            {language === "sv"
-              ? "Utforska sortimentet"
-              : "Explore our products"}
-          </button>
+          {/* SLIDE 2 - BILDGRAVYR */}
+          <div className="hero-slide slide-2 hero-promo-slide">
+            <div className="hero-promo-image">
+              <img src={daisie} alt="Personlig bildgravyr" />
+            </div>
+
+            <div className="hero-promo-text">
+              <h2>
+                {language === "sv"
+                  ? "Välj ett eget minne att föreviga med bildgravyr"
+                  : "Choose a special memory to preserve with photo engraving"}
+              </h2>
+            </div>
+          </div>
+
+          {/* SLIDE 3 - PERSONLIG GÅVA */}
+          <div className="hero-slide slide-3 hero-promo-slide">
+            <div className="hero-promo-text">
+              <h2>
+                {language === "sv"
+                  ? "Ge bort en personlig gåva"
+                  : "Give a personal gift"}
+              </h2>
+            </div>
+
+            <div className="hero-promo-image">
+              <img
+                className="brudpar-image"
+                src={brudpar}
+                alt="Personlig gåva"
+              />
+            </div>
+          </div>
+          {/* SLIDE 4 - EMALJ */}
+          <div className="hero-slide slide-4 hero-promo-slide">
+            <div className="hero-promo-image">
+              <img src={emalj} alt="Emaljprodukter från By Marcel" />
+            </div>
+
+            <div className="hero-promo-text">
+              <h2>
+                {language === "sv"
+                  ? "Husnummer, företagsskyltar, klockor och fotoskyltar! Se våra emaljprodukter både färdiga exemplar och produkter med egen design."
+                  : "House numbers, company signs, clocks and photo signs! Explore our enamel products both ready-made designs and products you can customize."}
+              </h2>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-
-    {/* SLIDE 2 - BILDGRAVYR */}
-    <div className="hero-slide slide-2 hero-promo-slide">
-      <div className="hero-promo-image">
-        <img src={daisie} alt="Personlig bildgravyr" />
-      </div>
-
-      <div className="hero-promo-text">
-        <h2>
-          {language === "sv"
-            ? "Välj ett eget minne att föreviga med bildgravyr"
-            : "Choose a special memory to preserve with photo engraving"}
-        </h2>
-      </div>
-    </div>
-
-    {/* SLIDE 3 - PERSONLIG GÅVA */}
-    <div className="hero-slide slide-3 hero-promo-slide">
-      <div className="hero-promo-text">
-        <h2>
-          {language === "sv"
-            ? "Ge bort en personlig gåva"
-            : "Give a personal gift"}
-        </h2>
+        <button
+          className="hero-button hero-button-fixed"
+          id="hero-button"
+          onClick={() => navigate("/produkter")}
+        >
+          {language === "sv" ? "Utforska sortimentet" : "Explore our products"}
+        </button>
       </div>
 
-      <div className="hero-promo-image">
-        <img
-  className="brudpar-image"
-  src={brudpar}
-  alt="Personlig gåva"
-/>
-      </div>
-    </div>
-    {/* SLIDE 4 - EMALJ */}
-<div className="hero-slide slide-4 hero-promo-slide">
-  <div className="hero-promo-image">
-    <img src={emalj} alt="Emaljprodukter från By Marcel" />
-  </div>
-
-  <div className="hero-promo-text">
-    <h2>
-      {language === "sv"
-        ? "Husnummer, företagsskyltar, klockor och fotoskyltar! Se våra emaljprodukter både färdiga exemplar och produkter med egen design."
-        : "House numbers, company signs, clocks and photo signs! Explore our enamel products both ready-made designs and products you can customize."}
-    </h2>
-  </div>
-</div>
-
-  </div>
-</div>
-
-{/* HOME CONTENT */}
+      {/* HOME CONTENT */}
       <div className="home-content" id="home-content">
         <div className="home-content-top" id="home-content-top">
           <p id="home-content-title">
