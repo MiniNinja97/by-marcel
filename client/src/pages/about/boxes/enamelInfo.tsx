@@ -190,7 +190,7 @@ export default function EnamelInfo() {
           </p>
 
           <div className="enamel-links">
-            <Link to="/produkter/emalj" className="enamel-link">
+            <Link to="/produkter/emalj/valj" className="enamel-link">
               Se emaljprodukter
             </Link>
 

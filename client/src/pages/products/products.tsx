@@ -480,7 +480,7 @@ export default function Products() {
           EMALJ STARTVY
           Visas när man går till /produkter/emalj
       ======================================== */}
-        {kategori === "emalj" && !produkttyp && (
+        {kategori === "emalj" && produkttyp === "valj" && (
           <div className="enamel-category-view">
             <h1>{language === "sv" ? "Emaljprodukter" : "Enamel products"}</h1>
 
@@ -513,7 +513,7 @@ export default function Products() {
           Visas först när Egen design eller
           Standardprodukter har valts
       ======================================== */}
-        {kategori === "emalj" && produkttyp && (
+        {kategori === "emalj" && produkttyp !== "valj" && (
           <>
             <div className="products-header">
               <h1>{pageTitle}</h1>
