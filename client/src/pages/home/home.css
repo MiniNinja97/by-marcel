@@ -189,6 +189,29 @@ min-height: 35rem;
 
 
 /* HERO-ANIMATION */
+@keyframes cornerLogoFade {
+    /* Slide 1 – lilla loggan helt dold */
+    0%,
+    24% {
+        opacity: 0;
+    }
+
+    /* Slide 2 kommer in – snabb fade in */
+    25% {
+        opacity: 1;
+    }
+
+    /* Helt synlig genom slide 2, 3 och 4 */
+    96% {
+        opacity: 1;
+    }
+
+    /* Snabb fade ut precis innan slide 1 kommer tillbaka */
+    97%,
+    100% {
+        opacity: 0;
+    }
+}
 
 @keyframes slide1Fade {
     0% {
@@ -345,20 +368,67 @@ min-height: 35rem;
     max-width: 70vw;
     height: auto;
 }
+.hero-corner-logo {
+    position: absolute;
+    top: 1.5rem;
+    left: 2rem;
+
+    z-index: 10;
+
+    opacity: 0;
+    pointer-events: none;
+
+    animation: cornerLogoFade 20s infinite;
+}
+
+.hero-corner-logo img {
+    display: block;
+
+    width: 20rem;
+    height: auto;
+}
 
 .hero-intro-columns {
     width: 100%;
 
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    /* grid-template-columns: 1fr 1fr; */
 
     gap: 4rem;
 
-    align-items: start;
+    align-items: center;
 }
 
-.hero-intro-column {
+/* .hero-intro-column {
     text-align: left;
+} */
+ .launch-info-fixed {
+    position: absolute;
+
+    left: 50%;
+    bottom: 6rem;
+
+    width: calc(100% - 4rem);
+    max-width: 50rem;
+
+    margin-bottom: 1.2rem;
+
+    transform: translateX(-50%);
+
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.7;
+
+    color: var(--gold);
+
+    text-align: center;
+    letter-spacing: 0.04rem;
+
+    z-index: 10;
 }
 
 .hero-intro-column h2 {

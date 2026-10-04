@@ -100,20 +100,20 @@ export default function Home() {
                   </p>
                 </div>
 
-                <div className="hero-intro-column">
+                {/* <div className="hero-intro-column">
                   <p>
                     {language === "sv"
                       ? "Dina bilder, texter och idéer blir unika produkter med en personlig prägel."
                       : "Your photos, texts and ideas become unique products with a personal touch."}
                   </p>
-                </div>
+                </div> */}
               </div>
 
-              <p className="launch-info">
+              {/* <p className="launch-info">
                 {language === "sv"
                   ? "Vi lanserar vårt sortiment stegvis. Fler unika produkter och möjligheter tillkommer inom kort."
                   : "We are launching our range step by step. More unique products and possibilities are coming soon."}
-              </p>
+              </p> */}
             </div>
           </div>
 
@@ -165,6 +165,14 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <div className="hero-corner-logo">
+  <img src={logo} alt="By Marcel" />
+</div>
+         <p className="launch-info launch-info-fixed">
+                {language === "sv"
+                  ? "Vi lanserar vårt sortiment stegvis. Fler unika produkter och möjligheter tillkommer inom kort."
+                  : "We are launching our range step by step. More unique products and possibilities are coming soon."}
+              </p>
         <button
           className="hero-button hero-button-fixed"
           id="hero-button"
