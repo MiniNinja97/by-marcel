@@ -9,16 +9,16 @@ import BKAE5 from "./boxes-img/BKAE-5.jpg";
 import BKAE6 from "./boxes-img/BKAE-6.jpg";
 import BKAE7 from "./boxes-img/BKAE-7.jpg";
 import BKAE8 from "./boxes-img/BKAE-8.jpg";
-import BKAE10 from "./boxes-img/BKAE-10.jpg";
+
 
 export default function EnamelInfo() {
   return (
     <div className="enamel-info">
       <h1 className="enamel-title">ÄKTA EMALJ</h1>
 
-      <div className="enamel-timeline">
-        <img src={BKAE10} alt="Emaljskyltar genom historien" />
-      </div>
+      {/* <div className="enamel-timeline">
+        
+      </div> */}
 
       {/* TEXT VÄNSTER / BILD HÖGER */}
 
