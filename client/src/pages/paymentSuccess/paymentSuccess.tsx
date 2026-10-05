@@ -14,9 +14,25 @@ export default function PaymentSuccess() {
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
+    const orderId = searchParams.get("order_id");
+
+    // -----------------------------------------
+    // Order helt betald med presentkort
+    // -----------------------------------------
+
+    if (!sessionId && orderId) {
+      clearCart();
+      setVerified(true);
+      setLoading(false);
+      return;
+    }
+
+    // -----------------------------------------
+    // Vanlig Stripe-betalning
+    // -----------------------------------------
 
     if (!sessionId) {
-      setError("Session-ID saknas.");
+      setError("Betalningsinformation saknas.");
       setLoading(false);
       return;
     }
@@ -28,16 +44,14 @@ export default function PaymentSuccess() {
         try {
           const response = await fetch(
             `https://www.bymarcel.se/Server/api/verify-payment.php?session_id=${encodeURIComponent(
-              id
-            )}`
+              id,
+            )}`,
           );
 
           const data = await response.json();
 
           if (!response.ok) {
-            throw new Error(
-              data.error || "Kunde inte verifiera betalningen."
-            );
+            throw new Error(data.error || "Kunde inte verifiera betalningen.");
           }
 
           if (data.verified) {
@@ -48,9 +62,7 @@ export default function PaymentSuccess() {
           }
 
           if (attempt < maxAttempts) {
-            await new Promise((resolve) =>
-              setTimeout(resolve, 1000)
-            );
+            await new Promise((resolve) => setTimeout(resolve, 1000));
           }
         } catch (error) {
           if (attempt === maxAttempts) {
@@ -64,9 +76,7 @@ export default function PaymentSuccess() {
             return;
           }
 
-          await new Promise((resolve) =>
-            setTimeout(resolve, 1000)
-          );
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
 
@@ -93,9 +103,7 @@ export default function PaymentSuccess() {
 
         <p>{error}</p>
 
-        <Link to="/payment">
-          Tillbaka till betalningen
-        </Link>
+        <Link to="/payment">Tillbaka till betalningen</Link>
       </main>
     );
   }
@@ -107,13 +115,11 @@ export default function PaymentSuccess() {
       <p>Din betalning har genomförts.</p>
 
       <p>
-        Vi har tagit emot din beställning och kommer att behandla
-        den så snart som möjligt.
+        Vi har tagit emot din beställning och kommer att behandla den så snart
+        som möjligt.
       </p>
 
-      <Link to="/">
-        Tillbaka till startsidan
-      </Link>
+      <Link to="/">Tillbaka till startsidan</Link>
     </main>
   );
 }

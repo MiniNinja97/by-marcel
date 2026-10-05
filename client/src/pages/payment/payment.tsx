@@ -7,6 +7,7 @@ import {
   validateDiscountCode,
   type ValidatedDiscount,
 } from "../../api/discounts";
+import { validateGiftCard, type ValidatedGiftCard } from "../../api/giftCards";
 import "./payment.css";
 
 export default function Payment() {
@@ -26,6 +27,15 @@ export default function Payment() {
   const [paymentDiscount, setPaymentDiscount] =
     useState<ValidatedDiscount | null>(null);
 
+  const [giftCardCode, setGiftCardCode] = useState("");
+
+  const [paymentGiftCard, setPaymentGiftCard] =
+    useState<ValidatedGiftCard | null>(null);
+
+  const [giftCardError, setGiftCardError] = useState("");
+
+  const [giftCardLoading, setGiftCardLoading] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -37,7 +47,13 @@ export default function Payment() {
 
   const discountAmount = paymentDiscount?.amount ?? 0;
 
-  const total = subtotal - discountAmount + (shipping ?? 0);
+  const totalBeforeGiftCard = subtotal - discountAmount + (shipping ?? 0);
+
+  const giftCardAmount = paymentGiftCard
+    ? Math.min(paymentGiftCard.remaining_balance, totalBeforeGiftCard)
+    : 0;
+
+  const total = Math.max(0, totalBeforeGiftCard - giftCardAmount);
 
   // -----------------------------------------
   // Rensa felmeddelande när språk ändras
@@ -52,35 +68,49 @@ export default function Payment() {
   // -----------------------------------------
 
   useEffect(() => {
-    if (items.length === 0 || !country.trim()) {
+  if (items.length === 0 || !country.trim()) {
+    setShipping(null);
+    return;
+  }
+
+  // Presentkort har frakt inkluderad i grundpriset
+  // och ska därför inte räknas med i fraktberäkningen.
+  const shippingItems = items.filter(
+  (item) => item.product.type !== "gift_card",
+);
+
+  // Om varukorgen endast innehåller presentkort
+  // ska ingen extra frakt läggas på.
+  if (shippingItems.length === 0) {
+    setShipping(0);
+    setShippingLoading(false);
+    return;
+  }
+
+  const loadShipping = async () => {
+    try {
+      setShippingLoading(true);
+
+      const result = await getShipping(
+        country.trim(),
+        shippingItems.map((item) => ({
+          product_id: item.product.id,
+          variant_id: item.variant_id,
+          quantity: item.quantity,
+        })),
+      );
+
+      setShipping(result.shipping);
+    } catch (error) {
+      console.error(error);
       setShipping(null);
-      return;
+    } finally {
+      setShippingLoading(false);
     }
+  };
 
-    const loadShipping = async () => {
-      try {
-        setShippingLoading(true);
-
-        const result = await getShipping(
-          country.trim(),
-          items.map((item) => ({
-            product_id: item.product.id,
-            variant_id: item.variant_id,
-            quantity: item.quantity,
-          })),
-        );
-
-        setShipping(result.shipping);
-      } catch (error) {
-        console.error(error);
-        setShipping(null);
-      } finally {
-        setShippingLoading(false);
-      }
-    };
-
-    loadShipping();
-  }, [country, items]);
+  loadShipping();
+}, [country, items]);
 
   // -----------------------------------------
   // Validering
@@ -209,6 +239,38 @@ export default function Payment() {
     return null;
   };
 
+  const handleGiftCard = async () => {
+    if (!giftCardCode.trim()) {
+      setGiftCardError(
+        language === "sv"
+          ? "Fyll i en presentkortskod."
+          : "Enter a gift card code.",
+      );
+
+      return;
+    }
+
+    try {
+      setGiftCardLoading(true);
+      setGiftCardError("");
+
+      const giftCard = await validateGiftCard(giftCardCode);
+
+      setPaymentGiftCard(giftCard);
+    } catch (error) {
+      setPaymentGiftCard(null);
+
+      setGiftCardError(
+        error instanceof Error
+          ? error.message
+          : language === "sv"
+            ? "Kunde inte kontrollera presentkortet."
+            : "Could not validate the gift card.",
+      );
+    } finally {
+      setGiftCardLoading(false);
+    }
+  };
   // -----------------------------------------
   // Skapa order
   // -----------------------------------------
@@ -246,11 +308,17 @@ export default function Payment() {
         },
         items,
         discountCode,
+        paymentGiftCard?.code ?? null,
       );
 
       if (result.checkout_url) {
         window.location.href = result.checkout_url;
+        return;
       }
+
+      // Ingen Stripe-session betyder att ordern
+      // betalades helt med presentkort.
+      window.location.href = `/#/betalning-klar?order_id=${encodeURIComponent(result.order_id)}`;
     } catch (error) {
       setError(
         error instanceof Error
@@ -436,6 +504,53 @@ export default function Payment() {
           <div className="payment-summary">
             <h2>{language === "sv" ? "Orderöversikt" : "Order summary"}</h2>
 
+            <div className="payment-gift-card">
+              <label>{language === "sv" ? "Presentkort" : "Gift card"}</label>
+
+              <div className="payment-gift-card-input">
+                <input
+                  type="text"
+                  value={giftCardCode}
+                  onChange={(event) => {
+                    setGiftCardCode(event.target.value);
+                    setPaymentGiftCard(null);
+                    setGiftCardError("");
+                  }}
+                  placeholder={
+                    language === "sv"
+                      ? "Ange presentkortskod"
+                      : "Enter gift card code"
+                  }
+                />
+
+                <button
+                  type="button"
+                  onClick={handleGiftCard}
+                  disabled={giftCardLoading}
+                >
+                  {giftCardLoading
+                    ? language === "sv"
+                      ? "Kontrollerar..."
+                      : "Checking..."
+                    : language === "sv"
+                      ? "Använd"
+                      : "Apply"}
+                </button>
+              </div>
+
+              {giftCardError && (
+                <div className="payment-error">{giftCardError}</div>
+              )}
+
+              {paymentGiftCard && (
+                <p>
+                  {language === "sv"
+                    ? `Tillgängligt saldo: ${paymentGiftCard.remaining_balance} SEK`
+                    : `Available balance: ${paymentGiftCard.remaining_balance} SEK`}
+                </p>
+              )}
+            </div>
+
             <div className="payment-summary-row">
               <span>{language === "sv" ? "Delsumma" : "Subtotal"}</span>
 
@@ -451,6 +566,18 @@ export default function Payment() {
                 </span>
 
                 <span>-{paymentDiscount.amount} SEK</span>
+              </div>
+            )}
+
+            {paymentGiftCard && (
+              <div className="payment-summary-row">
+                <span>
+                  {language === "sv"
+                    ? `Presentkort (${paymentGiftCard.code})`
+                    : `Gift card (${paymentGiftCard.code})`}
+                </span>
+
+                <span>-{giftCardAmount} SEK</span>
               </div>
             )}
 

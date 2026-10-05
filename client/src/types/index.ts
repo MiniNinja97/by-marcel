@@ -178,7 +178,17 @@ export interface OrderItem {
   selected_options?: Record<string, ProductOptionValue>;
 
   custom_texts?: Record<string, string>;
+
+  gift_cards?: GiftCard[];
 }
+
+export interface GiftCard {
+  code: string;
+  initial_amount: number;
+  remaining_balance: number;
+  status: "pending" | "active" | "used" | "cancelled";
+} 
+
 export interface OrderColor {
   name: string;
   ral_code: string;
@@ -193,7 +203,7 @@ export type OrderStatus =
   | "delivered"
   | "cancelled";
 
-export type ProductType = "EC" | "ES" | "OWN";
+export type ProductType = "EC" | "ES" | "OWN" | "gift_card";
 
 /*
     Typen för ett värde inne i variantens options.

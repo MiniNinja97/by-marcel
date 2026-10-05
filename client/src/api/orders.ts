@@ -26,6 +26,7 @@ export async function createOrder(
   customer: Omit<Customer, "id">,
   items: CartItem[],
   discountCode: string | null,
+  giftCardCode: string | null,
 ): Promise<CreateOrderResponse> {
   const orderItems = items.map((item) => ({
     product_id: item.product.id,
@@ -86,6 +87,7 @@ export async function createOrder(
   customer,
   items: orderItems,
   discount_code: discountCode,
+  gift_card_code: giftCardCode,
 }),
     },
   );

@@ -70,30 +70,26 @@ export default function AdminOrders() {
 
   const handleStatusChange = async (
     orderId: string,
-    newStatus: OrderStatus
-) => {
+    newStatus: OrderStatus,
+  ) => {
     try {
-        await updateOrderStatus(
-            orderId,
-            newStatus
-        )
+      await updateOrderStatus(orderId, newStatus);
 
-        setOrders(currentOrders =>
-            currentOrders.map(order =>
-                order.id === orderId
-                    ? {
-                        ...order,
-                        status: newStatus
-                    }
-                    : order
-            )
-        )
-
+      setOrders((currentOrders) =>
+        currentOrders.map((order) =>
+          order.id === orderId
+            ? {
+                ...order,
+                status: newStatus,
+              }
+            : order,
+        ),
+      );
     } catch (error) {
-        console.error(error)
-        alert('Kunde inte ändra orderstatus')
+      console.error(error);
+      alert("Kunde inte ändra orderstatus");
     }
-}
+  };
 
   return (
     <div className="admin-orders">
@@ -181,7 +177,9 @@ export default function AdminOrders() {
               <select
                 className="admin-status-select"
                 value={order.status}
-                onChange={(e) => handleStatusChange(order.id, e.target.value as OrderStatus)}
+                onChange={(e) =>
+                  handleStatusChange(order.id, e.target.value as OrderStatus)
+                }
               >
                 <option value="pending">Pågående</option>
                 <option value="delivered">Klar</option>
@@ -200,45 +198,65 @@ export default function AdminOrders() {
                   <p>Antal: {item.quantity}</p>
 
                   {item.supplier_id && <p>Leverantör: {item.supplier_id}</p>}
+
+                  {/* Presentkort */}
+                  {item.gift_cards &&
+                    item.gift_cards.map((giftCard) => (
+                      <div key={giftCard.code} className="admin-gift-card">
+                        <p>
+                          <strong>Presentkortskod: {giftCard.code}</strong>
+                        </p>
+
+                        <p>Presentkortsvärde: {giftCard.initial_amount} kr</p>
+
+                        <p>
+                          Återstående saldo: {giftCard.remaining_balance} kr
+                        </p>
+
+                        <p>Status: {giftCard.status}</p>
+                      </div>
+                    ))}
+
                   {/* Bakgrundsfärg */}
-{item.selected_background_color && (
-  <>
-    <p>
-      Bakgrundsfärg: {item.selected_background_color.name} (
-      {item.selected_background_color.ral_code})
-    </p>
+                  {item.selected_background_color && (
+                    <>
+                      <p>
+                        Bakgrundsfärg: {item.selected_background_color.name} (
+                        {item.selected_background_color.ral_code})
+                      </p>
 
-    <p>
-      Bakgrundskod: {item.selected_background_color.supplier_code}
-    </p>
+                      <p>
+                        Bakgrundskod:{" "}
+                        {item.selected_background_color.supplier_code}
+                      </p>
 
-    {item.selected_background_color.price > 0 && (
-      <p>
-        Färgtillägg bakgrund: +{item.selected_background_color.price} kr
-      </p>
-    )}
-  </>
-)}
+                      {item.selected_background_color.price > 0 && (
+                        <p>
+                          Färgtillägg bakgrund: +
+                          {item.selected_background_color.price} kr
+                        </p>
+                      )}
+                    </>
+                  )}
 
-{/* Tryckfärg */}
-{item.selected_print_color && (
-  <>
-    <p>
-      Tryckfärg: {item.selected_print_color.name} (
-      {item.selected_print_color.ral_code})
-    </p>
+                  {/* Tryckfärg */}
+                  {item.selected_print_color && (
+                    <>
+                      <p>
+                        Tryckfärg: {item.selected_print_color.name} (
+                        {item.selected_print_color.ral_code})
+                      </p>
 
-    <p>
-      Tryckkod: {item.selected_print_color.supplier_code}
-    </p>
+                      <p>Tryckkod: {item.selected_print_color.supplier_code}</p>
 
-    {item.selected_print_color.price > 0 && (
-      <p>
-        Färgtillägg tryck: +{item.selected_print_color.price} kr
-      </p>
-    )}
-  </>
-)}
+                      {item.selected_print_color.price > 0 && (
+                        <p>
+                          Färgtillägg tryck: +{item.selected_print_color.price}{" "}
+                          kr
+                        </p>
+                      )}
+                    </>
+                  )}
 
                   {/* Dynamiska produktval */}
                   {item.selected_options &&

@@ -63,8 +63,13 @@ if (
 
 $customer = $data["customer"];
 $items = $data["items"];
+
 $discountCode = strtoupper(
     trim($data["discount_code"] ?? "")
+);
+
+$giftCardCode = strtoupper(
+    trim($data["gift_card_code"] ?? "")
 );
 
 
@@ -340,25 +345,78 @@ try {
 
 
         // -----------------------------------------
-        // Grundvärden från databasen
-        // -----------------------------------------
+// Grundvärden från databasen
+// -----------------------------------------
 
-        $productName = $product["name"];
-        $productType = $product["product_type"];
+$productName = $product["name"];
+$productType = $product["product_type"];
 
-        $unitPrice = (float) $product["base_price"];
-        $weight = (float) $product["weight"];
+if (
+    $productType === "gift_card" &&
+    $quantity !== 1
+) {
+    throw new Exception(
+        "Presentkort måste beställas ett i taget"
+    );
+}
 
-        $supplierId = null;
+$unitPrice = (float) $product["base_price"];
+$weight = (float) $product["weight"];
 
-        $selectedSize =
-            $item["selected_size"] ?? null;
+$supplierId = null;
 
-        $selectedShape =
-            $item["selected_shape"] ?? null;
+$selectedSize =
+    $item["selected_size"] ?? null;
 
-        $selectedOptions =
-            $item["selected_options"] ?? null;
+$selectedShape =
+    $item["selected_shape"] ?? null;
+
+$selectedOptions =
+    $item["selected_options"] ?? null;
+
+            // -----------------------------------------
+// Presentkort
+// -----------------------------------------
+
+if ($productType === "gift_card") {
+
+    if (
+        !is_array($selectedOptions) ||
+        !isset($selectedOptions["amount"])
+    ) {
+        throw new Exception(
+            "Belopp saknas för presentkortet"
+        );
+    }
+
+    $giftCardAmount =
+    (int) $selectedOptions["amount"];
+
+    $allowedGiftCardAmounts = [
+        500,
+        750,
+        1000,
+        1250,
+        1500,
+        1750,
+        2000,
+        2500
+    ];
+
+    if (
+        !in_array(
+            $giftCardAmount,
+            $allowedGiftCardAmounts,
+            true
+        )
+    ) {
+        throw new Exception(
+            "Ogiltigt presentkortsbelopp"
+        );
+    }
+
+    $unitPrice += $giftCardAmount;
+}
 
 
         // -----------------------------------------
@@ -679,6 +737,10 @@ try {
 
             "supplier_id" =>
                 $supplierId,
+                "gift_card_amount" =>
+    $productType === "gift_card"
+        ? $giftCardAmount
+        : null,
 
             "quantity" =>
                 $quantity,
@@ -725,8 +787,10 @@ try {
         $subtotal +=
             $unitPrice * $quantity;
 
-        $totalWeight +=
-            $weight * $quantity;
+        if ($productType !== "gift_card") {
+    $totalWeight +=
+        $weight * $quantity;
+}
     }
 // -----------------------------------------
 // Validera rabattkod
@@ -851,7 +915,100 @@ if ($discountCode !== "") {
         2
     );
 }
+// -----------------------------------------
+// Börja databastransaktion
+// -----------------------------------------
 
+$conn->begin_transaction();
+
+// -----------------------------------------
+// Validera presentkort
+// -----------------------------------------
+
+$giftCardBalance = 0;
+
+if ($giftCardCode !== "") {
+
+    $giftCardStmt = $conn->prepare("
+    SELECT
+        id,
+        remaining_balance,
+        status
+    FROM gift_cards
+    WHERE code = ?
+    LIMIT 1
+    FOR UPDATE
+");
+
+    $giftCardStmt->bind_param(
+        "s",
+        $giftCardCode
+    );
+
+    $giftCardStmt->execute();
+
+    $giftCardResult =
+        $giftCardStmt->get_result();
+
+    $giftCard =
+        $giftCardResult->fetch_assoc();
+
+    $giftCardStmt->close();
+
+    if (!$giftCard) {
+        throw new Exception(
+            "Presentkortskoden finns inte"
+        );
+    }
+
+    if ($giftCard["status"] !== "active") {
+        throw new Exception(
+            "Presentkortet är inte aktivt"
+        );
+    }
+
+    $giftCardId =
+    (int) $giftCard["id"];
+
+$giftCardBalance =
+    (float) $giftCard["remaining_balance"];
+
+$reservedStmt = $conn->prepare("
+    SELECT COALESCE(SUM(amount), 0) AS reserved_amount
+    FROM gift_card_redemptions
+    WHERE gift_card_id = ?
+    AND status = 'reserved'
+");
+
+$reservedStmt->bind_param(
+    "i",
+    $giftCardId
+);
+
+$reservedStmt->execute();
+
+$reservedResult =
+    $reservedStmt->get_result();
+
+$reservedData =
+    $reservedResult->fetch_assoc();
+
+$reservedStmt->close();
+
+$reservedAmount =
+    (float) $reservedData["reserved_amount"];
+
+$giftCardBalance = max(
+    0,
+    $giftCardBalance - $reservedAmount
+);
+
+if ($giftCardBalance <= 0) {
+    throw new Exception(
+        "Presentkortet saknar tillgängligt saldo"
+    );
+}
+}
     // -----------------------------------------
 // Beräkna frakt
 // -----------------------------------------
@@ -871,31 +1028,60 @@ if (
 $totalWeightKg = $totalWeight / 1000;
 
 
-// Bestäm region från kundens land.
-$shippingRegion =
-    getShippingRegion($customer["country"]);
+// Om ordern endast innehåller presentkort
+// ska ingen extra frakt tas ut.
+if ($totalWeightKg <= 0) {
+
+    $shipping = 0;
+    $shippingCarrier = "Included";
+
+} else {
+
+    // Bestäm region från kundens land.
+    $shippingRegion =
+        getShippingRegion($customer["country"]);
 
 
-// Hämta rätt fraktpris från databasen.
-$shippingRate =
-    getShippingRate(
-        $conn,
-        $shippingRegion,
-        $totalWeightKg
-    );
+    // Hämta rätt fraktpris från databasen.
+    $shippingRate =
+        getShippingRate(
+            $conn,
+            $shippingRegion,
+            $totalWeightKg
+        );
 
 
-$shipping =
-    (float) $shippingRate["price"];
+    $shipping =
+        (float) $shippingRate["price"];
 
-$shippingCarrier =
-    $shippingRate["carrier"];
+    $shippingCarrier =
+        $shippingRate["carrier"];
+}
 
 
-$totalPrice =
+$totalBeforeGiftCard =
     $subtotal
     - $discountAmount
     + $shipping;
+
+$giftCardAmount = 0;
+
+if ($giftCardCode !== "") {
+    $giftCardAmount = min(
+        $giftCardBalance,
+        $totalBeforeGiftCard
+    );
+}
+
+$giftCardAmount = round(
+    $giftCardAmount,
+    2
+);
+
+$totalPrice = max(
+    0,
+    $totalBeforeGiftCard - $giftCardAmount
+);
     // -----------------------------------------
     // Skapa ID:n
     // -----------------------------------------
@@ -907,11 +1093,7 @@ $totalPrice =
         "ORD-" . bin2hex(random_bytes(8));
 
 
-    // -----------------------------------------
-    // Börja databastransaktion
-    // -----------------------------------------
-
-    $conn->begin_transaction();
+    
 
 
     // -----------------------------------------
@@ -1017,6 +1199,64 @@ $totalPrice =
 
     $orderStmt->execute();
     $orderStmt->close();
+
+    // -----------------------------------------
+// Reservera presentkort
+// -----------------------------------------
+
+if ($giftCardCode !== "" && $giftCardAmount > 0) {
+
+    $giftCardIdStmt = $conn->prepare("
+        SELECT id
+        FROM gift_cards
+        WHERE code = ?
+        LIMIT 1
+    ");
+
+    $giftCardIdStmt->bind_param(
+        "s",
+        $giftCardCode
+    );
+
+    $giftCardIdStmt->execute();
+
+    $giftCardIdResult =
+        $giftCardIdStmt->get_result();
+
+    $giftCardData =
+        $giftCardIdResult->fetch_assoc();
+
+    $giftCardIdStmt->close();
+
+    if (!$giftCardData) {
+        throw new Exception(
+            "Presentkortet kunde inte hittas"
+        );
+    }
+
+    $giftCardId =
+        (int) $giftCardData["id"];
+
+    $redemptionStmt = $conn->prepare("
+        INSERT INTO gift_card_redemptions (
+            gift_card_id,
+            order_id,
+            amount,
+            status
+        )
+        VALUES (?, ?, ?, 'reserved')
+    ");
+
+    $redemptionStmt->bind_param(
+        "isd",
+        $giftCardId,
+        $orderId,
+        $giftCardAmount
+    );
+
+    $redemptionStmt->execute();
+    $redemptionStmt->close();
+}
 
 
     // -----------------------------------------
@@ -1163,6 +1403,46 @@ $totalPrice =
         );
 
         $itemStmt->execute();
+
+        // -----------------------------------------
+// Skapa presentkortskod
+// -----------------------------------------
+
+if ($item["gift_card_amount"] !== null) {
+
+    $giftCardCode =
+        "BM-" .
+        strtoupper(bin2hex(random_bytes(2))) .
+        "-" .
+        strtoupper(bin2hex(random_bytes(2)));
+
+    $giftCardAmount =
+    (float) $item["gift_card_amount"];
+
+    $giftCardStmt = $conn->prepare("
+        INSERT INTO gift_cards (
+            code,
+            order_id,
+            order_item_id,
+            initial_amount,
+            remaining_balance,
+            status
+        )
+        VALUES (?, ?, ?, ?, ?, 'pending')
+    ");
+
+    $giftCardStmt->bind_param(
+        "sssdd",
+        $giftCardCode,
+        $orderId,
+        $itemId,
+        $giftCardAmount,
+        $giftCardAmount
+    );
+
+    $giftCardStmt->execute();
+    $giftCardStmt->close();
+}
     }
 
     $itemStmt->close();
@@ -1173,60 +1453,196 @@ $totalPrice =
     // -----------------------------------------
 
    
+$checkoutSession = null;
+
+if ($totalPrice > 0) {
 
     $checkoutSession = \Stripe\Checkout\Session::create([
-    "mode" => "payment",
+        "mode" => "payment",
 
-    "customer_email" => $customer["email"],
+        "customer_email" => $customer["email"],
 
-    "line_items" => [
-        [
-            "price_data" => [
-                "currency" => "sek",
+        "line_items" => [
+            [
+                "price_data" => [
+                    "currency" => "sek",
 
-                "product_data" => [
-                    "name" => "Order " . $orderId,
+                    "product_data" => [
+                        "name" => "Order " . $orderId,
+                    ],
+
+                    "unit_amount" =>
+                        (int) round($totalPrice * 100),
                 ],
 
-                "unit_amount" => (int) round($totalPrice * 100),
+                "quantity" => 1,
             ],
-
-            "quantity" => 1,
         ],
-    ],
 
-    "metadata" => [
-        "order_id" => $orderId,
-    ],
+        "metadata" => [
+            "order_id" => $orderId,
+        ],
 
-    "success_url" =>
-        "http://localhost:5173/#/betalning-klar?session_id={CHECKOUT_SESSION_ID}",
+        "success_url" =>
+            "http://localhost:5173/#/betalning-klar?session_id={CHECKOUT_SESSION_ID}",
 
-    "cancel_url" =>
-        "http://localhost:5173/#/payment",
-]);
+        "cancel_url" =>
+            "http://localhost:5173/#/payment",
+    ]);
+
+} else {
+
+    // -----------------------------------------
+    // Presentkortet täcker hela ordern
+    // -----------------------------------------
+
+    $paidOrderStmt = $conn->prepare("
+        UPDATE orders
+        SET status = 'processing'
+        WHERE id = ?
+        AND status = 'pending'
+    ");
+
+    $paidOrderStmt->bind_param(
+        "s",
+        $orderId
+    );
+
+    $paidOrderStmt->execute();
+    $paidOrderStmt->close();
+
+
+    // -----------------------------------------
+    // Slutför presentkortsreservationen
+    // -----------------------------------------
+
+    $redemptionStmt = $conn->prepare("
+        SELECT
+            id,
+            gift_card_id,
+            amount
+        FROM gift_card_redemptions
+        WHERE order_id = ?
+        AND status = 'reserved'
+        FOR UPDATE
+    ");
+
+    $redemptionStmt->bind_param(
+        "s",
+        $orderId
+    );
+
+    $redemptionStmt->execute();
+
+    $redemptionResult =
+        $redemptionStmt->get_result();
+
+    while (
+        $redemption =
+            $redemptionResult->fetch_assoc()
+    ) {
+        $redemptionId =
+            (int) $redemption["id"];
+
+        $giftCardId =
+            (int) $redemption["gift_card_id"];
+
+        $amount =
+            (float) $redemption["amount"];
+
+
+        // -----------------------------------------
+        // Markera reservationen som slutförd först
+        // -----------------------------------------
+
+        $completeStmt = $conn->prepare("
+            UPDATE gift_card_redemptions
+            SET
+                status = 'completed',
+                completed_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            AND status = 'reserved'
+        ");
+
+        $completeStmt->bind_param(
+            "i",
+            $redemptionId
+        );
+
+        $completeStmt->execute();
+
+        $wasCompleted =
+            $completeStmt->affected_rows === 1;
+
+        $completeStmt->close();
+
+
+        // -----------------------------------------
+        // Dra saldot endast om reservationen
+        // faktiskt ändrades till completed
+        // -----------------------------------------
+
+        if ($wasCompleted) {
+
+            $updateGiftCardStmt = $conn->prepare("
+                UPDATE gift_cards
+                SET
+                    remaining_balance =
+                        GREATEST(
+                            0,
+                            remaining_balance - ?
+                        ),
+                    status =
+                        CASE
+                            WHEN remaining_balance - ? <= 0
+                                THEN 'used'
+                            ELSE 'active'
+                        END
+                WHERE id = ?
+            ");
+
+            $updateGiftCardStmt->bind_param(
+                "ddi",
+                $amount,
+                $amount,
+                $giftCardId
+            );
+
+            $updateGiftCardStmt->execute();
+            $updateGiftCardStmt->close();
+        }
+    }
+
+    $redemptionStmt->close();
+}
+
 
 // -----------------------------------------
-// Stripe-sessionen skapades korrekt.
+// Stripe-sessionen skapades korrekt,
+// eller ordern betalades helt med presentkort.
 // Nu kan ordern sparas permanent.
 // -----------------------------------------
 
 $conn->commit();
 
-    http_response_code(201);
 
-   echo json_encode([
+http_response_code(201);
+
+echo json_encode([
     "success" => true,
     "message" => "Order skapad",
     "currency" => "SEK",
     "order_id" => $orderId,
     "customer_id" => $customerId,
     "subtotal" => $subtotal,
-"discount_code" => $discountCode,
-"discount_amount" => $discountAmount,
-"shipping" => $shipping,
-"total_price" => $totalPrice,
-    "checkout_url" => $checkoutSession->url
+    "discount_code" => $discountCode,
+    "discount_amount" => $discountAmount,
+    "shipping" => $shipping,
+    "total_price" => $totalPrice,
+    "checkout_url" =>
+        $checkoutSession !== null
+            ? $checkoutSession->url
+            : null
 ]);
 
 

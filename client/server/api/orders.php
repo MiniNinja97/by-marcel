@@ -121,6 +121,49 @@ $item["custom_texts"] =
         $item["unit_price"] = (float) $item["unit_price"];
         $item["weight"] = (float) $item["weight"];
 
+        // -----------------------------------------
+// Hämta eventuella presentkort
+// -----------------------------------------
+
+$giftCardStmt = $conn->prepare("
+    SELECT
+        code,
+        initial_amount,
+        remaining_balance,
+        status
+    FROM gift_cards
+    WHERE order_item_id = ?
+");
+
+$giftCardStmt->bind_param(
+    "s",
+    $item["id"]
+);
+
+$giftCardStmt->execute();
+
+$giftCardResult =
+    $giftCardStmt->get_result();
+
+$giftCards = [];
+
+while (
+    $giftCard =
+        $giftCardResult->fetch_assoc()
+) {
+    $giftCard["initial_amount"] =
+        (float) $giftCard["initial_amount"];
+
+    $giftCard["remaining_balance"] =
+        (float) $giftCard["remaining_balance"];
+
+    $giftCards[] = $giftCard;
+}
+
+$giftCardStmt->close();
+
+$item["gift_cards"] = $giftCards;
+
         $items[] = $item;
     }
 
