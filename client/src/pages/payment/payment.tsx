@@ -39,9 +39,18 @@ export default function Payment() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const subtotal = getTotalPrice();
+ const subtotal = getTotalPrice();
 
-  const [shipping, setShipping] = useState<number | null>(null);
+// Presentkort ska inte vara rabattgrundande.
+const discountableSubtotal = items
+  .filter((item) => item.product.type !== "gift_card")
+  .reduce(
+    (sum, item) =>
+      sum + item.unit_price * item.quantity,
+    0,
+  );
+
+const [shipping, setShipping] = useState<number | null>(null);
 
   const [shippingLoading, setShippingLoading] = useState(false);
 
@@ -332,25 +341,32 @@ export default function Payment() {
     }
   };
 
-  useEffect(() => {
-    if (!discountCode || subtotal <= 0) {
+ useEffect(() => {
+  if (!discountCode || discountableSubtotal <= 0) {
+    setPaymentDiscount(null);
+    return;
+  }
+
+  const loadDiscount = async () => {
+    try {
+      const discount = await validateDiscountCode(
+        discountCode,
+        discountableSubtotal,
+      );
+
+      setPaymentDiscount(discount);
+    } catch (error) {
+      console.error(error);
       setPaymentDiscount(null);
-      return;
     }
+  };
 
-    const loadDiscount = async () => {
-      try {
-        const discount = await validateDiscountCode(discountCode, subtotal);
+  loadDiscount();
+}, [discountCode, discountableSubtotal]);
 
-        setPaymentDiscount(discount);
-      } catch (error) {
-        console.error(error);
-        setPaymentDiscount(null);
-      }
-    };
-
-    loadDiscount();
-  }, [discountCode, subtotal]);
+  const containsGiftCardProduct = items.some(
+  (item) => item.product.type === "gift_card",
+);
 
   // -----------------------------------------
   // JSX
@@ -504,52 +520,58 @@ export default function Payment() {
           <div className="payment-summary">
             <h2>{language === "sv" ? "Orderöversikt" : "Order summary"}</h2>
 
-            <div className="payment-gift-card">
-              <label>{language === "sv" ? "Presentkort" : "Gift card"}</label>
+            {!containsGiftCardProduct && (
+  <div className="payment-gift-card">
+    <label>
+      {language === "sv" ? "Presentkort" : "Gift card"}
+    </label>
 
-              <div className="payment-gift-card-input">
-                <input
-                  type="text"
-                  value={giftCardCode}
-                  onChange={(event) => {
-                    setGiftCardCode(event.target.value);
-                    setPaymentGiftCard(null);
-                    setGiftCardError("");
-                  }}
-                  placeholder={
-                    language === "sv"
-                      ? "Ange presentkortskod"
-                      : "Enter gift card code"
-                  }
-                />
+    <div className="payment-gift-card-input">
+      <input
+        type="text"
+        value={giftCardCode}
+        onChange={(event) => {
+          setGiftCardCode(event.target.value);
+          setPaymentGiftCard(null);
+          setGiftCardError("");
+        }}
+        placeholder={
+          language === "sv"
+            ? "Ange presentkortskod"
+            : "Enter gift card code"
+        }
+      />
 
-                <button
-                  type="button"
-                  onClick={handleGiftCard}
-                  disabled={giftCardLoading}
-                >
-                  {giftCardLoading
-                    ? language === "sv"
-                      ? "Kontrollerar..."
-                      : "Checking..."
-                    : language === "sv"
-                      ? "Använd"
-                      : "Apply"}
-                </button>
-              </div>
+      <button
+        type="button"
+        onClick={handleGiftCard}
+        disabled={giftCardLoading}
+      >
+        {giftCardLoading
+          ? language === "sv"
+            ? "Kontrollerar..."
+            : "Checking..."
+          : language === "sv"
+            ? "Använd"
+            : "Apply"}
+      </button>
+    </div>
 
-              {giftCardError && (
-                <div className="payment-error">{giftCardError}</div>
-              )}
+    {giftCardError && (
+      <div className="payment-error">
+        {giftCardError}
+      </div>
+    )}
 
-              {paymentGiftCard && (
-                <p>
-                  {language === "sv"
-                    ? `Tillgängligt saldo: ${paymentGiftCard.remaining_balance} SEK`
-                    : `Available balance: ${paymentGiftCard.remaining_balance} SEK`}
-                </p>
-              )}
-            </div>
+    {paymentGiftCard && (
+      <p>
+        {language === "sv"
+          ? `Tillgängligt saldo: ${paymentGiftCard.remaining_balance} SEK`
+          : `Available balance: ${paymentGiftCard.remaining_balance} SEK`}
+      </p>
+    )}
+  </div>
+)}
 
             <div className="payment-summary-row">
               <span>{language === "sv" ? "Delsumma" : "Subtotal"}</span>

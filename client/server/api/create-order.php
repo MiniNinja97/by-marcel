@@ -798,7 +798,32 @@ if ($productType === "gift_card") {
 
 $discountAmount = 0;
 
+// -----------------------------------------
+// Räkna ut rabattgrundande belopp
+// Presentkort ska aldrig kunna rabatteras
+// -----------------------------------------
+
+$discountableSubtotal = 0;
+
+foreach ($validatedItems as $item) {
+    if ($item["product_type"] !== "gift_card") {
+        $discountableSubtotal +=
+            $item["unit_price"] *
+            $item["quantity"];
+    }
+}
+
+
 if ($discountCode !== "") {
+
+    // Rabattkod får inte användas om ordern
+    // endast innehåller presentkort.
+    if ($discountableSubtotal <= 0) {
+        throw new Exception(
+            "Rabattkod kan inte användas på presentkort"
+        );
+    }
+
 
     $discountStmt = $conn->prepare("
         SELECT
@@ -878,10 +903,10 @@ if ($discountCode !== "") {
 
     if (
         $minimumOrder !== null &&
-        $subtotal < $minimumOrder
+        $discountableSubtotal < $minimumOrder
     ) {
         throw new Exception(
-            "Rabattkoden kräver ett ordervärde på minst " .
+            "Rabattkoden kräver ett rabattgrundande ordervärde på minst " .
             $minimumOrder .
             " SEK"
         );
@@ -895,7 +920,7 @@ if ($discountCode !== "") {
     if ($discount["type"] === "percent") {
 
         $discountAmount =
-            $subtotal *
+            $discountableSubtotal *
             ($discountValue / 100);
 
     } else {
@@ -905,9 +930,11 @@ if ($discountCode !== "") {
     }
 
 
+    // Rabatten får aldrig bli större än
+    // värdet på de vanliga produkterna.
     $discountAmount = min(
         $discountAmount,
-        $subtotal
+        $discountableSubtotal
     );
 
     $discountAmount = round(
@@ -926,6 +953,34 @@ $conn->begin_transaction();
 // -----------------------------------------
 
 $giftCardBalance = 0;
+
+// -----------------------------------------
+// Presentkort får inte användas för att
+// köpa ett nytt presentkort
+// -----------------------------------------
+
+$containsGiftCardProduct = false;
+
+foreach ($validatedItems as $item) {
+    if ($item["product_type"] === "gift_card") {
+        $containsGiftCardProduct = true;
+        break;
+    }
+}
+
+if (
+    $giftCardCode !== "" &&
+    $containsGiftCardProduct
+) {
+    throw new Exception(
+        "Presentkort kan inte användas för att köpa presentkort"
+    );
+}
+
+
+// -----------------------------------------
+// Validera presentkort som betalningsmedel
+// -----------------------------------------
 
 if ($giftCardCode !== "") {
 

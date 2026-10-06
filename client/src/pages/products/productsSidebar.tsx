@@ -327,11 +327,10 @@ export default function ProductsSidebar({
         </NavLink>
       </div>
 
-      {/* KOMMANDE PRODUKTER */}
-      <div className="sidebar-category">
-        <NavLink
-          to="/produkter/kommande-produkter"
-          end
+      {/* PRESENTKORT */}
+<div className="sidebar-category">
+  <NavLink
+    to="/produkter/presentkort"
           className={({ isActive }) =>
             isActive
               ? "sidebar-category-link active"

@@ -194,6 +194,14 @@ export default function Product() {
         }
       });
 
+      if (optionName === "title" && value !== "custom") {
+        setCustomTexts((previous) => {
+          const updated = { ...previous };
+          delete updated.custom_title;
+          return updated;
+        });
+      }
+
       return updated;
     });
 
@@ -245,7 +253,11 @@ export default function Product() {
   const printColorPrice =
     product?.type === "EC" ? (printColor?.print_price ?? 0) : 0;
 
-  const displayedPrice = variantPrice + backgroundColorPrice + printColorPrice;
+  const giftCardAmount =
+    product?.type === "gift_card" ? Number(selectedOptions.amount ?? 0) : 0;
+
+  const displayedPrice =
+    variantPrice + backgroundColorPrice + printColorPrice + giftCardAmount;
 
   const displayedImages =
     selectedVariant?.images && selectedVariant.images.length > 0
@@ -328,131 +340,185 @@ export default function Product() {
   }, [selectedVariant?.id]);
 
   const handleAddToCart = () => {
-    setCartError("");
+  setCartError("");
 
-    if (!product || product.is_out_of_stock) {
+  if (!product || product.is_out_of_stock) {
+    return;
+  }
+
+  const isCustomEnamel = product.type === "EC";
+  const isGiftCard = product.type === "gift_card";
+
+  const requiresVariant = (product.variants?.length ?? 0) > 0;
+
+  const requiresColors =
+    isCustomEnamel && (product.colors?.length ?? 0) > 0;
+
+  // Kontrollera obligatoriska val för presentkort
+  if (isGiftCard) {
+    const requiredGiftCardOptions = [
+      "shape",
+      "amount",
+      "title",
+      "language",
+    ];
+
+    const missingGiftCardOptions = requiredGiftCardOptions.filter(
+      (optionName) => !selectedOptions[optionName],
+    );
+
+    if (missingGiftCardOptions.length > 0) {
+      setCartError(
+        language === "sv"
+          ? "Välj form, belopp, titel och språk innan du lägger presentkortet i kundkorgen."
+          : "Select shape, amount, title and language before adding the gift card to your cart.",
+      );
+
       return;
     }
+  }
 
-    const isCustomEnamel = product.type === "EC";
+  // Kontrollera egen titel för presentkort
+  if (
+    isGiftCard &&
+    selectedOptions.title === "custom" &&
+    !customTexts.custom_title?.trim()
+  ) {
+    setCartError(
+      language === "sv"
+        ? "Skriv en egen titel innan du lägger presentkortet i kundkorgen."
+        : "Enter a custom title before adding the gift card to your cart.",
+    );
 
-    const requiresVariant = (product.variants?.length ?? 0) > 0;
+    return;
+  }
 
-    const requiresColors = isCustomEnamel && (product.colors?.length ?? 0) > 0;
+  // Kontrollera produktval
+  if (requiresVariant && !selectedVariant) {
+    const missingOptions =
+      product.options
+        ?.filter(
+          (option) =>
+            selectedOptions[option.option_name] === undefined,
+        )
+        .map((option) =>
+          language === "sv"
+            ? option.display_name
+            : option.display_name_en || option.display_name,
+        ) ?? [];
 
-    // Kontrollera produktval
-    if (requiresVariant && !selectedVariant) {
-      const missingOptions =
-        product.options
-          ?.filter(
-            (option) => selectedOptions[option.option_name] === undefined,
-          )
-          .map((option) =>
-            language === "sv"
-              ? option.display_name
-              : option.display_name_en || option.display_name,
-          ) ?? [];
-
-      if (missingOptions.length > 0) {
-        if (language === "sv") {
-          setCartError(
-            `Välj ${missingOptions
-              .map((option) => option.toLowerCase())
-              .join(" och ")} innan du lägger produkten i kundkorgen.`,
-          );
-        } else {
-          setCartError(
-            `Please select ${missingOptions
-              .map((option) => option.toLowerCase())
-              .join(" and ")} before adding the product to your cart.`,
-          );
-        }
+    if (missingOptions.length > 0) {
+      if (language === "sv") {
+        setCartError(
+          `Välj ${missingOptions
+            .map((option) => option.toLowerCase())
+            .join(" och ")} innan du lägger produkten i kundkorgen.`,
+        );
       } else {
         setCartError(
-          language === "sv"
-            ? "Den valda kombinationen är inte tillgänglig."
-            : "The selected combination is not available.",
+          `Please select ${missingOptions
+            .map((option) => option.toLowerCase())
+            .join(" and ")} before adding the product to your cart.`,
         );
       }
-
-      return;
-    }
-
-    // Kontrollera färger
-    if (requiresColors && !backgroundColor && !printColor) {
+    } else {
       setCartError(
         language === "sv"
-          ? "Välj bakgrundsfärg och tryckfärg innan du lägger produkten i kundkorgen."
-          : "Select a background colour and print colour before adding the product to your cart.",
+          ? "Den valda kombinationen är inte tillgänglig."
+          : "The selected combination is not available.",
       );
-
-      return;
     }
 
-    if (requiresColors && !backgroundColor) {
-      setCartError(
-        language === "sv"
-          ? "Välj en bakgrundsfärg innan du lägger produkten i kundkorgen."
-          : "Select a background colour before adding the product to your cart.",
-      );
+    return;
+  }
 
-      return;
-    }
+  // Kontrollera färger
+  if (requiresColors && !backgroundColor && !printColor) {
+    setCartError(
+      language === "sv"
+        ? "Välj bakgrundsfärg och tryckfärg innan du lägger produkten i kundkorgen."
+        : "Select a background colour and print colour before adding the product to your cart.",
+    );
 
-    if (requiresColors && !printColor) {
-      setCartError(
-        language === "sv"
-          ? "Välj en tryckfärg innan du lägger produkten i kundkorgen."
-          : "Select a print colour before adding the product to your cart.",
-      );
+    return;
+  }
 
-      return;
-    }
+  if (requiresColors && !backgroundColor) {
+    setCartError(
+      language === "sv"
+        ? "Välj en bakgrundsfärg innan du lägger produkten i kundkorgen."
+        : "Select a background colour before adding the product to your cart.",
+    );
 
-    addItem({
-      product,
-      quantity,
+    return;
+  }
 
-      variant_id: selectedVariant?.id,
+  if (requiresColors && !printColor) {
+    setCartError(
+      language === "sv"
+        ? "Välj en tryckfärg innan du lägger produkten i kundkorgen."
+        : "Select a print colour before adding the product to your cart.",
+    );
 
-      supplier_id: selectedVariant?.supplier_id ?? product.supplier_id,
+    return;
+  }
 
-      selected_background_color: isCustomEnamel
-        ? (backgroundColor ?? undefined)
-        : undefined,
+  addItem({
+    product,
+    quantity,
 
-      selected_print_color: isCustomEnamel
-        ? (printColor ?? undefined)
-        : undefined,
+    variant_id: selectedVariant?.id,
 
-      selected_size: isCustomEnamel ? selectedOptions.size : undefined,
+    supplier_id:
+      selectedVariant?.supplier_id ?? product.supplier_id,
 
-      custom_texts: isCustomEnamel ? customTexts : {},
+    selected_background_color: isCustomEnamel
+      ? (backgroundColor ?? undefined)
+      : undefined,
 
-      custom_photo: isCustomEnamel ? customPhoto || undefined : undefined,
+    selected_print_color: isCustomEnamel
+      ? (printColor ?? undefined)
+      : undefined,
 
-      unit_price: displayedPrice,
+    selected_size: isCustomEnamel
+      ? selectedOptions.size
+      : undefined,
 
-      total_price: displayedPrice * quantity,
+    custom_texts:
+      isCustomEnamel || product.type === "gift_card"
+        ? customTexts
+        : {},
 
-      selected_options: isCustomEnamel ? selectedOptions : {},
-    });
+    custom_photo: isCustomEnamel
+      ? customPhoto || undefined
+      : undefined,
 
-    setShowCartConfirmation(true);
+    unit_price: displayedPrice,
 
-    setTimeout(() => {
-      setShowCartConfirmation(false);
-    }, 2500);
+    total_price: displayedPrice * quantity,
 
-    setSelectedOptions({});
-    setBackgroundColor(null);
-    setPrintColor(null);
-    setCustomTexts({});
-    setCustomPhoto(null);
-    setQuantity(1);
-    setSelectedImage(0);
-    setCartError("");
-  };
+    selected_options:
+      isCustomEnamel || product.type === "gift_card"
+        ? selectedOptions
+        : {},
+  });
+
+  setShowCartConfirmation(true);
+
+  setTimeout(() => {
+    setShowCartConfirmation(false);
+  }, 2500);
+
+  setSelectedOptions({});
+  setBackgroundColor(null);
+  setPrintColor(null);
+  setCustomTexts({});
+  setCustomPhoto(null);
+  setQuantity(1);
+  setSelectedImage(0);
+  setCartError("");
+};
+  
 
   if (loading) {
     return (
@@ -587,15 +653,16 @@ export default function Product() {
           <p className="product-price">{displayedPrice} SEK</p>
 
           {/* Dynamiska produktval */}
-          {isCustomEnamel &&
+          {(isCustomEnamel || product.type === "gift_card") &&
             product.options?.map((option) => {
-              const availableValues = getAvailableOptionValues(
-                option.option_name,
-              );
-
-              const filteredValues = option.values.filter((value) =>
-                availableValues.has(String(value.value)),
-              );
+              const filteredValues =
+                product.type === "gift_card"
+                  ? option.values
+                  : option.values.filter((value) =>
+                      getAvailableOptionValues(option.option_name).has(
+                        String(value.value),
+                      ),
+                    );
 
               return (
                 <div className="product-option" key={option.id}>
@@ -707,42 +774,48 @@ export default function Product() {
             ))}
 
           {/* Egen text */}
-          {isCustomEnamel &&
+          {(isCustomEnamel || product.type === "gift_card") &&
             product.allows_custom_text &&
-            product.text_fields?.map((field) => (
-              <div className="product-option" key={field.id}>
-                <label>
-                  {language === "sv"
-                    ? field.display_name
-                    : field.display_name_en || field.display_name}
-                </label>
-
-                <div className="gravyr-box">
-                  <textarea
-                    value={customTexts[field.field_name] ?? ""}
-                    onChange={(event) =>
-                      setCustomTexts((previous) => ({
-                        ...previous,
-                        [field.field_name]: event.target.value,
-                      }))
-                    }
-                    maxLength={field.max_length}
-                    placeholder={
-                      language === "sv"
-                        ? (field.placeholder ?? "")
-                        : field.placeholder_en || field.placeholder || ""
-                    }
-                    rows={2}
-                  />
-
-                  <p className="gravyr-hint">
+            product.text_fields
+              ?.filter(
+                (field) =>
+                  field.field_name !== "custom_title" ||
+                  selectedOptions.title === "custom",
+              )
+              .map((field) => (
+                <div className="product-option" key={field.id}>
+                  <label>
                     {language === "sv"
-                      ? `Max ${field.max_length} tecken`
-                      : `Max ${field.max_length} characters`}
-                  </p>
+                      ? field.display_name
+                      : field.display_name_en || field.display_name}
+                  </label>
+
+                  <div className="gravyr-box">
+                    <textarea
+                      value={customTexts[field.field_name] ?? ""}
+                      onChange={(event) =>
+                        setCustomTexts((previous) => ({
+                          ...previous,
+                          [field.field_name]: event.target.value,
+                        }))
+                      }
+                      maxLength={field.max_length}
+                      placeholder={
+                        language === "sv"
+                          ? (field.placeholder ?? "")
+                          : field.placeholder_en || field.placeholder || ""
+                      }
+                      rows={2}
+                    />
+
+                    <p className="gravyr-hint">
+                      {language === "sv"
+                        ? `Max ${field.max_length} tecken`
+                        : `Max ${field.max_length} characters`}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
           <div className="product-color-columns">
             {/* Bakgrundsfärg */}
@@ -891,25 +964,31 @@ export default function Product() {
           <div className="product-option">
             <label>{language === "sv" ? "Antal" : "Quantity"}</label>
 
-            <div className="quantity-row">
-              <button
-                className="quantity-btn"
-                onClick={() =>
-                  setQuantity((quantity) => Math.max(1, quantity - 1))
-                }
-              >
-                −
-              </button>
+            {product.type === "gift_card" ? (
+              <div className="quantity-row">
+                <span className="quantity-value">1</span>
+              </div>
+            ) : (
+              <div className="quantity-row">
+                <button
+                  className="quantity-btn"
+                  onClick={() =>
+                    setQuantity((quantity) => Math.max(1, quantity - 1))
+                  }
+                >
+                  −
+                </button>
 
-              <span className="quantity-value">{quantity}</span>
+                <span className="quantity-value">{quantity}</span>
 
-              <button
-                className="quantity-btn"
-                onClick={() => setQuantity((quantity) => quantity + 1)}
-              >
-                +
-              </button>
-            </div>
+                <button
+                  className="quantity-btn"
+                  onClick={() => setQuantity((quantity) => quantity + 1)}
+                >
+                  +
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Felmeddelande */}

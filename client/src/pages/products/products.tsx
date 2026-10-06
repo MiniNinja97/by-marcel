@@ -16,12 +16,12 @@ const categories = [
     slug: "emalj",
     subcategories: [
       {
-  name: {
-    sv: "Företagsskyltar",
-    en: "Company signs",
-  },
-  slug: "foretagsskyltar",
-},
+        name: {
+          sv: "Företagsskyltar",
+          en: "Company signs",
+        },
+        slug: "foretagsskyltar",
+      },
       {
         name: {
           sv: "Fotoskyltar",
@@ -119,9 +119,9 @@ function getSubcategory(product: Product): string {
   const id = product.id;
 
   // FÖRETAGSSKYLTAR
-if (id.startsWith("EC.ET")) {
-  return "foretagsskyltar";
-}
+  if (id.startsWith("EC.ET")) {
+    return "foretagsskyltar";
+  }
 
   // FOTOSKYLTAR
   if (id.startsWith("EC.PE")) {
@@ -186,27 +186,24 @@ if (id.startsWith("EC.ET")) {
   }
 
   // TERMOMETRAR - STANDARDPRODUKTER
-if (
-  id.startsWith("ES.TU") ||
-  id.startsWith("ES.TW")
-) {
-  return "termometrar";
-}
+  if (id.startsWith("ES.TU") || id.startsWith("ES.TW")) {
+    return "termometrar";
+  }
 
-// TERMOMETRAR - EGEN DESIGN
-if (id.startsWith("EC.TET")) {
-  return "ovrigt";
-}
+  // TERMOMETRAR - EGEN DESIGN
+  if (id.startsWith("EC.TET")) {
+    return "ovrigt";
+  }
 
   // KLOCKOR - STANDARDPRODUKTER
-if (id.startsWith("ES.KL")) {
-  return "klockor";
-}
+  if (id.startsWith("ES.KL")) {
+    return "klockor";
+  }
 
-// KLOCKOR - EGEN DESIGN
-if (id.startsWith("EC.KE")) {
-  return "ovrigt";
-}
+  // KLOCKOR - EGEN DESIGN
+  if (id.startsWith("EC.KE")) {
+    return "ovrigt";
+  }
 
   // Allt som vi ännu inte placerat
   return "ovrigt";
@@ -366,6 +363,11 @@ export default function Products() {
       return false;
     }
 
+    // Presentkort
+    if (kategori === "presentkort") {
+      return product.type === "gift_card";
+    }
+
     return false;
   });
 
@@ -409,6 +411,9 @@ export default function Products() {
       pageTitle = activeSubcategory.name[language];
     }
   }
+  if (kategori === "presentkort") {
+  pageTitle = language === "sv" ? "Presentkort" : "Gift cards";
+}
   if (loading) {
     return (
       <div className="products">
@@ -513,7 +518,8 @@ export default function Products() {
           Visas först när Egen design eller
           Standardprodukter har valts
       ======================================== */}
-        {kategori === "emalj" && produkttyp !== "valj" && (
+        {((kategori === "emalj" && produkttyp !== "valj") ||
+  kategori === "presentkort") && (
           <>
             <div className="products-header">
               <h1>{pageTitle}</h1>
@@ -634,4 +640,3 @@ export default function Products() {
     </div>
   );
 }
-
