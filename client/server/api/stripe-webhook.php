@@ -204,21 +204,21 @@ try {
                     if ($wasCompleted) {
 
                         $updateGiftCardStmt = $conn->prepare("
-                            UPDATE gift_cards
-                            SET
-                                remaining_balance =
-                                    GREATEST(
-                                        0,
-                                        remaining_balance - ?
-                                    ),
-                                status =
-                                    CASE
-                                        WHEN remaining_balance - ? <= 0
-                                            THEN 'used'
-                                        ELSE 'active'
-                                    END
-                            WHERE id = ?
-                        ");
+    UPDATE gift_cards
+    SET
+        status =
+            CASE
+                WHEN remaining_balance - ? <= 0
+                    THEN 'used'
+                ELSE 'active'
+            END,
+        remaining_balance =
+            GREATEST(
+                0,
+                remaining_balance - ?
+            )
+    WHERE id = ?
+");
 
                         $updateGiftCardStmt->bind_param(
                             "ddi",

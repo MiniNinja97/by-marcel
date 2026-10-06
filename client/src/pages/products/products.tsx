@@ -412,8 +412,8 @@ export default function Products() {
     }
   }
   if (kategori === "presentkort") {
-  pageTitle = language === "sv" ? "Presentkort" : "Gift cards";
-}
+    pageTitle = language === "sv" ? "Presentkort" : "Gift cards";
+  }
   if (loading) {
     return (
       <div className="products">
@@ -477,6 +477,15 @@ export default function Products() {
 
                 <h2>{language === "sv" ? "Emalj" : "Enamel"}</h2>
               </NavLink>
+
+              <NavLink
+                to="/produkter/presentkort"
+                className="products-category-card"
+              >
+                <div className="products-category-image"></div>
+
+                <h2>{language === "sv" ? "Presentkort" : "Gift cards"}</h2>
+              </NavLink>
             </div>
           </div>
         )}
@@ -519,7 +528,7 @@ export default function Products() {
           Standardprodukter har valts
       ======================================== */}
         {((kategori === "emalj" && produkttyp !== "valj") ||
-  kategori === "presentkort") && (
+          kategori === "presentkort") && (
           <>
             <div className="products-header">
               <h1>{pageTitle}</h1>
