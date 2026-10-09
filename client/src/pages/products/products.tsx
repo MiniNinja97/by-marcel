@@ -364,9 +364,9 @@ export default function Products() {
     }
 
     // Bildgravyr
-    if (kategori === "bildgravyr") {
-      return product.id === "LFG.TRA";
-    }
+if (kategori === "bildgravyr") {
+  return product.id === "LFG.TRA" || product.id === "LFG.DEK";
+}
 
     // Presentkort
     if (kategori === "presentkort") {
