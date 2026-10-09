@@ -1,9 +1,42 @@
 <?php
 
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
+
+$allowedOrigins = [
+    "https://www.bymarcel.se",
+    "https://bymarcel.se",
+    "http://localhost:5173"
+];
+
+$origin = $_SERVER["HTTP_ORIGIN"] ?? "";
+
+if (in_array($origin, $allowedOrigins, true)) {
+    header("Access-Control-Allow-Origin: " . $origin);
+    header("Access-Control-Allow-Credentials: true");
+}
+
+header("Vary: Origin");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
+
+if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+    http_response_code(204);
+    exit;
+}
+
+require_once __DIR__ . "/../config/db.php";
+require_once __DIR__ . "/admin/session.php";
+
+if (empty($_SESSION["admin_user_id"])) {
+    http_response_code(401);
+
+    echo json_encode([
+        "success" => false,
+        "message" => "Du måste vara inloggad som administratör"
+    ]);
+
+    exit;
+}
 
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     http_response_code(200);

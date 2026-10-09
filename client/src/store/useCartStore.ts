@@ -11,7 +11,7 @@ interface CartStore {
   getTotalPrice: () => number;
   totalWeight: () => number;
   discountCode: string | null;
-setDiscountCode: (code: string | null) => void;
+  setDiscountCode: (code: string | null) => void;
 }
 
 export const useCartStore = create<CartStore>((set, get) => ({
@@ -31,8 +31,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
             JSON.stringify(newItem.custom_texts) &&
           item.selected_background_color?.id ===
             newItem.selected_background_color?.id &&
-          item.selected_print_color?.id ===
-            newItem.selected_print_color?.id,
+          item.selected_print_color?.id === newItem.selected_print_color?.id &&
+          item.custom_photo === undefined &&
+          newItem.custom_photo === undefined,
       );
 
       if (existing) {
@@ -69,10 +70,10 @@ export const useCartStore = create<CartStore>((set, get) => ({
   },
 
   clearCart: () =>
-  set({
-    items: [],
-    discountCode: null,
-  }),
+    set({
+      items: [],
+      discountCode: null,
+    }),
 
   getTotalPrice: () => {
     return get().items.reduce(
@@ -82,10 +83,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   },
 
   getTotalItems: () => {
-    return get().items.reduce(
-      (sum, item) => sum + item.quantity,
-      0,
-    );
+    return get().items.reduce((sum, item) => sum + item.quantity, 0);
   },
 
   totalWeight: () => {
@@ -94,8 +92,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
         (variant) => variant.id === item.variant_id,
       );
 
-      const itemWeight =
-        selectedVariant?.weight ?? item.product.weight;
+      const itemWeight = selectedVariant?.weight ?? item.product.weight;
 
       return sum + itemWeight * item.quantity;
     }, 0);

@@ -171,7 +171,7 @@ export interface OrderItem {
 
   selected_font?: FontOption;
 
-  custom_photo_url?: string;
+ custom_photo_url?: string | null;
 
   custom_text?: string;
 
@@ -218,11 +218,13 @@ export type ProductOptionValue = string | number | boolean;
 
 export interface ProductVariant {
   id: string;
-  supplier_id: string;
+  supplier_id?: string | null;
   options: Record<string, ProductOptionValue>;
   price: number;
   weight?: number;
   images?: string[];
+
+  option_prices?: Record<string, Record<string, number>>;
 }
 
 export interface ProductTextField {

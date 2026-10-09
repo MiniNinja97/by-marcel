@@ -3,7 +3,9 @@ import type { Order, CartItem, Customer, OrderStatus } from "../types";
 const ORDERS_API = "https://www.bymarcel.se/Server/api/orders.php";
 
 export async function getOrders(): Promise<Order[]> {
-  const response = await fetch(ORDERS_API);
+  const response = await fetch(ORDERS_API, {
+    credentials: "include",
+  });
 
   if (!response.ok) {
     throw new Error("Kunde inte hämta ordrar");
@@ -22,13 +24,44 @@ interface CreateOrderResponse {
   checkout_url: string;
 }
 
+
+export async function uploadOrderImage(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await fetch(
+    "https://www.bymarcel.se/Server/api/upload-order-image.php",
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success || !data.image_url) {
+    throw new Error(
+      data.message ?? "Kunde inte ladda upp bilden.",
+    );
+  }
+
+  return data.image_url;
+}
+
+
 export async function createOrder(
   customer: Omit<Customer, "id">,
   items: CartItem[],
   discountCode: string | null,
   giftCardCode: string | null,
 ): Promise<CreateOrderResponse> {
-  const orderItems = items.map((item) => ({
+  const orderItems = await Promise.all(
+  items.map(async (item) => {
+    const customPhotoUrl = item.custom_photo
+      ? await uploadOrderImage(item.custom_photo)
+      : null;
+
+    return {
     product_id: item.product.id,
     product_name: item.product.name,
 
@@ -69,10 +102,13 @@ export async function createOrder(
     selected_options: item.selected_options,
 
     custom_text: item.custom_text,
-    custom_texts: item.custom_texts,
-  }));
+custom_texts: item.custom_texts,
+custom_photo_url: customPhotoUrl,
+     };
+  }),
+);
 
-  console.log("ORDER ITEMS:", JSON.stringify(orderItems, null, 2));
+console.log("ORDER ITEMS:", JSON.stringify(orderItems, null, 2));
 
   const response = await fetch(
     "https://www.bymarcel.se/Server/api/create-order.php",
@@ -112,6 +148,8 @@ export async function updateOrderStatus(
     {
       method: "POST",
 
+      credentials: "include",
+
       headers: {
         "Content-Type": "application/json",
       },
@@ -126,4 +164,28 @@ export async function updateOrderStatus(
   if (!response.ok) {
     throw new Error("Kunde inte uppdatera orderstatus");
   }
+}
+export async function getCustomerImage(
+  imageUrl: string,
+): Promise<string> {
+  const filename = imageUrl.split("/").pop();
+
+  if (!filename) {
+    throw new Error("Ogiltig bildsökväg");
+  }
+
+  const response = await fetch(
+    `https://www.bymarcel.se/Server/api/admin/customer-image.php?file=${encodeURIComponent(filename)}`,
+    {
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Kunde inte hämta kundbilden");
+  }
+
+  const blob = await response.blob();
+
+  return URL.createObjectURL(blob);
 }

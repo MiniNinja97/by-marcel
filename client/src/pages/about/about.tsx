@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "../../context/languageContext";
 import "./about.css";
-import BKOO2 from "./about-img/BKOO-2.jpg";
+
 import BKOO3 from "./about-img/BKOO-3.jpg";
 import BKOO4 from "./about-img/BKOO-4.jpg";
 import BKOO8 from "./about-img/BKOO-8.jpg";

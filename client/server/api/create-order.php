@@ -374,6 +374,8 @@ $selectedShape =
 $selectedOptions =
     $item["selected_options"] ?? null;
 
+    $isWoodEngraving = $productId === "LFG.TRA";
+
             // -----------------------------------------
 // Presentkort
 // -----------------------------------------
@@ -417,14 +419,7 @@ if ($productType === "gift_card") {
 
     $unitPrice += $giftCardAmount;
 
-    error_log(
-    "GIFT CARD DEBUG: base=" .
-    $product["base_price"] .
-    " amount=" .
-    $giftCardAmount .
-    " unitPrice=" .
-    $unitPrice
-);
+  
 }
 
 
@@ -432,7 +427,7 @@ if ($productType === "gift_card") {
         // EC måste ha en giltig variant
         // -----------------------------------------
 
-        if ($productType === "EC") {
+      if ($productType === "EC" || $isWoodEngraving) {
 
             if (
                 !isset($item["variant_id"]) ||
@@ -522,17 +517,179 @@ if ($productType === "gift_card") {
                 }
             }
 
-            $selectedOptions =
-                $variantOptions;
+            if ($productType === "EC") {
+    $selectedOptions = $variantOptions;
+}
 
-            $selectedSize =
-                $variantOptions["size"]
-                ?? $selectedSize;
+$selectedSize =
+    $variantOptions["size"]
+    ?? $selectedSize;
 
-            $selectedShape =
-                $variantOptions["shape"]
-                ?? $selectedShape;
+$selectedShape =
+    $variantOptions["shape"]
+    ?? $selectedShape;
+
+
+if ($isWoodEngraving) {
+
+    if (
+        !is_array($selectedOptions) ||
+        !isset($selectedOptions["shape"]) ||
+        !isset($selectedOptions["size"])
+    ) {
+        throw new Exception(
+            "Form eller storlek saknas för " . $productId
+        );
+    }
+
+    if (
+        (string) $selectedOptions["shape"] !==
+            (string) ($variantOptions["shape"] ?? "") ||
+        (string) $selectedOptions["size"] !==
+            (string) ($variantOptions["size"] ?? "")
+    ) {
+        throw new Exception(
+            "Vald form eller storlek stämmer inte med varianten för " .
+            $productId
+        );
+    }
+
+    // Shape och size kommer från den verifierade varianten
+    $selectedOptions["shape"] =
+        $variantOptions["shape"];
+
+    $selectedOptions["size"] =
+        $variantOptions["size"];
+
+
+    // -----------------------------------------
+    // Kontrollera obligatoriska produktval
+    // -----------------------------------------
+
+    $requiredWoodOptions = [
+        "shape",
+        "size",
+        "surface",
+        "thickness",
+        "wall_mount",
+        "epoxy_finish",
+        "wooden_stand",
+        "floating_led"
+    ];
+
+    if (
+        $selectedOptions["shape"] === "rectangle" ||
+        $selectedOptions["shape"] === "oval"
+    ) {
+        $requiredWoodOptions[] = "orientation";
+    }
+
+
+    // -----------------------------------------
+    // Kontrollera att alla obligatoriska val finns
+    // -----------------------------------------
+
+    foreach ($requiredWoodOptions as $requiredOption) {
+
+        if (
+            !isset($selectedOptions[$requiredOption]) ||
+            $selectedOptions[$requiredOption] === ""
+        ) {
+            throw new Exception(
+                "Produktval saknas: " .
+                $requiredOption .
+                " för " .
+                $productId
+            );
         }
+    }
+
+
+    // -----------------------------------------
+    // Kontrollera att valen är giltiga i databasen
+    // -----------------------------------------
+
+    foreach ($requiredWoodOptions as $requiredOption) {
+
+        $selectedValue =
+            (string) $selectedOptions[$requiredOption];
+
+        $validOptionSql = "
+            SELECT pov.id
+            FROM product_option_values pov
+            INNER JOIN product_options po
+                ON po.id = pov.option_id
+            WHERE
+                po.product_id = ?
+                AND po.option_name = ?
+                AND pov.value = ?
+            LIMIT 1
+        ";
+
+        $validOptionStmt =
+            $conn->prepare($validOptionSql);
+
+        $validOptionStmt->bind_param(
+            "sss",
+            $productId,
+            $requiredOption,
+            $selectedValue
+        );
+
+        $validOptionStmt->execute();
+
+        $validOptionResult =
+            $validOptionStmt->get_result();
+
+        $validOption =
+            $validOptionResult->fetch_assoc();
+
+        $validOptionStmt->close();
+
+        if (!$validOption) {
+            throw new Exception(
+                "Ogiltigt produktval: " .
+                $requiredOption .
+                " för " .
+                $productId
+            );
+        }
+    }
+
+    $optionPriceSql = "
+        SELECT
+            option_name,
+            option_value,
+            price_delta
+        FROM product_variant_option_prices
+        WHERE variant_id = ?
+    ";
+
+    $optionPriceStmt = $conn->prepare($optionPriceSql);
+    $optionPriceStmt->bind_param("s", $variantId);
+    $optionPriceStmt->execute();
+
+    $optionPriceResult = $optionPriceStmt->get_result();
+
+    while ($optionPrice = $optionPriceResult->fetch_assoc()) {
+
+        $optionName = $optionPrice["option_name"];
+        $optionValue = $optionPrice["option_value"];
+        $priceDelta = (float) $optionPrice["price_delta"];
+
+        if (
+            isset($selectedOptions[$optionName]) &&
+            (string) $selectedOptions[$optionName] ===
+            (string) $optionValue
+        ) {
+            $unitPrice += $priceDelta;
+        }
+    }
+
+    $optionPriceStmt->close();
+}
+
+}
 
 
         // -----------------------------------------
@@ -784,10 +941,13 @@ if ($productType === "gift_card") {
                 $selectedOptions,
 
             "custom_text" =>
-                $item["custom_text"] ?? null,
+    $item["custom_text"] ?? null,
 
-            "custom_texts" =>
-                $customTexts
+"custom_texts" =>
+    $customTexts,
+
+"custom_photo_url" =>
+    $item["custom_photo_url"] ?? null
         ];
 
 
@@ -1429,8 +1589,29 @@ if ($giftCardCode !== "" && $giftCardAmount > 0) {
                 : null;
 
 
-        // Bilduppladdning tar vi senare
-        $customPhotoUrl = null;
+       // Kundens uppladdade bild eller skiss
+$customPhotoUrl = $item["custom_photo_url"] ?? null;
+
+if ($customPhotoUrl !== null) {
+    if (
+        !is_string($customPhotoUrl) ||
+        strlen($customPhotoUrl) > 500 ||
+        !preg_match(
+            '~^/uploads/customerUploads/[a-f0-9]{32}\.(jpg|png|webp)$~',
+            $customPhotoUrl
+        )
+    ) {
+        throw new Exception("Ogiltig sökväg för kundbild.");
+    }
+
+    $filename = basename($customPhotoUrl);
+
+    $imagePath = __DIR__ . "/../../uploads/customerUploads/" . $filename;
+
+    if (!is_file($imagePath)) {
+        throw new Exception("Den uppladdade kundbilden saknas.");
+    }
+}
 
 
         $customText =

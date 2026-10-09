@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getOrders, updateOrderStatus } from "../../api/orders";
+import AdminCustomerImage from "./adminCustomerImage";
 import type { Order, OrderStatus } from "../../types";
 
 type SortOption = "az" | "datum";
@@ -267,6 +268,11 @@ export default function AdminOrders() {
                         </p>
                       ),
                     )}
+
+                  {/* Kundens uppladdade bild */}
+                  {item.custom_photo_url && (
+                    <AdminCustomerImage imageUrl={item.custom_photo_url} />
+                  )}
 
                   {/* Dynamiska textrader */}
                   {item.custom_texts &&

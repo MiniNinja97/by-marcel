@@ -39,18 +39,14 @@ export default function Payment() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
- const subtotal = getTotalPrice();
+  const subtotal = getTotalPrice();
 
-// Presentkort ska inte vara rabattgrundande.
-const discountableSubtotal = items
-  .filter((item) => item.product.type !== "gift_card")
-  .reduce(
-    (sum, item) =>
-      sum + item.unit_price * item.quantity,
-    0,
-  );
+  // Presentkort ska inte vara rabattgrundande.
+  const discountableSubtotal = items
+    .filter((item) => item.product.type !== "gift_card")
+    .reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
 
-const [shipping, setShipping] = useState<number | null>(null);
+  const [shipping, setShipping] = useState<number | null>(null);
 
   const [shippingLoading, setShippingLoading] = useState(false);
 
@@ -77,49 +73,49 @@ const [shipping, setShipping] = useState<number | null>(null);
   // -----------------------------------------
 
   useEffect(() => {
-  if (items.length === 0 || !country.trim()) {
-    setShipping(null);
-    return;
-  }
-
-  // Presentkort har frakt inkluderad i grundpriset
-  // och ska därför inte räknas med i fraktberäkningen.
-  const shippingItems = items.filter(
-  (item) => item.product.type !== "gift_card",
-);
-
-  // Om varukorgen endast innehåller presentkort
-  // ska ingen extra frakt läggas på.
-  if (shippingItems.length === 0) {
-    setShipping(0);
-    setShippingLoading(false);
-    return;
-  }
-
-  const loadShipping = async () => {
-    try {
-      setShippingLoading(true);
-
-      const result = await getShipping(
-        country.trim(),
-        shippingItems.map((item) => ({
-          product_id: item.product.id,
-          variant_id: item.variant_id,
-          quantity: item.quantity,
-        })),
-      );
-
-      setShipping(result.shipping);
-    } catch (error) {
-      console.error(error);
+    if (items.length === 0 || !country.trim()) {
       setShipping(null);
-    } finally {
-      setShippingLoading(false);
+      return;
     }
-  };
 
-  loadShipping();
-}, [country, items]);
+    // Presentkort har frakt inkluderad i grundpriset
+    // och ska därför inte räknas med i fraktberäkningen.
+    const shippingItems = items.filter(
+      (item) => item.product.type !== "gift_card",
+    );
+
+    // Om varukorgen endast innehåller presentkort
+    // ska ingen extra frakt läggas på.
+    if (shippingItems.length === 0) {
+      setShipping(0);
+      setShippingLoading(false);
+      return;
+    }
+
+    const loadShipping = async () => {
+      try {
+        setShippingLoading(true);
+
+        const result = await getShipping(
+          country.trim(),
+          shippingItems.map((item) => ({
+            product_id: item.product.id,
+            variant_id: item.variant_id,
+            quantity: item.quantity,
+          })),
+        );
+
+        setShipping(result.shipping);
+      } catch (error) {
+        console.error(error);
+        setShipping(null);
+      } finally {
+        setShippingLoading(false);
+      }
+    };
+
+    loadShipping();
+  }, [country, items]);
 
   // -----------------------------------------
   // Validering
@@ -301,6 +297,15 @@ const [shipping, setShipping] = useState<number | null>(null);
     }
 
     try {
+      console.log(
+        "Kundbilder i varukorgen:",
+        items.map((item) => ({
+          product: item.product.name,
+          hasImage: item.custom_photo instanceof File,
+          imageType: item.custom_photo?.type ?? null,
+        })),
+      );
+
       setLoading(true);
       setError("");
 
@@ -341,32 +346,32 @@ const [shipping, setShipping] = useState<number | null>(null);
     }
   };
 
- useEffect(() => {
-  if (!discountCode || discountableSubtotal <= 0) {
-    setPaymentDiscount(null);
-    return;
-  }
-
-  const loadDiscount = async () => {
-    try {
-      const discount = await validateDiscountCode(
-        discountCode,
-        discountableSubtotal,
-      );
-
-      setPaymentDiscount(discount);
-    } catch (error) {
-      console.error(error);
+  useEffect(() => {
+    if (!discountCode || discountableSubtotal <= 0) {
       setPaymentDiscount(null);
+      return;
     }
-  };
 
-  loadDiscount();
-}, [discountCode, discountableSubtotal]);
+    const loadDiscount = async () => {
+      try {
+        const discount = await validateDiscountCode(
+          discountCode,
+          discountableSubtotal,
+        );
+
+        setPaymentDiscount(discount);
+      } catch (error) {
+        console.error(error);
+        setPaymentDiscount(null);
+      }
+    };
+
+    loadDiscount();
+  }, [discountCode, discountableSubtotal]);
 
   const containsGiftCardProduct = items.some(
-  (item) => item.product.type === "gift_card",
-);
+    (item) => item.product.type === "gift_card",
+  );
 
   // -----------------------------------------
   // JSX
@@ -521,57 +526,53 @@ const [shipping, setShipping] = useState<number | null>(null);
             <h2>{language === "sv" ? "Orderöversikt" : "Order summary"}</h2>
 
             {!containsGiftCardProduct && (
-  <div className="payment-gift-card">
-    <label>
-      {language === "sv" ? "Presentkort" : "Gift card"}
-    </label>
+              <div className="payment-gift-card">
+                <label>{language === "sv" ? "Presentkort" : "Gift card"}</label>
 
-    <div className="payment-gift-card-input">
-      <input
-        type="text"
-        value={giftCardCode}
-        onChange={(event) => {
-          setGiftCardCode(event.target.value);
-          setPaymentGiftCard(null);
-          setGiftCardError("");
-        }}
-        placeholder={
-          language === "sv"
-            ? "Ange presentkortskod"
-            : "Enter gift card code"
-        }
-      />
+                <div className="payment-gift-card-input">
+                  <input
+                    type="text"
+                    value={giftCardCode}
+                    onChange={(event) => {
+                      setGiftCardCode(event.target.value);
+                      setPaymentGiftCard(null);
+                      setGiftCardError("");
+                    }}
+                    placeholder={
+                      language === "sv"
+                        ? "Ange presentkortskod"
+                        : "Enter gift card code"
+                    }
+                  />
 
-      <button
-        type="button"
-        onClick={handleGiftCard}
-        disabled={giftCardLoading}
-      >
-        {giftCardLoading
-          ? language === "sv"
-            ? "Kontrollerar..."
-            : "Checking..."
-          : language === "sv"
-            ? "Använd"
-            : "Apply"}
-      </button>
-    </div>
+                  <button
+                    type="button"
+                    onClick={handleGiftCard}
+                    disabled={giftCardLoading}
+                  >
+                    {giftCardLoading
+                      ? language === "sv"
+                        ? "Kontrollerar..."
+                        : "Checking..."
+                      : language === "sv"
+                        ? "Använd"
+                        : "Apply"}
+                  </button>
+                </div>
 
-    {giftCardError && (
-      <div className="payment-error">
-        {giftCardError}
-      </div>
-    )}
+                {giftCardError && (
+                  <div className="payment-error">{giftCardError}</div>
+                )}
 
-    {paymentGiftCard && (
-      <p>
-        {language === "sv"
-          ? `Tillgängligt saldo: ${paymentGiftCard.remaining_balance} SEK`
-          : `Available balance: ${paymentGiftCard.remaining_balance} SEK`}
-      </p>
-    )}
-  </div>
-)}
+                {paymentGiftCard && (
+                  <p>
+                    {language === "sv"
+                      ? `Tillgängligt saldo: ${paymentGiftCard.remaining_balance} SEK`
+                      : `Available balance: ${paymentGiftCard.remaining_balance} SEK`}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="payment-summary-row">
               <span>{language === "sv" ? "Delsumma" : "Subtotal"}</span>

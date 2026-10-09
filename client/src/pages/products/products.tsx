@@ -363,6 +363,11 @@ export default function Products() {
       return false;
     }
 
+    // Bildgravyr
+    if (kategori === "bildgravyr") {
+      return product.id === "LFG.TRA";
+    }
+
     // Presentkort
     if (kategori === "presentkort") {
       return product.type === "gift_card";
@@ -410,6 +415,9 @@ export default function Products() {
     if (activeSubcategory) {
       pageTitle = activeSubcategory.name[language];
     }
+  }
+  if (kategori === "bildgravyr") {
+    pageTitle = language === "sv" ? "Bildgravyr" : "Photo engraving";
   }
   if (kategori === "presentkort") {
     pageTitle = language === "sv" ? "Presentkort" : "Gift cards";
@@ -479,6 +487,15 @@ export default function Products() {
               </NavLink>
 
               <NavLink
+                to="/produkter/bildgravyr"
+                className="products-category-card"
+              >
+                <div className="products-category-image"></div>
+
+                <h2>{language === "sv" ? "Bildgravyr" : "Photo engraving"}</h2>
+              </NavLink>
+
+              <NavLink
                 to="/produkter/presentkort"
                 className="products-category-card"
               >
@@ -528,6 +545,7 @@ export default function Products() {
           Standardprodukter har valts
       ======================================== */}
         {((kategori === "emalj" && produkttyp !== "valj") ||
+          kategori === "bildgravyr" ||
           kategori === "presentkort") && (
           <>
             <div className="products-header">

@@ -257,6 +257,39 @@ if ($result) {
             );
 
             $variantId = $variant["id"];
+            // =========================================
+// TILLÄGGSPRISER FÖR DENNA VARIANT
+// =========================================
+
+$optionPriceSql = "
+    SELECT
+        option_name,
+        option_value,
+        price_delta
+    FROM product_variant_option_prices
+    WHERE variant_id = ?
+";
+
+$optionPriceStmt = $conn->prepare($optionPriceSql);
+$optionPriceStmt->bind_param("s", $variantId);
+$optionPriceStmt->execute();
+
+$optionPriceResult = $optionPriceStmt->get_result();
+
+$optionPrices = [];
+
+while ($optionPrice = $optionPriceResult->fetch_assoc()) {
+
+    $optionName = $optionPrice["option_name"];
+    $optionValue = $optionPrice["option_value"];
+
+    $optionPrices[$optionName][$optionValue] =
+        (float) $optionPrice["price_delta"];
+}
+
+$variant["option_prices"] = $optionPrices;
+
+$optionPriceStmt->close();
 
 
             // =========================================

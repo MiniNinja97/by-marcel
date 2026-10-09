@@ -310,6 +310,21 @@ export default function ProductsSidebar({
         )}
       </div>
 
+      {/* BILDGRAVYR */}
+<div className="sidebar-category">
+  <NavLink
+    to="/produkter/bildgravyr"
+    end
+    className={({ isActive }) =>
+      isActive
+        ? "sidebar-category-link active"
+        : "sidebar-category-link"
+    }
+  >
+    {language === "sv" ? "Bildgravyr" : "Photo engraving"}
+  </NavLink>
+</div>
+
       {/* KOMMANDE PRODUKTER */}
       <div className="sidebar-category">
         <NavLink

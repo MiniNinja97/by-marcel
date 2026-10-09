@@ -119,6 +119,17 @@ export default function Product() {
     if (!product || !product.options || !product.variants) {
       return new Set<string>();
     }
+    if (
+      product.id === "LFG.TRA" &&
+      optionName !== "shape" &&
+      optionName !== "size"
+    ) {
+      const option = product.options.find(
+        (option) => option.option_name === optionName,
+      );
+
+      return new Set(option?.values.map((value) => String(value.value)) ?? []);
+    }
 
     const currentOptionIndex = product.options.findIndex(
       (option) => option.option_name === optionName,
@@ -219,7 +230,14 @@ export default function Product() {
     }
 
     const relevantOptions =
-      product.type === "EC" ? (product.options ?? []) : [];
+      product.id === "LFG.TRA"
+        ? (product.options ?? []).filter(
+            (option) =>
+              option.option_name === "shape" || option.option_name === "size",
+          )
+        : product.type === "EC"
+          ? (product.options ?? [])
+          : [];
 
     // En produkt utan kundval ska ha exakt en variant.
     if (relevantOptions.length === 0) {
@@ -256,8 +274,25 @@ export default function Product() {
   const giftCardAmount =
     product?.type === "gift_card" ? Number(selectedOptions.amount ?? 0) : 0;
 
+  const optionAddOnPrice =
+    product?.id === "LFG.TRA" && selectedVariant?.option_prices
+      ? Object.entries(selectedOptions).reduce(
+          (total, [optionName, optionValue]) => {
+            const price =
+              selectedVariant.option_prices?.[optionName]?.[optionValue] ?? 0;
+
+            return total + price;
+          },
+          0,
+        )
+      : 0;
+
   const displayedPrice =
-    variantPrice + backgroundColorPrice + printColorPrice + giftCardAmount;
+    variantPrice +
+    backgroundColorPrice +
+    printColorPrice +
+    giftCardAmount +
+    optionAddOnPrice;
 
   const displayedImages =
     selectedVariant?.images && selectedVariant.images.length > 0
@@ -340,185 +375,227 @@ export default function Product() {
   }, [selectedVariant?.id]);
 
   const handleAddToCart = () => {
-  setCartError("");
+    setCartError("");
 
-  if (!product || product.is_out_of_stock) {
-    return;
-  }
+    if (!product || product.is_out_of_stock) {
+      return;
+    }
 
-  const isCustomEnamel = product.type === "EC";
-  const isGiftCard = product.type === "gift_card";
+    const isCustomEnamel = product.type === "EC";
+    const isGiftCard = product.type === "gift_card";
+    const isWoodEngraving = product.id === "LFG.TRA";
 
-  const requiresVariant = (product.variants?.length ?? 0) > 0;
+    const requiresVariant = (product.variants?.length ?? 0) > 0;
 
-  const requiresColors =
-    isCustomEnamel && (product.colors?.length ?? 0) > 0;
+    const requiresColors = isCustomEnamel && (product.colors?.length ?? 0) > 0;
+    const requiredWoodOptions = isWoodEngraving
+      ? [
+          "shape",
+          "size",
+          ...(selectedOptions.shape === "rectangle" ||
+          selectedOptions.shape === "oval"
+            ? ["orientation"]
+            : []),
+          "surface",
+          "thickness",
+          "wall_mount",
+          "epoxy_finish",
+          "wooden_stand",
+          "floating_led",
+        ]
+      : [];
 
-  // Kontrollera obligatoriska val för presentkort
-  if (isGiftCard) {
-    const requiredGiftCardOptions = [
-      "shape",
-      "amount",
-      "title",
-      "language",
-    ];
-
-    const missingGiftCardOptions = requiredGiftCardOptions.filter(
+    const missingWoodOptions = requiredWoodOptions.filter(
       (optionName) => !selectedOptions[optionName],
     );
 
-    if (missingGiftCardOptions.length > 0) {
+    if (missingWoodOptions.length > 0) {
       setCartError(
         language === "sv"
-          ? "Välj form, belopp, titel och språk innan du lägger presentkortet i kundkorgen."
-          : "Select shape, amount, title and language before adding the gift card to your cart.",
+          ? "Gör alla produktval innan du lägger produkten i kundkorgen."
+          : "Complete all product options before adding the product to your cart.",
       );
 
       return;
     }
-  }
-
-  // Kontrollera egen titel för presentkort
-  if (
-    isGiftCard &&
-    selectedOptions.title === "custom" &&
-    !customTexts.custom_title?.trim()
-  ) {
-    setCartError(
-      language === "sv"
-        ? "Skriv en egen titel innan du lägger presentkortet i kundkorgen."
-        : "Enter a custom title before adding the gift card to your cart.",
-    );
-
-    return;
-  }
-
-  // Kontrollera produktval
-  if (requiresVariant && !selectedVariant) {
-    const missingOptions =
-      product.options
-        ?.filter(
-          (option) =>
-            selectedOptions[option.option_name] === undefined,
-        )
-        .map((option) =>
-          language === "sv"
-            ? option.display_name
-            : option.display_name_en || option.display_name,
-        ) ?? [];
-
-    if (missingOptions.length > 0) {
-      if (language === "sv") {
-        setCartError(
-          `Välj ${missingOptions
-            .map((option) => option.toLowerCase())
-            .join(" och ")} innan du lägger produkten i kundkorgen.`,
-        );
-      } else {
-        setCartError(
-          `Please select ${missingOptions
-            .map((option) => option.toLowerCase())
-            .join(" and ")} before adding the product to your cart.`,
-        );
-      }
-    } else {
+    if (isWoodEngraving && !uploadFiles["engraving_image_0"]?.[0]) {
       setCartError(
         language === "sv"
-          ? "Den valda kombinationen är inte tillgänglig."
-          : "The selected combination is not available.",
+          ? "Ladda upp en bild för gravyr innan du lägger produkten i kundkorgen."
+          : "Upload an image for engraving before adding the product to your cart.",
       );
+
+      return;
     }
 
-    return;
-  }
+    // Kontrollera obligatoriska val för presentkort
+    if (isGiftCard) {
+      const requiredGiftCardOptions = ["shape", "amount", "title", "language"];
 
-  // Kontrollera färger
-  if (requiresColors && !backgroundColor && !printColor) {
-    setCartError(
-      language === "sv"
-        ? "Välj bakgrundsfärg och tryckfärg innan du lägger produkten i kundkorgen."
-        : "Select a background colour and print colour before adding the product to your cart.",
-    );
+      const missingGiftCardOptions = requiredGiftCardOptions.filter(
+        (optionName) => !selectedOptions[optionName],
+      );
 
-    return;
-  }
+      if (missingGiftCardOptions.length > 0) {
+        setCartError(
+          language === "sv"
+            ? "Välj form, belopp, titel och språk innan du lägger presentkortet i kundkorgen."
+            : "Select shape, amount, title and language before adding the gift card to your cart.",
+        );
 
-  if (requiresColors && !backgroundColor) {
-    setCartError(
-      language === "sv"
-        ? "Välj en bakgrundsfärg innan du lägger produkten i kundkorgen."
-        : "Select a background colour before adding the product to your cart.",
-    );
+        return;
+      }
+    }
 
-    return;
-  }
+    // Kontrollera egen titel för presentkort
+    if (
+      isGiftCard &&
+      selectedOptions.title === "custom" &&
+      !customTexts.custom_title?.trim()
+    ) {
+      setCartError(
+        language === "sv"
+          ? "Skriv en egen titel innan du lägger presentkortet i kundkorgen."
+          : "Enter a custom title before adding the gift card to your cart.",
+      );
 
-  if (requiresColors && !printColor) {
-    setCartError(
-      language === "sv"
-        ? "Välj en tryckfärg innan du lägger produkten i kundkorgen."
-        : "Select a print colour before adding the product to your cart.",
-    );
+      return;
+    }
 
-    return;
-  }
+    // Kontrollera produktval
+    if (requiresVariant && !selectedVariant) {
+      const missingOptions =
+        product.options
+          ?.filter(
+            (option) => selectedOptions[option.option_name] === undefined,
+          )
+          .map((option) =>
+            language === "sv"
+              ? option.display_name
+              : option.display_name_en || option.display_name,
+          ) ?? [];
 
-  addItem({
-    product,
-    quantity,
+      if (missingOptions.length > 0) {
+        if (language === "sv") {
+          setCartError(
+            `Välj ${missingOptions
+              .map((option) => option.toLowerCase())
+              .join(" och ")} innan du lägger produkten i kundkorgen.`,
+          );
+        } else {
+          setCartError(
+            `Please select ${missingOptions
+              .map((option) => option.toLowerCase())
+              .join(" and ")} before adding the product to your cart.`,
+          );
+        }
+      } else {
+        setCartError(
+          language === "sv"
+            ? "Den valda kombinationen är inte tillgänglig."
+            : "The selected combination is not available.",
+        );
+      }
 
-    variant_id: selectedVariant?.id,
+      return;
+    }
 
-    supplier_id:
-      selectedVariant?.supplier_id ?? product.supplier_id,
+    // Kontrollera färger
+    if (requiresColors && !backgroundColor && !printColor) {
+      setCartError(
+        language === "sv"
+          ? "Välj bakgrundsfärg och tryckfärg innan du lägger produkten i kundkorgen."
+          : "Select a background colour and print colour before adding the product to your cart.",
+      );
 
-    selected_background_color: isCustomEnamel
-      ? (backgroundColor ?? undefined)
-      : undefined,
+      return;
+    }
 
-    selected_print_color: isCustomEnamel
-      ? (printColor ?? undefined)
-      : undefined,
+    if (requiresColors && !backgroundColor) {
+      setCartError(
+        language === "sv"
+          ? "Välj en bakgrundsfärg innan du lägger produkten i kundkorgen."
+          : "Select a background colour before adding the product to your cart.",
+      );
 
-    selected_size: isCustomEnamel
-      ? selectedOptions.size
-      : undefined,
+      return;
+    }
 
-    custom_texts:
-      isCustomEnamel || product.type === "gift_card"
-        ? customTexts
-        : {},
+    if (requiresColors && !printColor) {
+      setCartError(
+        language === "sv"
+          ? "Välj en tryckfärg innan du lägger produkten i kundkorgen."
+          : "Select a print colour before adding the product to your cart.",
+      );
 
-    custom_photo: isCustomEnamel
-      ? customPhoto || undefined
-      : undefined,
+      return;
+    }
 
-    unit_price: displayedPrice,
+    addItem({
+      product,
+      quantity,
 
-    total_price: displayedPrice * quantity,
+      variant_id: selectedVariant?.id,
 
-    selected_options:
-      isCustomEnamel || product.type === "gift_card"
-        ? selectedOptions
-        : {},
-  });
+      supplier_id: selectedVariant?.supplier_id ?? product.supplier_id,
 
-  setShowCartConfirmation(true);
+      selected_background_color: isCustomEnamel
+        ? (backgroundColor ?? undefined)
+        : undefined,
 
-  setTimeout(() => {
-    setShowCartConfirmation(false);
-  }, 2500);
+      selected_print_color: isCustomEnamel
+        ? (printColor ?? undefined)
+        : undefined,
 
-  setSelectedOptions({});
-  setBackgroundColor(null);
-  setPrintColor(null);
-  setCustomTexts({});
-  setCustomPhoto(null);
-  setQuantity(1);
-  setSelectedImage(0);
-  setCartError("");
-};
-  
+    selected_size:
+  isCustomEnamel || product.id === "LFG.TRA"
+    ? selectedOptions.size
+    : undefined,
+
+selected_shape:
+  isCustomEnamel || product.id === "LFG.TRA"
+    ? selectedOptions.shape
+    : undefined,
+
+custom_texts:
+  isCustomEnamel || product.type === "gift_card" ? customTexts : {},
+
+      
+
+      custom_photo: isCustomEnamel
+        ? customPhoto || undefined
+        : product.id === "LFG.TRA"
+          ? uploadFiles["engraving_image_0"]?.[0] || undefined
+          : undefined,
+
+      unit_price: displayedPrice,
+
+      total_price: displayedPrice * quantity,
+
+      selected_options:
+        isCustomEnamel ||
+        product.type === "gift_card" ||
+        product.id === "LFG.TRA"
+          ? selectedOptions
+          : {},
+    });
+
+    setShowCartConfirmation(true);
+
+    setTimeout(() => {
+      setShowCartConfirmation(false);
+    }, 2500);
+
+    setSelectedOptions({});
+    setBackgroundColor(null);
+    setPrintColor(null);
+    setCustomTexts({});
+    setCustomPhoto(null);
+    setUploadFiles({});
+    setQuantity(1);
+    setSelectedImage(0);
+    setCartError("");
+  };
 
   if (loading) {
     return (
@@ -545,11 +622,12 @@ export default function Product() {
   const requiresVariant = (product.variants?.length ?? 0) > 0;
 
   const allOptionsSelected =
-    !isCustomEnamel ||
-    (product.options?.every(
-      (option) => selectedOptions[option.option_name] !== undefined,
-    ) ??
-      true);
+  product.id === "LFG.TRA"
+    ? Boolean(selectedOptions.shape && selectedOptions.size)
+    : !isCustomEnamel ||
+      (product.options?.every(
+        (option) => selectedOptions[option.option_name] !== undefined,
+      ) ?? true);
 
   return (
     <div className="product-page">
@@ -653,8 +731,19 @@ export default function Product() {
           <p className="product-price">{displayedPrice} SEK</p>
 
           {/* Dynamiska produktval */}
-          {(isCustomEnamel || product.type === "gift_card") &&
+          {(isCustomEnamel ||
+            product.type === "gift_card" ||
+            product.id === "LFG.TRA") &&
             product.options?.map((option) => {
+              const shouldHideOrientation =
+                product.id === "LFG.TRA" &&
+                option.option_name === "orientation" &&
+                selectedOptions.shape !== "rectangle" &&
+                selectedOptions.shape !== "oval";
+
+              if (shouldHideOrientation) {
+                return null;
+              }
               const filteredValues =
                 product.type === "gift_card"
                   ? option.values
@@ -723,7 +812,7 @@ export default function Product() {
             )}
 
           {/* Dynamiska uppladdningsfält */}
-          {isCustomEnamel &&
+          {(isCustomEnamel || product.id === "LFG.TRA") &&
             product.upload_fields?.map((field) => (
               <div className="product-option" key={field.id}>
                 {Array.from({ length: field.max_files }).map((_, index) => {

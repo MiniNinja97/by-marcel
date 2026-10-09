@@ -85,7 +85,7 @@ $fileName = "product-" . bin2hex(random_bytes(8)) . "." . $extension;
  * Därifrån går vi till:
  * /uploads/products/
  */
-$uploadDirectory = __DIR__ . "/../../uploads/products/";
+$uploadDirectory = __DIR__ . "/../../uploads/customerUploads/";
 
 if (!is_dir($uploadDirectory)) {
     http_response_code(500);
@@ -108,7 +108,7 @@ if (!move_uploaded_file($file["tmp_name"], $destination)) {
 /*
  * Detta är sökvägen vi senare sparar i databasen.
  */
-$imagePath = "/uploads/products/" . $fileName;
+$imagePath = "/uploads/customerUploads/" . $fileName;
 
 echo json_encode([
     "success" => true,
