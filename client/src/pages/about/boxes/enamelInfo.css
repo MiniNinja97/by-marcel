@@ -236,3 +236,13 @@
         font-size: 1.5rem;
     }
 }
+
+@media (min-width: 1024px) {
+  .enamel-image img.bildgravyr-large-image {
+    width: 100%;
+    max-width: 500px;
+    max-height: 750px;
+    height: auto;
+    object-fit: contain;
+  }
+}

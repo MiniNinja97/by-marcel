@@ -6,6 +6,8 @@ import Footer from "./footer/footer";
 import Home from "./pages/home/home";
 import About from "./pages/about/about";
 import EnamelInfo from "./pages/about/boxes/enamelInfo";
+import PhotoEngraving from "./pages/about/boxes/photoengraving";
+import GrafiskDesign from "./pages/about/boxes/grafiskdesign";
 import Products from "./pages/products/products";
 import Contact from "./pages/contact/contact";
 import Product from "./pages/product_card/product_card";
@@ -52,6 +54,8 @@ export default function App() {
 
           <Route path="/about" element={<About />} />
           <Route path="/akta-emalj" element={<EnamelInfo />} />
+          <Route path="/bildgravyr-info" element={<PhotoEngraving />} />
+          <Route path="/grafisk-design" element={<GrafiskDesign />} />
 
           <Route path="/contact" element={<Contact />} />
 

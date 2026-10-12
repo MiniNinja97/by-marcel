@@ -5,7 +5,10 @@ import { getProducts } from "../../api/products";
 import type { Product } from "../../types";
 import { useLanguage } from "../../context/languageContext";
 import ProductsSidebar from "./productsSidebar";
-import enamelImage from "./products-img/BKAE-10.jpg";
+import enamelImage from "./products-img/emalj-framsida.jpeg";
+
+const giftCardImage =
+  "https://www.bymarcel.se/uploads/products/presentkort1.jpeg";
 
 const categories = [
   {
@@ -364,9 +367,9 @@ export default function Products() {
     }
 
     // Bildgravyr
-if (kategori === "bildgravyr") {
-  return product.id === "LFG.TRA" || product.id === "LFG.DEK";
-}
+    if (kategori === "bildgravyr") {
+      return product.id === "LFG.TRA" || product.id === "LFG.DEK";
+    }
 
     // Presentkort
     if (kategori === "presentkort") {
@@ -499,7 +502,12 @@ if (kategori === "bildgravyr") {
                 to="/produkter/presentkort"
                 className="products-category-card"
               >
-                <div className="products-category-image"></div>
+                <div className="products-category-image giftcard-category-image">
+                  <img
+                    src={giftCardImage}
+                    alt={language === "sv" ? "Presentkort" : "Gift cards"}
+                  />
+                </div>
 
                 <h2>{language === "sv" ? "Presentkort" : "Gift cards"}</h2>
               </NavLink>
@@ -574,7 +582,13 @@ if (kategori === "bildgravyr") {
                   <div className="product-card-img">
                     {product.images?.[0] && (
                       <img
-                        src={`https://www.bymarcel.se${product.images[0]}`}
+                        src={`https://www.bymarcel.se${product.images[0]}${
+                          product.id === "EC.ET" ||
+                          product.id === "EC.PE" ||
+                          product.id.startsWith("EC.SG")
+                            ? "?v=20261012"
+                            : ""
+                        }`}
                         alt={
                           language === "sv"
                             ? product.name

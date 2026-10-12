@@ -3,10 +3,12 @@ import { useLanguage } from "../../context/languageContext";
 import "./about.css";
 
 import BKOO3 from "./about-img/BKOO-3.jpg";
-import BKOO4 from "./about-img/BKOO-4.jpg";
+import BKOO5 from "./about-img/BKOO-5.jpeg";
 import BKOO8 from "./about-img/BKOO-8.jpg";
 import BKOO6 from "./about-img/BKOO-6.jpg";
 import äktaemalj from "./boxes/boxes-img/äktaemalj.jpg";
+import bildgravyr1 from "./boxes/boxes-img/bildgravyr1.jpeg";
+import grafiskDesignImage from "./boxes/grafisk-img/BKGD.jpg";
 
 export default function About() {
   const { language } = useLanguage();
@@ -81,7 +83,7 @@ export default function About() {
           </div>
 
           <div className="about-image">
-            <img src={BKOO4} alt="Tillverkning hos By Marcel" />
+            <img src={BKOO5} alt="Tillverkning hos By Marcel" />
           </div>
         </section>
         <section className="about-row about-row-reverse">
@@ -143,29 +145,37 @@ export default function About() {
           </div>
         </Link>
 
-        <div className="imgbox-2">
-          <div className="imgbox-img"></div>
+        <Link to="/bildgravyr-info" className="imgbox-2">
+          <div className="imgbox-img">
+            <img src={bildgravyr1} alt="Bildgravyr" />
+          </div>
 
           <div className="imgbox-info">
-            <h3>{language === "sv" ? "Namn" : "Name"}</h3>
+            <h3>{language === "sv" ? "Bildgravyr" : "Photo engraving"}</h3>
 
             <p>
-              {language === "sv" ? "Kort beskrivning" : "Short description"}
+              {language === "sv"
+                ? "Läs mer om bildgravyr på trä."
+                : "Learn more about photo engraving on wood."}
             </p>
           </div>
-        </div>
+        </Link>
 
-        <div className="imgbox-3">
-          <div className="imgbox-img"></div>
+        <Link to="/grafisk-design" className="imgbox-3">
+          <div className="imgbox-img">
+            <img src={grafiskDesignImage} alt="Grafisk design" />
+          </div>
 
           <div className="imgbox-info">
-            <h3>{language === "sv" ? "Namn" : "Name"}</h3>
+            <h3>{language === "sv" ? "Grafisk design" : "Graphic design"}</h3>
 
             <p>
-              {language === "sv" ? "Kort beskrivning" : "Short description"}
+              {language === "sv"
+                ? "Läs mer om vår grafiska design, bildredigering och personliga service."
+                : "Learn more about our graphic design, photo editing and personalised service."}
             </p>
           </div>
-        </div>
+        </Link>
 
         <div className="imgbox-4">
           <div className="imgbox-img"></div>
