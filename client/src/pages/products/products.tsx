@@ -6,6 +6,9 @@ import type { Product } from "../../types";
 import { useLanguage } from "../../context/languageContext";
 import ProductsSidebar from "./productsSidebar";
 import enamelImage from "./products-img/emalj-framsida.jpeg";
+import photoEngravingImage from "./products-img/bildgravyrfirst.jpeg";
+import enamelCustomImage from "./products-img/emaljegendesign.jpeg";
+import enamelStandardImage from "./products-img/emaljstandard.jpeg";
 
 const giftCardImage =
   "https://www.bymarcel.se/uploads/products/presentkort1.jpeg";
@@ -76,8 +79,15 @@ const categories = [
       },
       {
         name: {
-          sv: "Gatunamn & automotive",
-          en: "Street & automotive",
+          sv: "Gatunamn",
+          en: "Street names",
+        },
+        slug: "gatunamn",
+      },
+      {
+        name: {
+          sv: "Automotive",
+          en: "Automotive",
         },
         slug: "automotive",
       },
@@ -183,8 +193,13 @@ function getSubcategory(product: Product): string {
     return "sakerhet";
   }
 
-  // GATUNAMN / AUTOMOTIVE
-  if (id.startsWith("ES.SS") || id.startsWith("ES.AUT")) {
+  // GATUNAMN
+  if (id.startsWith("ES.SS")) {
+    return "gatunamn";
+  }
+
+  // AUTOMOTIVE
+  if (id.startsWith("ES.AUT")) {
     return "automotive";
   }
 
@@ -476,7 +491,10 @@ export default function Products() {
             </div>
 
             <div className="products-category-grid">
-              <NavLink to="/produkter/emalj" className="products-category-card">
+              <NavLink
+                to="/produkter/emalj/valj"
+                className="products-category-card"
+              >
                 <div className="products-category-image">
                   <img
                     src={enamelImage}
@@ -493,7 +511,14 @@ export default function Products() {
                 to="/produkter/bildgravyr"
                 className="products-category-card"
               >
-                <div className="products-category-image"></div>
+                <div className="products-category-image">
+                  <img
+                    src={photoEngravingImage}
+                    alt={
+                      language === "sv" ? "Bildgravyr" : "Photo engraving"
+                    }
+                  />
+                </div>
 
                 <h2>{language === "sv" ? "Bildgravyr" : "Photo engraving"}</h2>
               </NavLink>
@@ -529,19 +554,31 @@ export default function Products() {
                 : "Here you can find both finished standard products and enamel products that you can personalise."}
             </p>
 
-            <div className="enamel-category-buttons">
+            <div className="enamel-category-grid">
               <NavLink
                 to="/produkter/emalj/egen-design"
-                className="enamel-category-button"
+                className="products-category-card"
               >
-                {language === "sv" ? "Egen design" : "Custom design"}
+                <div className="products-category-image">
+                  <img src={enamelCustomImage} alt="Egen design" />
+                </div>
+
+                <h2>{language === "sv" ? "Egen design" : "Custom design"}</h2>
               </NavLink>
 
               <NavLink
                 to="/produkter/emalj/standardprodukter"
-                className="enamel-category-button"
+                className="products-category-card"
               >
-                {language === "sv" ? "Standardprodukter" : "Standard products"}
+                <div className="products-category-image">
+                  <img src={enamelStandardImage} alt="Standardprodukter" />
+                </div>
+
+                <h2>
+                  {language === "sv"
+                    ? "Standardprodukter"
+                    : "Standard products"}
+                </h2>
               </NavLink>
             </div>
           </div>

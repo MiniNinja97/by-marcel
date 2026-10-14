@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "../../context/languageContext";
 import "./about.css";
 
-import BKOO3 from "./about-img/BKOO-3.jpg";
+import aboutpic from "./about-img/aboutpic.jpeg";
 import BKOO5 from "./about-img/BKOO-5.jpeg";
 import BKOO8 from "./about-img/BKOO-8.jpg";
 import BKOO6 from "./about-img/BKOO-6.jpg";
@@ -115,7 +115,7 @@ export default function About() {
           </div>
 
           <div className="about-image">
-            <img src={BKOO3} alt="By Marcel" />
+            <img src={aboutpic} alt="By Marcel" />
           </div>
         </section>
       </div>

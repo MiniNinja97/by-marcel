@@ -713,6 +713,31 @@
   color: #0a0a0a;
 }
 
+
+/* EMALJ – VAL AV PRODUKTTYP */
+
+.enamel-category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+  width: 100%;
+  max-width: 850px;
+  margin: 2rem auto 0;
+}
+
+.enamel-category-grid .products-category-card {
+  min-width: 0;
+  text-decoration: none;
+}
+
+@media (max-width: 600px) {
+  .enamel-category-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+
 @media (max-width: 600px) {
   .enamel-category-view {
     padding: 2rem 1.5rem;
