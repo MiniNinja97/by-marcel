@@ -152,6 +152,37 @@
     color: var(--gold);
 }
 
+/* CENTRERA INNEHÅLLET */
+
+.shipping-returns__content {
+    align-items: center;
+    text-align: center;
+}
+
+.shipping-returns__header {
+    width: 100%;
+    align-items: center;
+    text-align: center;
+}
+
+.shipping-returns__content section {
+    width: 100%;
+    align-items: center;
+    text-align: center;
+}
+
+.shipping-returns__content ul {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: 0;
+    list-style-position: inside;
+}
+
+.shipping-returns__content li {
+    text-align: center;
+}
+
 
 /* TABLET */
 
