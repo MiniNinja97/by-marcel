@@ -1,7 +1,9 @@
+import { useLanguage } from "../../context/languageContext";
 import "./purchase_terms.css";
 
 export default function PurchaseTerms() {
-  return (
+  const { language } = useLanguage();
+  return language === "sv" ? (
     <main className="purchase-terms">
       <article className="purchase-terms__content">
 
@@ -637,6 +639,174 @@ export default function PurchaseTerms() {
           </p>
         </section>
 
+      </article>
+    </main>
+  
+  ) : (
+    <main className="purchase-terms">
+      <article className="purchase-terms__content">
+        <header className="purchase-terms__header">
+          <h1>Purchase Terms – By Marcel</h1>
+          <p>Last updated: 24 September 2026</p>
+        </header>
+        <p>These purchase terms apply when you, as a consumer, buy products from By Marcel through our online shop. By placing an order, you accept these purchase terms. We recommend that you read the terms before completing your purchase.</p>
+        <section>
+          <h2>1. Company information</h2>
+          <p><strong>Company:</strong> Marcel Klaassen Development AB<br /><strong>Company registration number:</strong> 559575-6296<br /><strong>VAT number:</strong> SE559575629601<br /><strong>Registered business name:</strong> By Marcel<br /><strong>Address:</strong> Gruvgatan 4 / 712 60 Grythyttan / Sweden<br /><strong>Email:</strong> info@bymarcel.se</p>
+        </section>
+        <section>
+          <h2>2. Delivery destinations</h2>
+          <p>By Marcel delivers to the following countries:</p>
+          <p><strong>Within the EU</strong></p>
+          <ul><li>Denmark</li><li>Finland</li><li>Netherlands</li><li>Sweden</li><li>Germany</li></ul>
+          <p><strong>Outside the EU</strong></p>
+          <ul><li>Iceland</li><li>Norway</li></ul>
+          <p>If you would like delivery to another country, please contact us before placing your order. We will check whether delivery is possible and provide information about shipping costs, delivery times and any other conditions.</p>
+          <p>Available delivery options and current shipping costs are displayed at checkout or when placing the order.</p>
+        </section>
+        <section>
+          <h2>3. Prices</h2>
+          <p>All prices in the online shop are stated in Swedish kronor (SEK) and include Swedish VAT (25%), unless expressly stated otherwise. Any shipping costs and optional extras are displayed before the order is completed.</p>
+          <p>For deliveries to countries outside the EU, such as Norway and Iceland, customs duties, import VAT and other charges may apply under the destination country’s rules. Such charges are normally paid by the customer and are not included in By Marcel’s price unless expressly stated otherwise when ordering.</p>
+        </section>
+        <section>
+          <h2>4. Placing an order</h2>
+          <p>When you place an order, an order confirmation is sent to the email address you provided. Always check that the information in the confirmation is correct. If anything is incorrect, contact By Marcel as soon as possible. By Marcel reserves the right to correct obvious typographical errors, pricing errors and other manifestly incorrect information in the online shop.</p>
+          <p>If we cannot fulfil an order, we will contact the customer and refund any payment already made for the part of the order that cannot be delivered.</p>
+        </section>
+        <section>
+          <h2>5. Custom-made and personalised products</h2>
+          <p>A large part of By Marcel’s range consists of products made individually for customers. This may include products made or adapted using:</p>
+          <ul><li>The customer’s photographs or other images</li><li>Names or other personalised text</li><li>House numbers or addresses</li><li>Original designs</li><li>Logos or corporate branding</li><li>Specific colours, dimensions or finishes</li><li>Other individual customer requests</li></ul>
+          <p>When a product is made according to the customer’s instructions or has a clearly personalised character, it is considered a custom-made/personalised product.</p>
+        </section>
+        <section>
+          <h2>6. Design proofs and customer approval</h2>
+          <p>For products for which By Marcel creates an individual design, the customer may receive a digital proof for approval before production. The customer is responsible for carefully checking the proof, including:</p>
+          <ul><li>Names and spelling</li><li>Dates and numbers</li><li>Addresses and house numbers</li><li>Images</li><li>Placement</li><li>Text</li><li>Colour choices</li><li>Other individual details</li></ul>
+          <p>Once the customer has approved the proof, the design is considered approved for production.</p>
+          <p>Changes after approval cannot be guaranteed. If production has not yet started, we will naturally try to help, but additional work may incur an extra charge. Errors present in a proof expressly approved by the customer are normally not regarded as manufacturing defects on By Marcel’s part. This does not affect the customer’s rights regarding defects for which By Marcel is responsible under mandatory consumer legislation.</p>
+        </section>
+        <section>
+          <h2>7. Customer images and other materials</h2>
+          <p>When the customer submits photographs, images, logos, texts, illustrations or other materials to By Marcel, the customer is responsible for having the right to use those materials for the ordered product. The customer is also responsible for obtaining any necessary permissions if the materials include or concern other people or third-party rights. By Marcel uses customer materials to design and manufacture the order and for necessary communication and after-sales service.</p>
+          <p>Private customer images are not used in By Marcel’s marketing, social media or public product images without the customer’s express permission.</p>
+          <p>Please also read sections 4 and 5 of our Privacy Policy!</p>
+        </section>
+        <section>
+          <h2>8. Materials we do not accept</h2>
+          <p>By Marcel reserves the right to decline to manufacture or process an order if the material is illegal or if there are reasonable grounds to believe its use would infringe someone else’s rights. We may also decline orders containing material that is, for example, threatening, seriously offensive, discriminatory, pornographic or otherwise incompatible with By Marcel’s values, safety requirements or general principles.</p>
+          <p>If we decline an order, the customer will be informed as soon as possible. Payments already made for products that will not be manufactured will be refunded where applicable.</p>
+          <p>Please also read section 5 of our Privacy Policy!</p>
+        </section>
+        <section>
+          <h2>9. Right of withdrawal and voluntary returns – custom-made products</h2>
+          <p>The right of withdrawal and voluntary returns do not apply to products made according to the customer’s instructions or otherwise given a clearly personalised character.</p>
+          <p>This includes, for example, products featuring the customer’s:</p>
+          <ul><li>Photograph or image</li><li>Name</li><li>Personalised text</li><li>House number or address</li><li>Logo</li><li>Individual design</li><li>Individually selected dimensions or other specially customised features</li></ul>
+          <p>The exception to the right of withdrawal follows the rules on distance contracts for goods made according to the consumer’s specifications or otherwise clearly personalised.</p>
+          <p>By ordering such a product, the customer acknowledges that the normal right of withdrawal does not apply to it. The absence of a right of withdrawal does not affect the customer’s right to complain about a defective product.</p>
+        </section>
+        <section>
+          <h2>10. Right of withdrawal for standard products</h2>
+          <p>If By Marcel sells a standard product that has not been custom-made or adapted for the customer, the consumer’s statutory right of withdrawal for distance purchases applies. The withdrawal period is 14 days from the day the customer receives the goods. To exercise this right, the customer must notify By Marcel within the withdrawal period.</p>
+          <p>The customer can contact us by email at info@bymarcel.se.</p>
+          <p>The customer may also use the Swedish Consumer Agency’s standard withdrawal form.</p>
+          <p>For a valid return under the right of withdrawal, the product must be returned without undue delay and no later than 14 days after the customer notified us of the withdrawal.</p>
+          <p>The customer pays the direct cost of return shipping unless otherwise agreed.</p>
+          <p>By Marcel refunds payments covered by the right of withdrawal in accordance with applicable law. Where permitted by law, we may withhold the refund until we have received the goods back.</p>
+          <p>The customer may inspect the product in the same way as in a physical shop. If the product has been handled beyond what is necessary to establish its characteristics and function, the customer may be responsible for any reduction in value.</p>
+        </section>
+        <section>
+          <h2>11. Cancelling a custom-made product</h2>
+          <p>Contact By Marcel immediately if you wish to cancel a custom-made product.</p>
+          <p>If work or production has not yet begun, we will try to stop the order.</p>
+          <p>If work, design, material preparation or production has already begun, By Marcel may be entitled to compensation for costs and work arising from the order and cancellation, to the extent permitted by applicable law. The fact that a product is exempt from the right of withdrawal does not automatically remove the customer’s statutory right to cancel an order for goods before delivery.</p>
+        </section>
+        <section>
+          <h2>12. Payment</h2>
+          <p>Available payment methods are displayed at checkout. Payment may be handled by an external payment provider, whose own terms may also apply to the payment service itself. By Marcel does not normally store complete card details.</p>
+        </section>
+        <section>
+          <h2>13. Production and delivery times</h2>
+          <p>Estimated production and delivery times may vary depending on the product, material, workload and delivery destination.</p>
+          <p>For custom-made products, production time normally begins when the necessary customer materials have been received and, where proofs are used, after the customer has approved the proof.</p>
+          <p>Any estimated delivery time is stated on the product page when ordering or in communication with the customer. Custom-made products may take longer to deliver than standard products.</p>
+        </section>
+        <section>
+          <h2>14. Enamel products</h2>
+          <p>Some enamel products are made individually to the customer’s order and may therefore require longer production times. When an enamel product is custom-made according to the customer’s instructions or has a clearly personalised character, the exception to the right of withdrawal applies as stated in section 8.</p>
+          <p>Estimated delivery times are provided with the product or order. We communicate any delays of which we become aware to the customer as soon as possible.</p>
+        </section>
+        <section>
+          <h2>15. Gift cards</h2>
+          <p>By Marcel gift cards are valid for 3 years from the purchase date unless otherwise stated on the gift card.</p>
+          <p>Gift cards can be used to pay for products in By Marcel’s online shop. If the order value exceeds the gift card value, the customer pays the difference using one of the payment methods offered at checkout.</p>
+          <p>If the full value of the gift card is not used in one purchase, any remaining balance stays on the gift card for its original validity period, provided that the online shop’s technical solution supports this.</p>
+          <p>The gift card:</p>
+          <ul><li>Cannot be redeemed or exchanged for cash</li><li>Cannot be refunded in cash</li><li>Is valid for 3 years from the purchase date</li><li>Should be treated as a valuable document</li></ul>
+          <p>Lost or unauthorisedly used gift cards or gift card codes are normally not replaced unless otherwise required by mandatory law.</p>
+          <p>When purchasing a product with a gift card, By Marcel’s standard purchase terms apply to that product, including the rules on withdrawal for standard products and the exception for custom-made and personalised products.</p>
+        </section>
+        <section>
+          <h2>16. Delivery and shipping</h2>
+          <p>Available delivery options and current shipping costs are displayed at checkout or when ordering. The customer is responsible for providing a correct and complete delivery address and accurate contact details.</p>
+          <p>If a shipment is returned to By Marcel because of an incorrect address, failure to collect the parcel or another circumstance for which the customer is responsible, the customer may need to pay for a new delivery and other reasonable costs incurred, to the extent permitted by law.</p>
+        </section>
+        <section>
+          <h2>17. Shipping damage</h2>
+          <p>If a parcel or product is visibly damaged on delivery, we recommend that the customer photographs:</p>
+          <ul><li>The outer packaging</li><li>The shipping label</li><li>The inner packaging</li><li>The damaged product</li></ul>
+          <p>Then contact By Marcel as soon as possible so we can help with the matter.</p>
+          <p>Failure to photograph the damage or contact us immediately does not in itself remove the customer’s statutory rights concerning defective goods.</p>
+        </section>
+        <section>
+          <h2>18. Complaints about defective products</h2>
+          <p>If a product is defective, the customer has the right to make a complaint under applicable Swedish consumer legislation. A complaint must be made within a reasonable time after the customer noticed or should have noticed the defect. A complaint made within two months of noticing the defect is always considered to have been made in time.</p>
+          <p>The customer should contact us by email at info@bymarcel.se.</p>
+          <p>Describe the problem and preferably attach photographs clearly showing the defect. This helps us assess and resolve the matter more quickly.</p>
+          <p>Where By Marcel is responsible for a defect, the complaint is handled in accordance with applicable consumer legislation. Depending on the circumstances, remedies may include repair, replacement delivery, a price reduction or cancellation of the purchase.</p>
+          <p>These purchase terms do not limit the customer’s statutory right to complain about defective goods.</p>
+        </section>
+        <section>
+          <h2>19. Variations in handmade and custom-made products</h2>
+          <p>Many By Marcel products are individually manufactured, and some steps may be performed by hand.</p>
+          <p>Minor variations in colour tone, texture, engraving, wood grain, placement or surface finish may occur due to the material’s natural properties and the manufacturing method.</p>
+          <p>Images on the website are intended to provide as accurate a representation as possible. However, colours may appear slightly different depending on the screen, display settings and material. Such normal variations in materials and manufacturing do not automatically constitute a defect in the product.</p>
+          <p>This does not limit the customer’s rights if the product actually differs from what was agreed.</p>
+        </section>
+        <section>
+          <h2>20. Image quality for personalised products</h2>
+          <p>The final result of products made from customer photographs or images is affected by the quality of the material submitted by the customer.</p>
+          <p>By Marcel may edit and adapt the material for the relevant manufacturing method, such as engraving, printing or enamel production. If the image quality is considered insufficient, we may contact the customer and request a better image.</p>
+          <p>An approved proof shows the main design. The finished result may nevertheless differ slightly from how the image appears on a digital screen due to the material and manufacturing method.</p>
+        </section>
+        <section>
+          <h2>21. Force majeure and circumstances beyond our control</h2>
+          <p>By Marcel is not responsible for delays or failure to perform to the extent caused by extraordinary circumstances beyond our reasonable control and insofar as permitted by applicable law.</p>
+          <p>Examples include serious transport disruptions, natural disasters, government decisions, major operational disruptions or other comparable events.</p>
+          <p>We contact the customer as soon as possible if such a situation affects an order.</p>
+        </section>
+        <section>
+          <h2>22. Personal data</h2>
+          <p>By Marcel processes personal data in accordance with our Privacy Policy.</p>
+          <p>Information about the use of cookies and similar technologies can be found in our Cookie Policy.</p>
+        </section>
+        <section>
+          <h2>23. Disputes</h2>
+          <p>We always hope to resolve any problems directly with the customer. Please contact By Marcel first if you are dissatisfied with a product or how a matter has been handled.</p>
+          <p>If we cannot reach an agreement, the consumer may refer the matter to the Swedish National Board for Consumer Disputes (ARN), provided the case meets ARN’s requirements. By Marcel complies with mandatory Swedish consumer legislation.</p>
+          <p>Disputes may also be heard by a court of competent jurisdiction.</p>
+        </section>
+        <section>
+          <h2>24. Changes to the purchase terms</h2>
+          <p>By Marcel may update these purchase terms when the business, product range or applicable regulations change. The terms applicable to an order are those available at the time of purchase, unless otherwise required by mandatory law. The latest version is always published on our website.</p>
+        </section>
+        <section>
+          <h2>Contact</h2>
+          <p>If you have any questions about how By Marcel processes your personal data, please feel free to contact us.</p>
+          <p><strong>Company:</strong> Marcel Klaassen Development AB<br /><strong>Company registration number:</strong> 559575-6296<br /><strong>VAT number:</strong> SE559575629601<br /><strong>Registered business name:</strong> By Marcel<br /><strong>Address:</strong> Gruvgatan 4 / 712 60 Grythyttan / Sweden<br /><strong>Email:</strong> info@bymarcel.se</p>
+        </section>
       </article>
     </main>
   );

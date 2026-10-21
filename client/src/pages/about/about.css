@@ -337,7 +337,8 @@
 
 .imgbox-1 .imgbox-img,
 .imgbox-2 .imgbox-img,
-.imgbox-3 .imgbox-img {
+.imgbox-3 .imgbox-img,
+.imgbox-4 .imgbox-img {
     aspect-ratio: 1 / 1;
     overflow: hidden;
 }
