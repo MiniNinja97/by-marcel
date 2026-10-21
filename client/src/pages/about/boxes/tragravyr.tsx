@@ -1,8 +1,17 @@
-
-
 import { Link } from "react-router-dom";
 import { useLanguage } from "../../../context/languageContext";
 import "./tragravyr.css";
+import bild1 from "./tragravyr-img/bild1.jpeg";
+import bild2 from "./tragravyr-img/bild2.jpeg";
+import bild3 from "./tragravyr-img/bild3.jpeg";
+import bild4 from "./tragravyr-img/bild4.jpeg";
+import bild5 from "./tragravyr-img/bild5.jpeg";
+import bild6 from "./tragravyr-img/bild6.jpeg";
+import bild7 from "./tragravyr-img/bild7.jpeg";
+import bild8 from "./tragravyr-img/bild8.jpeg";
+import bild9 from "./tragravyr-img/bild9.jpeg";
+import bild10 from "./tragravyr-img/bild10.jpeg";
+
 
 export default function Tragravyr() {
   const { language } = useLanguage();
@@ -32,7 +41,7 @@ export default function Tragravyr() {
         </div>
 
         <div className="tragravyr-image">
-          {/* Bild läggs till senare */}
+          <img src={bild1} alt={language === "sv" ? "Exempel på bildgravyr" : "Photo engraving example"} loading="lazy" />
         </div>
       </section>
 
@@ -53,7 +62,7 @@ export default function Tragravyr() {
         </div>
 
         <div className="tragravyr-image">
-          {/* Bild läggs till senare */}
+          <img src={bild2} alt={language === "sv" ? "Exempel på bildgravyr" : "Photo engraving example"} loading="lazy" />
         </div>
       </section>
 
@@ -80,7 +89,10 @@ export default function Tragravyr() {
         </div>
 
         <div className="tragravyr-image">
-          {/* Bilder läggs till senare */}
+<div className="tragravyr-gallery">
+          <img src={bild3} alt={language === "sv" ? "Exempel på bildgravyr" : "Photo engraving example"} loading="lazy" />
+          <img src={bild4} alt={language === "sv" ? "Exempel på bildgravyr" : "Photo engraving example"} loading="lazy" />
+        </div>
         </div>
       </section>
 
@@ -101,7 +113,7 @@ export default function Tragravyr() {
         </div>
 
         <div className="tragravyr-image">
-          {/* Bild läggs till senare */}
+          <img src={bild5} alt={language === "sv" ? "Exempel på bildgravyr" : "Photo engraving example"} loading="lazy" />
         </div>
       </section>
 
@@ -128,7 +140,10 @@ export default function Tragravyr() {
         </div>
 
         <div className="tragravyr-image">
-          {/* Jämförelsebilder läggs till senare */}
+<div className="tragravyr-gallery">
+          <img src={bild6} alt={language === "sv" ? "Exempel på bildgravyr" : "Photo engraving example"} loading="lazy" />
+          <img src={bild7} alt={language === "sv" ? "Exempel på bildgravyr" : "Photo engraving example"} loading="lazy" />
+        </div>
         </div>
       </section>
 
@@ -149,7 +164,7 @@ export default function Tragravyr() {
         </div>
 
         <div className="tragravyr-image">
-          {/* Bilder läggs till senare */}
+          <img src={bild8} alt={language === "sv" ? "Exempel på bildgravyr" : "Photo engraving example"} loading="lazy" />
         </div>
       </section>
 
@@ -170,7 +185,7 @@ export default function Tragravyr() {
         </div>
 
         <div className="tragravyr-image">
-          {/* Bild läggs till senare */}
+          <img src={bild9} alt={language === "sv" ? "Exempel på bildgravyr" : "Photo engraving example"} loading="lazy" />
         </div>
       </section>
 
@@ -203,7 +218,7 @@ export default function Tragravyr() {
         </div>
 
         <div className="tragravyr-image">
-          {/* Bilder läggs till senare */}
+          <img src={bild10} alt={language === "sv" ? "Exempel på bildgravyr" : "Photo engraving example"} loading="lazy" />
         </div>
       </section>
     </div>

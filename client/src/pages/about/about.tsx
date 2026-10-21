@@ -10,6 +10,7 @@ import BKOO6 from "./about-img/BKOO-6.jpg";
 import äktaemalj from "./boxes/boxes-img/äktaemalj.jpg";
 import bildgravyr1 from "./boxes/boxes-img/bildgravyr1.jpeg";
 import grafiskDesignImage from "./boxes/grafisk-img/BKGD.jpg";
+import bild2 from "./boxes/tragravyr-img/bild2.jpeg";
 
 export default function About() {
   const { language } = useLanguage();
@@ -81,20 +82,24 @@ export default function About() {
         </Link>
 
         <Link to="/tragravyr" className="imgbox-4">
-          <div className="imgbox-img">
-            {/* Här lägger vi in huvudbilden senare */}
-          </div>
+  <div className="imgbox-img">
+    <img
+      src={bild2}
+      alt={language === "sv" ? "Trägravyr" : "Wood engraving"}
+      loading="lazy"
+    />
+  </div>
 
-          <div className="imgbox-info">
-            <h3>{language === "sv" ? "Trägravyr" : "Wood engraving"}</h3>
+  <div className="imgbox-info">
+    <h3>{language === "sv" ? "Trägravyr" : "Wood engraving"}</h3>
 
-            <p>
-              {language === "sv"
-                ? "Läs mer om våra olika material för bildgravyr och hur de påverkar resultatet."
-                : "Learn more about our different photo engraving materials and how they affect the final result."}
-            </p>
-          </div>
-        </Link>
+    <p>
+      {language === "sv"
+        ? "Läs mer om våra olika material för bildgravyr och hur de påverkar resultatet."
+        : "Learn more about our different photo engraving materials and how they affect the final result."}
+    </p>
+  </div>
+</Link>
 
         <div className="imgbox-5">
           <div className="imgbox-img"></div>
