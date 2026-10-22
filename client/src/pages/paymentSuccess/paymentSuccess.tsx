@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
 
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCartStore } from "../../store/useCartStore";
+
+import "./payment_success.css";
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
@@ -89,37 +91,48 @@ export default function PaymentSuccess() {
 
   if (loading) {
     return (
-      <main>
-        <h1>Kontrollerar betalningen...</h1>
-        <p>Vänta ett ögonblick.</p>
+      <main className="payment-success">
+        <div className="payment-success__content">
+          <h1>Kontrollerar betalningen...</h1>
+          <p>Vänta ett ögonblick.</p>
+        </div>
       </main>
     );
   }
 
   if (!verified) {
     return (
-      <main>
-        <h1>Betalningen kunde inte bekräftas</h1>
+      <main className="payment-success">
+        <div className="payment-success__content">
+          <h1>Betalningen kunde inte bekräftas</h1>
 
-        <p>{error}</p>
+          <p>{error}</p>
 
-        <Link to="/payment">Tillbaka till betalningen</Link>
+          <Link to="/payment" className="payment-success__button">
+            Tillbaka till betalningen
+          </Link>
+        </div>
       </main>
     );
   }
 
   return (
-    <main>
-      <h1>Tack för din order!</h1>
+    <main className="payment-success">
+      <div className="payment-success__content">
+        <h1>Tack för din order!</h1>
 
-      <p>Din betalning har genomförts.</p>
+        <p>Din betalning har genomförts.</p>
 
-      <p>
-        Vi har tagit emot din beställning och kommer att behandla den så snart
-        som möjligt.
-      </p>
+        <p>
+          Vi har tagit emot din beställning och kommer att behandla den så snart
+          som möjligt.
+        </p>
 
-      <Link to="/">Tillbaka till startsidan</Link>
+        <Link to="/" className="payment-success__button">
+          Tillbaka till startsidan
+        </Link>
+      </div>
     </main>
   );
 }
+

@@ -8,6 +8,8 @@
 
     display: flex;
     justify-content: center;
+    align-items: center;
+
 }
 
 
@@ -155,36 +157,7 @@
 }
 
 
-/* CENTRERA INNEHÅLLET */
 
-.privacy-policy__content {
-    align-items: center;
-    text-align: center;
-}
-
-.privacy-policy__header {
-    width: 100%;
-    align-items: center;
-    text-align: center;
-}
-
-.privacy-policy__content section {
-    width: 100%;
-    align-items: center;
-    text-align: center;
-}
-
-.privacy-policy__content ul {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    padding-left: 0;
-    list-style-position: inside;
-}
-
-.privacy-policy__content li {
-    text-align: center;
-}
 
 /* TABLET */
 

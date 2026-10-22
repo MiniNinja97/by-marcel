@@ -1,0 +1,122 @@
+
+/* PAYMENT SUCCESS */
+
+.payment-success {
+    width: 100%;
+    min-height: 100vh;
+    padding: 5rem 2rem;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* INNEHÅLL */
+
+.payment-success__content {
+    width: 100%;
+    max-width: 45rem;
+
+    background: rgba(14, 14, 14, 0.60);
+    border: 0.0625rem solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.25rem;
+
+    padding: 4rem 3rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    gap: 1.5rem;
+}
+
+/* RUBRIK */
+
+.payment-success__content h1 {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--gold);
+    margin: 0;
+}
+
+/* BRÖDTEXT */
+
+.payment-success__content p {
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* KNAPP */
+
+.payment-success__button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+
+    margin-top: 1.5rem;
+    padding: 0.9rem 2rem;
+
+    border: 0.0625rem solid var(--gold);
+    border-radius: 0.25rem;
+
+    color: var(--gold);
+    background: transparent;
+
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    text-decoration: none;
+
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.payment-success__button:hover {
+    background: var(--gold);
+    color: #0e0e0e;
+}
+
+/* TABLET */
+
+@media (max-width: 850px) {
+    .payment-success {
+        padding: 4rem 1.5rem;
+    }
+
+    .payment-success__content {
+        padding: 3rem 2rem;
+    }
+
+    .payment-success__content h1 {
+        font-size: 2.2rem;
+    }
+}
+
+/* MOBIL */
+
+@media (max-width: 550px) {
+    .payment-success {
+        padding: 3rem 1rem;
+    }
+
+    .payment-success__content {
+        padding: 2.5rem 1.5rem;
+        gap: 1.25rem;
+    }
+
+    .payment-success__content h1 {
+        font-size: 2rem;
+    }
+
+    .payment-success__content p {
+        font-size: 0.85rem;
+    }
+
+    .payment-success__button {
+        width: 100%;
+    }
+}

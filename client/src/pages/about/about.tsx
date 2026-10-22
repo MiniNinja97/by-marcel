@@ -42,6 +42,25 @@ export default function About() {
             </p>
           </div>
         </Link>
+        
+        <Link to="/grafisk-design" className="imgbox-3">
+          <div className="imgbox-img">
+            <img
+              src={grafiskDesignImage}
+              alt={language === "sv" ? "Grafisk design" : "Graphic design"}
+            />
+          </div>
+
+          <div className="imgbox-info">
+            <h3>{language === "sv" ? "Grafisk design" : "Graphic design"}</h3>
+
+            <p>
+              {language === "sv"
+                ? "Läs mer om vår grafiska design, bildredigering och personliga service."
+                : "Learn more about our graphic design, photo editing and personalised service."}
+            </p>
+          </div>
+        </Link>
 
         <Link to="/bildgravyr-info" className="imgbox-2">
           <div className="imgbox-img">
@@ -62,24 +81,7 @@ export default function About() {
           </div>
         </Link>
 
-        <Link to="/grafisk-design" className="imgbox-3">
-          <div className="imgbox-img">
-            <img
-              src={grafiskDesignImage}
-              alt={language === "sv" ? "Grafisk design" : "Graphic design"}
-            />
-          </div>
-
-          <div className="imgbox-info">
-            <h3>{language === "sv" ? "Grafisk design" : "Graphic design"}</h3>
-
-            <p>
-              {language === "sv"
-                ? "Läs mer om vår grafiska design, bildredigering och personliga service."
-                : "Learn more about our graphic design, photo editing and personalised service."}
-            </p>
-          </div>
-        </Link>
+        
 
         <Link to="/tragravyr" className="imgbox-4">
   <div className="imgbox-img">

@@ -20,7 +20,7 @@ export default function Footer() {
 
                     <li>
                         <NavLink to="/kopevillkor">
-                            Köpevillkor
+                            Köpvillkor
                         </NavLink>
                     </li>
 

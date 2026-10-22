@@ -1118,3 +1118,67 @@ min-height: 35rem;
     }
 
 }
+
+
+/* MOBIL – MER PLATS FÖR HERO-TEXT OCH KNAPP */
+
+@media (max-width: 550px) {
+
+    .hero {
+        height: auto;
+        min-height: max(42rem, 100svh);
+    }
+
+    /* Välkomsttexten får mer utrymme */
+
+    .hero-intro-slide .hero-content {
+        padding: 2rem 1rem 12rem;
+        gap: 1.25rem;
+    }
+
+    .hero-intro-column p {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .hero-intro-title {
+        font-size: 1.5rem;
+    }
+
+    /* Lanseringsinformationen ligger ovanför knappen */
+
+    .launch-info-fixed {
+        bottom: 5.5rem;
+        width: calc(100% - 2rem);
+        margin: 0;
+        font-size: 0.75rem;
+        line-height: 1.5;
+    }
+
+    /* Knappen placeras längst ner */
+
+    .hero-button-fixed {
+        position: absolute;
+        left: 50%;
+        bottom: 1.5rem;
+        transform: translateX(-50%);
+
+        width: max-content;
+        max-width: calc(100% - 2rem);
+        margin: 0;
+
+        z-index: 11;
+    }
+
+    /* Kampanjbilder och texter får plats ovanför knappen */
+
+    .hero-promo-slide {
+        height: min(29rem, calc(100% - 12rem));
+        top: 43%;
+    }
+
+    .hero-promo-text h2 {
+        font-size: 1.25rem;
+        line-height: 1.35;
+    }
+}
