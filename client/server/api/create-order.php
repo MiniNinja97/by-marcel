@@ -40,6 +40,26 @@ if (!$data) {
     exit;
 }
 
+$allowedSiteOrigins = [
+    "https://test.bymarcel.se",
+    "https://www.bymarcel.se",
+    "https://bymarcel.se",
+    "http://localhost:5173"
+];
+
+$siteOrigin = $data["site_origin"] ?? "";
+
+if (!in_array($siteOrigin, $allowedSiteOrigins, true)) {
+    http_response_code(400);
+
+    echo json_encode([
+        "success" => false,
+        "message" => "Ogiltig webbplatsadress"
+    ]);
+
+    exit;
+}
+
 
 // -----------------------------------------
 // Kontrollera grundläggande data
@@ -1730,11 +1750,11 @@ if ($totalPrice > 0) {
             "order_id" => $orderId,
         ],
 
-        "success_url" =>
-            "http://localhost:5173/#/betalning-klar?session_id={CHECKOUT_SESSION_ID}",
+       "success_url" =>
+    $siteOrigin . "/#/betalning-klar?session_id={CHECKOUT_SESSION_ID}",
 
-        "cancel_url" =>
-            "http://localhost:5173/#/payment",
+"cancel_url" =>
+    $siteOrigin . "/#/payment",
     ]);
 
 } else {

@@ -124,6 +124,7 @@ console.log("ORDER ITEMS:", JSON.stringify(orderItems, null, 2));
   items: orderItems,
   discount_code: discountCode,
   gift_card_code: giftCardCode,
+  site_origin: window.location.origin,
 }),
     },
   );
