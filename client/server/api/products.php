@@ -328,6 +328,45 @@ $optionPriceStmt->close();
 
         $variantStmt->close();
 
+        // =========================================
+// MÄNGDPRISER
+// =========================================
+
+$quantityPriceSql = "
+    SELECT
+        min_quantity,
+        max_quantity,
+        unit_price
+    FROM product_quantity_prices
+    WHERE product_id = ?
+    ORDER BY min_quantity ASC
+";
+
+$quantityPriceStmt = $conn->prepare($quantityPriceSql);
+$quantityPriceStmt->bind_param("s", $productId);
+$quantityPriceStmt->execute();
+
+$quantityPriceResult = $quantityPriceStmt->get_result();
+
+$quantityPrices = [];
+
+while ($quantityPrice = $quantityPriceResult->fetch_assoc()) {
+    $quantityPrice["min_quantity"] = (int) $quantityPrice["min_quantity"];
+
+    $quantityPrice["max_quantity"] =
+        $quantityPrice["max_quantity"] !== null
+            ? (int) $quantityPrice["max_quantity"]
+            : null;
+
+    $quantityPrice["unit_price"] = (float) $quantityPrice["unit_price"];
+
+    $quantityPrices[] = $quantityPrice;
+}
+
+$row["quantity_prices"] = $quantityPrices;
+
+$quantityPriceStmt->close();
+
 
         // Lägg till färdig produkt
         $products[] = $row;

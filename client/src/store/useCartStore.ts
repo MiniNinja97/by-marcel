@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { CartItem } from "../types";
+import { getQuantityPrice } from "../types/getQuantityPrice";
 
 interface CartStore {
   items: CartItem[];
@@ -37,17 +38,23 @@ export const useCartStore = create<CartStore>((set, get) => ({
       );
 
       if (existing) {
-        return {
-          items: state.items.map((item) =>
-            item === existing
-              ? {
-                  ...item,
-                  quantity: item.quantity + newItem.quantity,
-                }
-              : item,
-          ),
-        };
-      }
+  return {
+    items: state.items.map((item) => {
+      if (item !== existing) return item;
+
+      const newQuantity = item.quantity + newItem.quantity;
+
+      return {
+        ...item,
+        quantity: newQuantity,
+        unit_price:
+          item.product.type === "KT"
+            ? getQuantityPrice(item.product, newQuantity)
+            : item.unit_price,
+      };
+    }),
+  };
+}
 
       return {
         items: [...state.items, newItem],
@@ -64,7 +71,16 @@ export const useCartStore = create<CartStore>((set, get) => ({
   updateQuantity: (itemToUpdate, quantity) => {
     set((state) => ({
       items: state.items.map((item) =>
-        item === itemToUpdate ? { ...item, quantity } : item,
+        item === itemToUpdate
+          ? {
+              ...item,
+              quantity,
+              unit_price:
+                item.product.type === "KT"
+                  ? getQuantityPrice(item.product, quantity)
+                  : item.unit_price,
+            }
+          : item,
       ),
     }));
   },

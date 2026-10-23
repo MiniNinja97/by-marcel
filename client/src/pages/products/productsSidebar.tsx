@@ -328,6 +328,23 @@ export default function ProductsSidebar({
         )}
       </div>
 
+      {/* KREATIVA TRÄPRODUKTER */}
+<div className="sidebar-category">
+  <NavLink
+    to="/produkter/kreativa-traprodukter"
+    end
+    className={({ isActive }) =>
+      isActive
+        ? "sidebar-category-link active"
+        : "sidebar-category-link"
+    }
+  >
+    {language === "sv"
+      ? "Kreativa träprodukter"
+      : "Creative wooden products"}
+  </NavLink>
+</div>
+
       {/* BILDGRAVYR */}
 <div className="sidebar-category">
   <NavLink

@@ -23,7 +23,7 @@ export default function Payment() {
   const [city, setCity] = useState("");
   const [zipCode, setZipCode] = useState("");
   const [country, setCountry] = useState("SE");
-  const [customerNotes, setCustomerNotes] = useState("");
+  // const [customerNotes, setCustomerNotes] = useState("");
 
   const [paymentDiscount, setPaymentDiscount] =
     useState<ValidatedDiscount | null>(null);
@@ -325,7 +325,7 @@ export default function Payment() {
         items,
         discountCode,
         paymentGiftCard?.code ?? null,
-        customerNotes.trim(),
+        // customerNotes.trim(),
       );
 
       if (result.checkout_url) {
@@ -522,7 +522,7 @@ export default function Payment() {
                   </option>
                 </select>
               </div>
-              <div className="payment-field full-width">
+              {/* <div className="payment-field full-width">
                 <label htmlFor="customer-notes">
                   {language === "sv"
                     ? "Övriga önskemål (valfritt)"
@@ -541,7 +541,7 @@ export default function Payment() {
                       : "Do you have any special requests regarding your order?"
                   }
                 />
-              </div>
+              </div> */}
             </div>
           </div>
 

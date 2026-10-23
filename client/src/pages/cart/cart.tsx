@@ -262,6 +262,38 @@ export default function Cart() {
                     </p>
                   )}
 
+                  {/* KT: Visa motiv, material och yta */}
+                  {item.product.type === "KT" &&
+                    Object.entries(item.selected_options ?? {}).map(
+                      ([optionName, optionValue]) => {
+                        const option = item.product.options?.find(
+                          (option) => option.option_name === optionName,
+                        );
+
+                        const selectedValue = option?.values.find(
+                          (value) =>
+                            String(value.value) === String(optionValue),
+                        );
+
+                        return (
+                          <p className="cart-item-text" key={optionName}>
+                            {language === "sv"
+                              ? (option?.display_name ?? optionName)
+                              : option?.display_name_en ||
+                                option?.display_name ||
+                                optionName}
+                            :{" "}
+                            {language === "sv"
+                              ? (selectedValue?.display_value ??
+                                String(optionValue))
+                              : selectedValue?.display_value_en ||
+                                selectedValue?.display_value ||
+                                String(optionValue)}
+                          </p>
+                        );
+                      },
+                    )}
+
                   {item.selected_print_color && (
                     <p className="cart-item-text">
                       {language === "sv" ? "Tryckfärg" : "Print colour"}:{" "}
@@ -285,6 +317,16 @@ export default function Cart() {
                           </p>
                         );
                       },
+                    )}
+
+                  {/* KT: Visa uppladdad fil för Egen design */}
+                  {item.product.type === "KT" &&
+                    item.selected_options?.motiv === "22" &&
+                    item.custom_photo && (
+                      <p className="cart-item-text">
+                        {language === "sv" ? "Bifogad fil" : "Attached file"}:{" "}
+                        {item.custom_photo.name}
+                      </p>
                     )}
 
                   <div className="cart-item-quantity">

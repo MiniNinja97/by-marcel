@@ -5,6 +5,7 @@ import type { Product, ProductVariant, ProductColor } from "../../types";
 import { useCartStore } from "../../store/useCartStore";
 import { useLanguage } from "../../context/languageContext";
 import "./product_card.css";
+import { getQuantityPrice } from "../../types/getQuantityPrice";
 
 export default function Product() {
   const { id } = useParams();
@@ -116,9 +117,19 @@ export default function Product() {
    * från varianter där shape === "round".
    */
   const getAvailableOptionValues = (optionName: string): Set<string> => {
+    // KT-produkter använder alternativ direkt från databasen
+    if (product?.type === "KT") {
+      const option = product.options?.find(
+        (option) => option.option_name === optionName,
+      );
+
+      return new Set(option?.values.map((value) => String(value.value)) ?? []);
+    }
+
     if (!product || !product.options || !product.variants) {
       return new Set<string>();
     }
+
     if (
       product.id === "LFG.TRA" &&
       optionName !== "shape" &&
@@ -130,6 +141,8 @@ export default function Product() {
 
       return new Set(option?.values.map((value) => String(value.value)) ?? []);
     }
+
+    // Resten av din befintliga kod fortsätter här...
 
     const currentOptionIndex = product.options.findIndex(
       (option) => option.option_name === optionName,
@@ -177,6 +190,12 @@ export default function Product() {
     if (!product?.options) {
       return;
     }
+
+    // Rensa tidigare texter och filer när motivet ändras
+if (product.type === "KT" && optionName === "motiv") {
+  setCustomTexts({});
+  setUploadFiles({});
+}
 
     const changedOptionIndex = product.options.findIndex(
       (option) => option.option_name === optionName,
@@ -374,18 +393,69 @@ export default function Product() {
     setGalleryDescription("");
   }, [selectedVariant?.id]);
 
-  const handleAddToCart = () => {
-    setCartError("");
+ const handleAddToCart = () => {
+  setCartError("");
 
-    if (!product || product.is_out_of_stock) {
+  if (!product || product.is_out_of_stock) {
+    return;
+  }
+
+  const isCustomEnamel = product.type === "EC";
+  const isGiftCard = product.type === "gift_card";
+  const isWoodEngraving = product.id === "LFG.TRA";
+
+  // KT: Kontrollera att motiv, material och yta är valda
+  if (product.type === "KT") {
+    const requiredOptions = ["motiv", "material", "yta"];
+
+    const missingOptions = requiredOptions.filter(
+      (optionName) => !selectedOptions[optionName],
+    );
+
+    if (missingOptions.length > 0) {
+      setCartError(
+        language === "sv"
+          ? "Välj motiv, material och yta innan du lägger produkten i kundkorgen."
+          : "Select motif, material and finish before adding the product to your cart.",
+      );
+
+      return;
+    }
+  }
+
+  // KT: Kontrollera obligatoriska textfält
+  if (product.type === "KT") {
+    const motiv = Number(selectedOptions.motiv);
+
+    const requiresCutoutText =
+      (motiv >= 1 && motiv <= 12) ||
+      motiv === 14 ||
+      (motiv >= 17 && motiv <= 21);
+
+    const requiresEngravedText = [13, 15, 16, 21].includes(motiv);
+
+    if (requiresCutoutText && !customTexts.utskuren_text?.trim()) {
+      setCartError(
+        language === "sv"
+          ? "Fyll i namn eller utskuren text innan du lägger produkten i kundkorgen."
+          : "Enter a name or cut-out text before adding the product to your cart.",
+      );
       return;
     }
 
-    const isCustomEnamel = product.type === "EC";
-    const isGiftCard = product.type === "gift_card";
-    const isWoodEngraving = product.id === "LFG.TRA";
+    if (requiresEngravedText && !customTexts.graverad_text?.trim()) {
+      setCartError(
+        language === "sv"
+          ? "Fyll i extra graverad text innan du lägger produkten i kundkorgen."
+          : "Enter the engraved text before adding the product to your cart.",
+      );
+      return;
+    }
+  }
 
-    const requiresVariant = (product.variants?.length ?? 0) > 0;
+  const requiresVariant = (product.variants?.length ?? 0) > 0;
+
+  // Resten av din befintliga kod fortsätter här
 
     const requiresColors = isCustomEnamel && (product.colors?.length ?? 0) > 0;
     const requiredWoodOptions = isWoodEngraving
@@ -500,6 +570,21 @@ export default function Product() {
       return;
     }
 
+    // KT: Egen design kräver en uppladdad fil
+if (
+  product.type === "KT" &&
+  selectedOptions.motiv === "22" &&
+  !uploadFiles["egen_design_0"]?.[0]
+) {
+  setCartError(
+    language === "sv"
+      ? "Du måste ladda upp en fil för att välja Egen design."
+      : "You must upload a file when selecting Custom design.",
+  );
+
+  return;
+}
+
     // Kontrollera färger
     if (requiresColors && !backgroundColor && !printColor) {
       setCartError(
@@ -547,37 +632,48 @@ export default function Product() {
         ? (printColor ?? undefined)
         : undefined,
 
-    selected_size:
-  isCustomEnamel || product.id === "LFG.TRA"
-    ? selectedOptions.size
-    : undefined,
-
-selected_shape:
-  isCustomEnamel || product.id === "LFG.TRA"
-    ? selectedOptions.shape
-    : undefined,
-
-custom_texts:
-  isCustomEnamel || product.type === "gift_card" ? customTexts : {},
-
-      
-
-      custom_photo: isCustomEnamel
-        ? customPhoto || undefined
-        : product.id === "LFG.TRA"
-          ? uploadFiles["engraving_image_0"]?.[0] || undefined
+      selected_size:
+        isCustomEnamel || product.id === "LFG.TRA"
+          ? selectedOptions.size
           : undefined,
 
-      unit_price: displayedPrice,
+      selected_shape:
+        isCustomEnamel || product.id === "LFG.TRA"
+          ? selectedOptions.shape
+          : undefined,
 
-      total_price: displayedPrice * quantity,
+      custom_texts:
+  isCustomEnamel ||
+  product.type === "gift_card" ||
+  product.type === "KT"
+    ? customTexts
+    : {},
+
+      custom_photo: isCustomEnamel
+  ? customPhoto || undefined
+  : product.id === "LFG.TRA"
+    ? uploadFiles["engraving_image_0"]?.[0] || undefined
+    : product.type === "KT" && selectedOptions.motiv === "22"
+      ? uploadFiles["egen_design_0"]?.[0] || undefined
+      : undefined,
+
+      unit_price:
+  product.type === "KT"
+    ? getQuantityPrice(product, quantity)
+    : displayedPrice,
+
+total_price:
+  (product.type === "KT"
+    ? getQuantityPrice(product, quantity)
+    : displayedPrice) * quantity,
 
       selected_options:
-        isCustomEnamel ||
-        product.type === "gift_card" ||
-        product.id === "LFG.TRA"
-          ? selectedOptions
-          : {},
+  isCustomEnamel ||
+  product.type === "gift_card" ||
+  product.id === "LFG.TRA" ||
+  product.type === "KT"
+    ? selectedOptions
+    : {},
     });
 
     setShowCartConfirmation(true);
@@ -622,12 +718,13 @@ custom_texts:
   const requiresVariant = (product.variants?.length ?? 0) > 0;
 
   const allOptionsSelected =
-  product.id === "LFG.TRA"
-    ? Boolean(selectedOptions.shape && selectedOptions.size)
-    : !isCustomEnamel ||
-      (product.options?.every(
-        (option) => selectedOptions[option.option_name] !== undefined,
-      ) ?? true);
+    product.id === "LFG.TRA"
+      ? Boolean(selectedOptions.shape && selectedOptions.size)
+      : !isCustomEnamel ||
+        (product.options?.every(
+          (option) => selectedOptions[option.option_name] !== undefined,
+        ) ??
+          true);
 
   return (
     <div className="product-page">
@@ -733,7 +830,8 @@ custom_texts:
           {/* Dynamiska produktval */}
           {(isCustomEnamel ||
             product.type === "gift_card" ||
-            product.id === "LFG.TRA") &&
+            product.id === "LFG.TRA" ||
+            product.type === "KT") &&
             product.options?.map((option) => {
               const shouldHideOrientation =
                 product.id === "LFG.TRA" &&
@@ -812,65 +910,97 @@ custom_texts:
             )}
 
           {/* Dynamiska uppladdningsfält */}
-          {(isCustomEnamel || product.id === "LFG.TRA") &&
-            product.upload_fields?.map((field) => (
-              <div className="product-option" key={field.id}>
-                {Array.from({ length: field.max_files }).map((_, index) => {
-                  const fileKey = `${field.field_name}_${index}`;
-
-                  return (
-                    <div className="product-upload-field" key={fileKey}>
-                      <label>
-                        {field.max_files > 1
-                          ? `${
-                              language === "sv"
-                                ? field.display_name
-                                : field.display_name_en || field.display_name
-                            } ${index + 1}`
-                          : language === "sv"
-                            ? field.display_name
-                            : field.display_name_en || field.display_name}
-                      </label>
-
-                      <label className="upload-btn">
-                        <input
-                          type="file"
-                          accept={field.allowed_extensions
-                            .split(",")
-                            .map((extension) => `.${extension.trim()}`)
-                            .join(",")}
-                          onChange={(event) => {
-                            const file = event.target.files?.[0];
-
-                            setUploadFiles((previous) => ({
-                              ...previous,
-                              [fileKey]: file ? [file] : [],
-                            }));
-                          }}
-                        />
-                        📎
-                      </label>
-
-                      {uploadFiles[fileKey]?.[0] && (
-                        <p className="upload-filename">
-                          {uploadFiles[fileKey][0].name}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-
-          {/* Egen text */}
-          {(isCustomEnamel || product.type === "gift_card") &&
-            product.allows_custom_text &&
-            product.text_fields
+          {(isCustomEnamel ||
+            product.id === "LFG.TRA" ||
+            product.type === "KT") &&
+            product.upload_fields
               ?.filter(
                 (field) =>
-                  field.field_name !== "custom_title" ||
-                  selectedOptions.title === "custom",
+                  product.type !== "KT" ||
+                  (selectedOptions.motiv === "22" &&
+                    field.field_name === "egen_design"),
               )
+              .map((field) => (
+                <div className="product-option" key={field.id}>
+                  {Array.from({ length: field.max_files }).map((_, index) => {
+                    const fileKey = `${field.field_name}_${index}`;
+
+                    return (
+                      <div className="product-upload-field" key={fileKey}>
+                        <label>
+                          {field.max_files > 1
+                            ? `${
+                                language === "sv"
+                                  ? field.display_name
+                                  : field.display_name_en || field.display_name
+                              } ${index + 1}`
+                            : language === "sv"
+                              ? field.display_name
+                              : field.display_name_en || field.display_name}
+                        </label>
+
+                        <label className="upload-btn">
+                          <input
+                            type="file"
+                            accept={field.allowed_extensions
+                              .split(",")
+                              .map((extension) => `.${extension.trim()}`)
+                              .join(",")}
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+
+                              setUploadFiles((previous) => ({
+                                ...previous,
+                                [fileKey]: file ? [file] : [],
+                              }));
+                            }}
+                          />
+                          📎
+                        </label>
+
+                        {uploadFiles[fileKey]?.[0] && (
+                          <p className="upload-filename">
+                            {uploadFiles[fileKey][0].name}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+
+          {/* Egen text */}
+          {(isCustomEnamel ||
+            product.type === "gift_card" ||
+            product.type === "KT") &&
+            product.allows_custom_text &&
+            product.text_fields
+              ?.filter((field) => {
+                // KT-produkter: visa rätt textfält beroende på motiv
+                if (product.type === "KT") {
+                  const motiv = Number(selectedOptions.motiv);
+
+                  if (field.field_name === "utskuren_text") {
+                    return (
+                      (motiv >= 1 && motiv <= 12) ||
+                      motiv === 14 ||
+                      (motiv >= 17 && motiv <= 21)
+                    );
+                  }
+
+                  if (field.field_name === "graverad_text") {
+                    return [13, 15, 16, 21].includes(motiv);
+                  }
+
+                  return false;
+                }
+
+                // Befintlig logik för övriga produkter
+                return (
+                  field.field_name !== "custom_title" ||
+                  selectedOptions.title === "custom"
+                );
+              })
               .map((field) => (
                 <div className="product-option" key={field.id}>
                   <label>

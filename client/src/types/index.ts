@@ -43,6 +43,12 @@ export interface Product {
   is_hidden: boolean;
   is_out_of_stock: boolean;
   is_featured: boolean;
+
+  quantity_prices?: {
+  min_quantity: number;
+  max_quantity: number | null;
+  unit_price: number;
+}[];
 }
 
 export interface ProductColor {
@@ -204,7 +210,7 @@ export type OrderStatus =
   | "delivered"
   | "cancelled";
 
-export type ProductType = "EC" | "ES" | "OWN" | "gift_card";
+export type ProductType = "EC" | "ES" | "OWN" | "gift_card" | "KT";
 
 /*
     Typen för ett värde inne i variantens options.

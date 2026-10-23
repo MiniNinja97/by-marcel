@@ -9,6 +9,7 @@ import enamelImage from "./products-img/emalj-framsida.jpeg";
 import photoEngravingImage from "./products-img/bildgravyrfirst.jpeg";
 import enamelCustomImage from "./products-img/emaljegendesign.jpeg";
 import enamelStandardImage from "./products-img/emaljstandard.jpeg";
+import creativeWoodImage from "./products-img/kreativa-traprodukter.jpeg";
 
 const giftCardImage =
   "https://www.bymarcel.se/uploads/products/presentkort1.jpeg";
@@ -381,6 +382,18 @@ export default function Products() {
       return false;
     }
 
+    // KREATIVA TRÄPRODUKTER
+    if (kategori === "kreativa-traprodukter") {
+      return product.id.startsWith("KT.");
+    }
+
+    if (kategori === "kreativa-traprodukter") {
+      pageTitle =
+        language === "sv"
+          ? "Kreativa träprodukter"
+          : "Creative wooden products";
+    }
+
     // Bildgravyr
     if (kategori === "bildgravyr") {
       return product.id === "LFG.TRA" || product.id === "LFG.DEK";
@@ -508,15 +521,35 @@ export default function Products() {
               </NavLink>
 
               <NavLink
+  to="/produkter/kreativa-traprodukter"
+  className="products-category-card"
+>
+  <div className="products-category-image">
+    <img
+      src={creativeWoodImage}
+      alt={
+        language === "sv"
+          ? "Kreativa träprodukter"
+          : "Creative wooden products"
+      }
+    />
+  </div>
+
+  <h2>
+    {language === "sv"
+      ? "Kreativa träprodukter"
+      : "Creative wooden products"}
+  </h2>
+</NavLink>
+
+              <NavLink
                 to="/produkter/bildgravyr"
                 className="products-category-card"
               >
                 <div className="products-category-image">
                   <img
                     src={photoEngravingImage}
-                    alt={
-                      language === "sv" ? "Bildgravyr" : "Photo engraving"
-                    }
+                    alt={language === "sv" ? "Bildgravyr" : "Photo engraving"}
                   />
                 </div>
 
@@ -590,6 +623,7 @@ export default function Products() {
           Standardprodukter har valts
       ======================================== */}
         {((kategori === "emalj" && produkttyp !== "valj") ||
+          kategori === "kreativa-traprodukter" ||
           kategori === "bildgravyr" ||
           kategori === "presentkort") && (
           <>

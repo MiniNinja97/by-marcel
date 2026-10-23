@@ -84,23 +84,23 @@ if (
 $customer = $data["customer"];
 $items = $data["items"];
 
-$customerNotes = $data["customer_notes"] ?? null;
+// $customerNotes = $data["customer_notes"] ?? null;
 
-if ($customerNotes !== null) {
-    if (!is_string($customerNotes)) {
-        throw new InvalidArgumentException("Ogiltigt format för önskemål.");
-    }
+// if ($customerNotes !== null) {
+//     if (!is_string($customerNotes)) {
+//         throw new InvalidArgumentException("Ogiltigt format för önskemål.");
+//     }
 
-    $customerNotes = trim($customerNotes);
+//     $customerNotes = trim($customerNotes);
 
-    if (mb_strlen($customerNotes, "UTF-8") > 1000) {
-        throw new InvalidArgumentException("Önskemålet får innehålla högst 1000 tecken.");
-    }
+//     if (mb_strlen($customerNotes, "UTF-8") > 1000) {
+//         throw new InvalidArgumentException("Önskemålet får innehålla högst 1000 tecken.");
+//     }
 
-    if ($customerNotes === "") {
-        $customerNotes = null;
-    }
-}
+//     if ($customerNotes === "") {
+//         $customerNotes = null;
+//     }
+// }
 
 $discountCode = strtoupper(
     trim($data["discount_code"] ?? "")
@@ -1377,7 +1377,7 @@ $totalPrice = max(
             zip_code,
             country
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ";
 
     $customerStmt =
@@ -1439,8 +1439,8 @@ $totalPrice = max(
         total_weight,
         total_price,
         status,
-        stripe_payment_id,
-        customer_notes
+        stripe_payment_id
+        
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ";
@@ -1449,7 +1449,7 @@ $totalPrice = max(
         $conn->prepare($orderSql);
 
     $orderStmt->bind_param(
-    "ssdsddddsss",
+    "ssdsddddss",
     $orderId,
     $customerId,
     $subtotal,
@@ -1459,8 +1459,7 @@ $totalPrice = max(
     $totalWeight,
     $totalPrice,
     $status,
-    $stripePaymentId,
-     $customerNotes
+    $stripePaymentId
 );
 
     $orderStmt->execute();
