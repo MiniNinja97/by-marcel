@@ -140,6 +140,7 @@ export interface Order {
   total_price: number;
   status: OrderStatus;
   stripe_payment_id?: string;
+  customer_notes: string | null;
   created_at: string;
 }
 

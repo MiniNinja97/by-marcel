@@ -23,6 +23,7 @@ export default function Payment() {
   const [city, setCity] = useState("");
   const [zipCode, setZipCode] = useState("");
   const [country, setCountry] = useState("SE");
+  const [customerNotes, setCustomerNotes] = useState("");
 
   const [paymentDiscount, setPaymentDiscount] =
     useState<ValidatedDiscount | null>(null);
@@ -319,10 +320,12 @@ export default function Payment() {
           city: city.trim(),
           zip_code: zipCode.trim(),
           country: country.trim(),
+
         },
         items,
         discountCode,
         paymentGiftCard?.code ?? null,
+        customerNotes.trim(),
       );
 
       if (result.checkout_url) {
@@ -518,6 +521,26 @@ export default function Payment() {
                     {language === "sv" ? "Nederländerna" : "Netherlands"}
                   </option>
                 </select>
+              </div>
+              <div className="payment-field full-width">
+                <label htmlFor="customer-notes">
+                  {language === "sv"
+                    ? "Övriga önskemål (valfritt)"
+                    : "Additional requests (optional)"}
+                </label>
+
+                <textarea
+                  id="customer-notes"
+                  value={customerNotes}
+                  onChange={(event) => setCustomerNotes(event.target.value)}
+                  maxLength={1000}
+                  rows={4}
+                  placeholder={
+                    language === "sv"
+                      ? "Har du några särskilda önskemål kring din beställning?"
+                      : "Do you have any special requests regarding your order?"
+                  }
+                />
               </div>
             </div>
           </div>

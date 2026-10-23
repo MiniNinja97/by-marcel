@@ -634,6 +634,24 @@
     justify-content: flex-end;
 }
 
+.admin-order-notes {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #fff8e6;
+  border-left: 3px solid #c49a45;
+  border-radius: 4px;
+}
+
+.admin-order-notes p {
+  margin: 0 0 0.5rem;
+}
+
+.admin-order-notes p:last-child {
+  margin-bottom: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 
 /* ── RESPONSIVE RABATTKODER ───────────────────────────── */
 

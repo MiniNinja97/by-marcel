@@ -47,6 +47,7 @@ orders.discount_amount,
         orders.total_price,
         orders.status,
         orders.stripe_payment_id,
+        orders.customer_notes,
         orders.created_at,
 
         customers.id AS customer_id,
@@ -231,6 +232,7 @@ $item["gift_cards"] = $giftCards;
 
         "status" => $row["status"],
         "stripe_payment_id" => $row["stripe_payment_id"],
+        "customer_notes" => $row["customer_notes"],
         "created_at" => $row["created_at"]
     ];
 }

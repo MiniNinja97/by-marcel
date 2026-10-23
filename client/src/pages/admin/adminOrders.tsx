@@ -286,6 +286,16 @@ export default function AdminOrders() {
                     )}
                 </div>
               ))}
+
+              {/* Kundens övriga önskemål */}
+              {order.customer_notes?.trim() && (
+                <div className="admin-order-notes">
+                  <p>
+                    <strong>Övriga önskemål från kunden:</strong>
+                  </p>
+                  <p>{order.customer_notes}</p>
+                </div>
+              )}
             </div>
 
             {/* Ordersammanfattning */}

@@ -31,6 +31,7 @@ export default function ProductsSidebar({
   const [isEnamelOpen, setIsEnamelOpen] = useState(
     kategori === "emalj",
   );
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [openProductType, setOpenProductType] =
     useState<"egen-design" | "standardprodukter" | null>(
@@ -82,7 +83,24 @@ export default function ProductsSidebar({
     );
 
   return (
-    <aside className="products-sidebar">
+  <aside className="products-sidebar">
+    <button
+      type="button"
+      className="products-mobile-toggle"
+      onClick={() => setIsMobileMenuOpen((open) => !open)}
+      aria-expanded={isMobileMenuOpen}
+      aria-controls="products-sidebar-content"
+    >
+      <span>{language === "sv" ? "Produkter" : "Products"}</span>
+      <span aria-hidden="true">{isMobileMenuOpen ? "−" : "+"}</span>
+    </button>
+
+    <div
+      id="products-sidebar-content"
+      className={`products-sidebar-content ${
+        isMobileMenuOpen ? "products-sidebar-content--open" : ""
+      }`}
+    >
       {/* ALLA PRODUKTER
       <NavLink
         to="/produkter"
@@ -357,6 +375,7 @@ export default function ProductsSidebar({
             : "Gift cards"}
         </NavLink>
       </div>
+    </div>
     </aside>
   );
 }

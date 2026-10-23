@@ -54,6 +54,7 @@ export async function createOrder(
   items: CartItem[],
   discountCode: string | null,
   giftCardCode: string | null,
+  customerNotes: string,
 ): Promise<CreateOrderResponse> {
   const orderItems = await Promise.all(
   items.map(async (item) => {
@@ -119,11 +120,12 @@ console.log("ORDER ITEMS:", JSON.stringify(orderItems, null, 2));
         "Content-Type": "application/json",
       },
 
-      body: JSON.stringify({
+     body: JSON.stringify({
   customer,
   items: orderItems,
   discount_code: discountCode,
   gift_card_code: giftCardCode,
+  customer_notes: customerNotes,
   site_origin: window.location.origin,
 }),
     },

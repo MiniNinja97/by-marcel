@@ -80,7 +80,8 @@
 }
 
 .payment-field input,
-.payment-field select {
+.payment-field select,
+.payment-field textarea {
     width: 100%;
     box-sizing: border-box;
     background: rgba(255, 255, 255, 0.03);
@@ -95,8 +96,20 @@
 }
 
 .payment-field input:focus,
-.payment-field select:focus {
+.payment-field select:focus,
+.payment-field textarea:focus {
     border-color: var(--gold);
+}
+
+.payment-field textarea {
+    min-height: 7rem;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.payment-field textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
 }
 
 .payment-field select {
@@ -106,6 +119,72 @@
 .payment-field select option {
     background: var(--bg-card);
     color: var(--text);
+}
+
+/* PRESENTKORT */
+
+.payment-gift-card {
+    margin-bottom: 1.5rem;
+}
+
+.payment-gift-card label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    color: var(--text);
+}
+
+.payment-gift-card-input {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.payment-gift-card-input input {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.03);
+    border: 0.0625rem solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    padding: 0.9rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.payment-gift-card-input input:focus {
+    border-color: var(--gold);
+}
+
+.payment-gift-card-input input::placeholder {
+    color: var(--text-muted);
+}
+
+.payment-gift-card-input button {
+    flex-shrink: 0;
+    padding: 0.9rem 1.2rem;
+    background: transparent;
+    border: 0.0625rem solid var(--gold);
+    border-radius: 0.25rem;
+    color: var(--gold);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-gift-card-input button:hover:not(:disabled) {
+    background: var(--gold);
+    color: #0a0a0a;
+}
+
+.payment-gift-card-input button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 

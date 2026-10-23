@@ -84,6 +84,24 @@ if (
 $customer = $data["customer"];
 $items = $data["items"];
 
+$customerNotes = $data["customer_notes"] ?? null;
+
+if ($customerNotes !== null) {
+    if (!is_string($customerNotes)) {
+        throw new InvalidArgumentException("Ogiltigt format för önskemål.");
+    }
+
+    $customerNotes = trim($customerNotes);
+
+    if (mb_strlen($customerNotes, "UTF-8") > 1000) {
+        throw new InvalidArgumentException("Önskemålet får innehålla högst 1000 tecken.");
+    }
+
+    if ($customerNotes === "") {
+        $customerNotes = null;
+    }
+}
+
 $discountCode = strtoupper(
     trim($data["discount_code"] ?? "")
 );
@@ -1359,7 +1377,7 @@ $totalPrice = max(
             zip_code,
             country
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ";
 
     $customerStmt =
@@ -1421,7 +1439,8 @@ $totalPrice = max(
         total_weight,
         total_price,
         status,
-        stripe_payment_id
+        stripe_payment_id,
+        customer_notes
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ";
@@ -1430,7 +1449,7 @@ $totalPrice = max(
         $conn->prepare($orderSql);
 
     $orderStmt->bind_param(
-    "ssdsddddss",
+    "ssdsddddsss",
     $orderId,
     $customerId,
     $subtotal,
@@ -1440,7 +1459,8 @@ $totalPrice = max(
     $totalWeight,
     $totalPrice,
     $status,
-    $stripePaymentId
+    $stripePaymentId,
+     $customerNotes
 );
 
     $orderStmt->execute();
@@ -1915,11 +1935,19 @@ echo json_encode([
 
 } catch (Throwable $error) {
 
-    // Rollback bara om en transaktion faktiskt är aktiv.
+    error_log(
+        "CREATE ORDER ERROR: " .
+        $error->getMessage() .
+        " in " . $error->getFile() .
+        " on line " . $error->getLine()
+    );
+
     try {
         $conn->rollback();
     } catch (Throwable $rollbackError) {
-        // Ingenting behöver göras här.
+        error_log(
+            "ROLLBACK ERROR: " . $rollbackError->getMessage()
+        );
     }
 
     http_response_code(400);
