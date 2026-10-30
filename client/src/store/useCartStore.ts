@@ -2,6 +2,23 @@ import { create } from "zustand";
 import type { CartItem } from "../types";
 import { getQuantityPrice } from "../types/getQuantityPrice";
 
+function updateKTPrices(items: CartItem[]): CartItem[] {
+  const totalKTQuantity = items
+    .filter((item) => item.product.type === "KT")
+    .reduce((sum, item) => sum + item.quantity, 0);
+
+  return items.map((item) => {
+    if (item.product.type !== "KT") {
+      return item;
+    }
+
+    return {
+      ...item,
+      unit_price: getQuantityPrice(item.product, totalKTQuantity),
+    };
+  });
+}
+
 interface CartStore {
   items: CartItem[];
   addItem: (item: CartItem) => void;
@@ -38,52 +55,42 @@ export const useCartStore = create<CartStore>((set, get) => ({
       );
 
       if (existing) {
-  return {
-    items: state.items.map((item) => {
-      if (item !== existing) return item;
+        const updatedItems = state.items.map((item) =>
+          item === existing
+            ? { ...item, quantity: item.quantity + newItem.quantity }
+            : item,
+        );
 
-      const newQuantity = item.quantity + newItem.quantity;
-
-      return {
-        ...item,
-        quantity: newQuantity,
-        unit_price:
-          item.product.type === "KT"
-            ? getQuantityPrice(item.product, newQuantity)
-            : item.unit_price,
-      };
-    }),
-  };
-}
+        return {
+          items: updateKTPrices(updatedItems),
+        };
+      }
 
       return {
-        items: [...state.items, newItem],
+        items: updateKTPrices([...state.items, newItem]),
       };
     });
   },
 
   removeItem: (itemToRemove) => {
-    set((state) => ({
-      items: state.items.filter((item) => item !== itemToRemove),
-    }));
-  },
+  set((state) => ({
+    items: updateKTPrices(
+      state.items.filter((item) => item !== itemToRemove),
+    ),
+  }));
+},
 
-  updateQuantity: (itemToUpdate, quantity) => {
-    set((state) => ({
-      items: state.items.map((item) =>
+ updateQuantity: (itemToUpdate, quantity) => {
+  set((state) => ({
+    items: updateKTPrices(
+      state.items.map((item) =>
         item === itemToUpdate
-          ? {
-              ...item,
-              quantity,
-              unit_price:
-                item.product.type === "KT"
-                  ? getQuantityPrice(item.product, quantity)
-                  : item.unit_price,
-            }
+          ? { ...item, quantity }
           : item,
       ),
-    }));
-  },
+    ),
+  }));
+},
 
   clearCart: () =>
     set({

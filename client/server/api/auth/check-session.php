@@ -5,6 +5,7 @@ header("Content-Type: application/json; charset=UTF-8");
 $allowedOrigins = [
     "https://www.bymarcel.se",
     "https://bymarcel.se",
+    "https://test.bymarcel.se",
     "http://localhost:5173"
 ];
 

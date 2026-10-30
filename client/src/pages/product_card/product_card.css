@@ -757,3 +757,44 @@
         font-size: 0.8rem;
     }
 }
+
+/* Mängdpriser för KT-produkter */
+
+.quantity-prices {
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.quantity-prices h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.quantity-prices table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.quantity-prices th,
+.quantity-prices td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.quantity-prices th:last-child,
+.quantity-prices td:last-child {
+  text-align: right;
+}
+
+.quantity-prices tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.quantity-prices tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}

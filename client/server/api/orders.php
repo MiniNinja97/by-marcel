@@ -5,6 +5,7 @@ header("Content-Type: application/json; charset=UTF-8");
 $allowedOrigins = [
     "https://www.bymarcel.se",
     "https://bymarcel.se",
+    "https://test.bymarcel.se",
     "http://localhost:5173"
 ];
 
@@ -23,7 +24,8 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     http_response_code(204);
     exit;
 }
-require_once __DIR__ . "/admin/session.php";
+require_once __DIR__ . "/../config/db.php";
+require_once __DIR__ . "/auth/session.php";
 
 if (empty($_SESSION["admin_user_id"])) {
     http_response_code(401);
@@ -117,7 +119,11 @@ while ($row = $result->fetch_assoc()) {
     WHERE order_id = ?
 ";
 
+error_log("ORDERS DEBUG: Ska förbereda order_items för order " . $orderId);
     $itemStmt = $conn->prepare($itemSql);
+    if (!$itemStmt) {
+    error_log("ORDERS DEBUG: Prepare misslyckades: " . $conn->error);
+}
     $itemStmt->bind_param("s", $orderId);
     $itemStmt->execute();
 

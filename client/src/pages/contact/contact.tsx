@@ -288,9 +288,9 @@ export default function Contact() {
 
             <a
               className="info-link"
-              href="mailto:emma.malinsdotter@outlook.com"
+              href="mailto:emma@bymarcel.se"
             >
-              emma.malinsdotter@outlook.com
+              emma@bymarcel.se
             </a>
 
             <p className="info-sub">

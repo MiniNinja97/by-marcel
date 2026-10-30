@@ -54,6 +54,24 @@ $allowedTypes = [
 
 if (!isset($allowedTypes[$mime])) {
     sendError(400, "Endast JPG, PNG och WebP är tillåtna.");
+
+
+}
+
+// Kontrollera att filen är en giltig bild
+$imageInfo = @getimagesize($file["tmp_name"]);
+
+$expectedImageTypes = [
+    "image/jpeg" => IMAGETYPE_JPEG,
+    "image/png" => IMAGETYPE_PNG,
+    "image/webp" => IMAGETYPE_WEBP
+];
+
+if (
+    $imageInfo === false ||
+    $imageInfo[2] !== $expectedImageTypes[$mime]
+) {
+    sendError(400, "Filen är inte en giltig bild.");
 }
 
 $uploadDirectory = __DIR__ . "/../../uploads/customerUploads/";

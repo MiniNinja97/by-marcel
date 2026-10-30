@@ -131,7 +131,7 @@ export default function Product() {
     }
 
     if (
-      product.id === "LFG.TRA" &&
+      (product.id === "LFG.TRA" || product.id === "LFG.DEK") &&
       optionName !== "shape" &&
       optionName !== "size"
     ) {
@@ -192,10 +192,22 @@ export default function Product() {
     }
 
     // Rensa tidigare texter och filer när motivet ändras
-if (product.type === "KT" && optionName === "motiv") {
-  setCustomTexts({});
-  setUploadFiles({});
-}
+    if (product.type === "KT" && optionName === "motiv") {
+      setCustomTexts({});
+      setUploadFiles({});
+
+      if (
+        (product.id === "KT.JUL01" || product.id === "KT.JUL02") &&
+        value !== ""
+      ) {
+        setGalleryImage("/uploads/products/KT.JUL01-A.jpg");
+        setGalleryDescription(
+          language === "sv"
+            ? "Välj bland våra 22 motiv"
+            : "Choose from our 22 designs",
+        );
+      }
+    }
 
     const changedOptionIndex = product.options.findIndex(
       (option) => option.option_name === optionName,
@@ -249,7 +261,7 @@ if (product.type === "KT" && optionName === "motiv") {
     }
 
     const relevantOptions =
-      product.id === "LFG.TRA"
+      product.id === "LFG.TRA" || product.id === "LFG.DEK"
         ? (product.options ?? []).filter(
             (option) =>
               option.option_name === "shape" || option.option_name === "size",
@@ -293,18 +305,7 @@ if (product.type === "KT" && optionName === "motiv") {
   const giftCardAmount =
     product?.type === "gift_card" ? Number(selectedOptions.amount ?? 0) : 0;
 
-  const optionAddOnPrice =
-    product?.id === "LFG.TRA" && selectedVariant?.option_prices
-      ? Object.entries(selectedOptions).reduce(
-          (total, [optionName, optionValue]) => {
-            const price =
-              selectedVariant.option_prices?.[optionName]?.[optionValue] ?? 0;
-
-            return total + price;
-          },
-          0,
-        )
-      : 0;
+  const optionAddOnPrice = 0;
 
   const displayedPrice =
     variantPrice +
@@ -393,71 +394,75 @@ if (product.type === "KT" && optionName === "motiv") {
     setGalleryDescription("");
   }, [selectedVariant?.id]);
 
- const handleAddToCart = () => {
-  setCartError("");
+  const handleAddToCart = () => {
+    setCartError("");
 
-  if (!product || product.is_out_of_stock) {
-    return;
-  }
-
-  const isCustomEnamel = product.type === "EC";
-  const isGiftCard = product.type === "gift_card";
-  const isWoodEngraving = product.id === "LFG.TRA";
-
-  // KT: Kontrollera att motiv, material och yta är valda
-  if (product.type === "KT") {
-    const requiredOptions = ["motiv", "material", "yta"];
-
-    const missingOptions = requiredOptions.filter(
-      (optionName) => !selectedOptions[optionName],
-    );
-
-    if (missingOptions.length > 0) {
-      setCartError(
-        language === "sv"
-          ? "Välj motiv, material och yta innan du lägger produkten i kundkorgen."
-          : "Select motif, material and finish before adding the product to your cart.",
-      );
-
-      return;
-    }
-  }
-
-  // KT: Kontrollera obligatoriska textfält
-  if (product.type === "KT") {
-    const motiv = Number(selectedOptions.motiv);
-
-    const requiresCutoutText =
-      (motiv >= 1 && motiv <= 12) ||
-      motiv === 14 ||
-      (motiv >= 17 && motiv <= 21);
-
-    const requiresEngravedText = [13, 15, 16, 21].includes(motiv);
-
-    if (requiresCutoutText && !customTexts.utskuren_text?.trim()) {
-      setCartError(
-        language === "sv"
-          ? "Fyll i namn eller utskuren text innan du lägger produkten i kundkorgen."
-          : "Enter a name or cut-out text before adding the product to your cart.",
-      );
+    if (!product || product.is_out_of_stock) {
       return;
     }
 
-    if (requiresEngravedText && !customTexts.graverad_text?.trim()) {
-      setCartError(
-        language === "sv"
-          ? "Fyll i extra graverad text innan du lägger produkten i kundkorgen."
-          : "Enter the engraved text before adding the product to your cart.",
+    const isCustomEnamel = product.type === "EC";
+    const isGiftCard = product.type === "gift_card";
+    const isWoodEngraving = product.id === "LFG.TRA";
+    const isImageEngraving =
+      product.id === "LFG.TRA" || product.id === "LFG.DEK";
+
+    // KT: Kontrollera att motiv, material och yta är valda
+    if (product.type === "KT") {
+      const requiredOptions = ["motiv", "material", "yta"];
+
+      const missingOptions = requiredOptions.filter(
+        (optionName) => !selectedOptions[optionName],
       );
-      return;
+
+      if (missingOptions.length > 0) {
+        setCartError(
+          language === "sv"
+            ? "Välj motiv, material och yta innan du lägger produkten i kundkorgen."
+            : "Select motif, material and finish before adding the product to your cart.",
+        );
+
+        return;
+      }
     }
-  }
 
-  const requiresVariant = (product.variants?.length ?? 0) > 0;
+    // KT: Kontrollera obligatoriska textfält
+    if (product.type === "KT") {
+      const motiv = Number(selectedOptions.motiv);
 
-  // Resten av din befintliga kod fortsätter här
+      const requiresCutoutText =
+        (motiv >= 1 && motiv <= 12) ||
+        motiv === 14 ||
+        (motiv >= 17 && motiv <= 21);
+
+      const requiresEngravedText = [13, 15, 16, 21].includes(motiv);
+
+      if (requiresCutoutText && !customTexts.utskuren_text?.trim()) {
+        setCartError(
+          language === "sv"
+            ? "Fyll i namn eller utskuren text innan du lägger produkten i kundkorgen."
+            : "Enter a name or cut-out text before adding the product to your cart.",
+        );
+
+        return;
+      }
+
+      if (requiresEngravedText && !customTexts.graverad_text?.trim()) {
+        setCartError(
+          language === "sv"
+            ? "Fyll i extra graverad text innan du lägger produkten i kundkorgen."
+            : "Enter the engraved text before adding the product to your cart.",
+        );
+
+        return;
+      }
+    }
+
+    const requiresVariant = (product.variants?.length ?? 0) > 0;
 
     const requiresColors = isCustomEnamel && (product.colors?.length ?? 0) > 0;
+
+    // Obligatoriska produktval för bildgravyr på trä
     const requiredWoodOptions = isWoodEngraving
       ? [
           "shape",
@@ -467,17 +472,31 @@ if (product.type === "KT" && optionName === "motiv") {
             ? ["orientation"]
             : []),
           "surface",
-          "thickness",
           "wall_mount",
-          "epoxy_finish",
           "wooden_stand",
-          "floating_led",
         ]
       : [];
 
-    const missingWoodOptions = requiredWoodOptions.filter(
-      (optionName) => !selectedOptions[optionName],
-    );
+    // Obligatoriska produktval för bildgravyr på dekorpanel
+    const requiredDecorOptions =
+      product.id === "LFG.DEK"
+        ? [
+            "shape",
+            "size",
+            ...(selectedOptions.shape === "rectangle" ||
+            selectedOptions.shape === "oval"
+              ? ["orientation"]
+              : []),
+            "wall_mount",
+            "wooden_stand",
+          ]
+        : [];
+
+    // Kontrollera att alla obligatoriska produktval är gjorda
+    const missingWoodOptions = [
+      ...requiredWoodOptions,
+      ...requiredDecorOptions,
+    ].filter((optionName) => !selectedOptions[optionName]);
 
     if (missingWoodOptions.length > 0) {
       setCartError(
@@ -488,7 +507,9 @@ if (product.type === "KT" && optionName === "motiv") {
 
       return;
     }
-    if (isWoodEngraving && !uploadFiles["engraving_image_0"]?.[0]) {
+
+    // Kontrollera bilduppladdning för båda gravyrprodukterna
+    if (isImageEngraving && !uploadFiles["engraving_image_0"]?.[0]) {
       setCartError(
         language === "sv"
           ? "Ladda upp en bild för gravyr innan du lägger produkten i kundkorgen."
@@ -499,6 +520,7 @@ if (product.type === "KT" && optionName === "motiv") {
     }
 
     // Kontrollera obligatoriska val för presentkort
+
     if (isGiftCard) {
       const requiredGiftCardOptions = ["shape", "amount", "title", "language"];
 
@@ -571,19 +593,37 @@ if (product.type === "KT" && optionName === "motiv") {
     }
 
     // KT: Egen design kräver en uppladdad fil
-if (
-  product.type === "KT" &&
-  selectedOptions.motiv === "22" &&
-  !uploadFiles["egen_design_0"]?.[0]
-) {
-  setCartError(
-    language === "sv"
-      ? "Du måste ladda upp en fil för att välja Egen design."
-      : "You must upload a file when selecting Custom design.",
-  );
+    if (
+      product.type === "KT" &&
+      selectedOptions.motiv === "22" &&
+      !uploadFiles["egen_design_0"]?.[0]
+    ) {
+      setCartError(
+        language === "sv"
+          ? "Du måste ladda upp en fil för att välja Egen design."
+          : "You must upload a file when selecting Custom design.",
+      );
 
-  return;
-}
+      return;
+    }
+
+    // KT: Egen design måste vara en JPG-bild
+    if (product.type === "KT" && selectedOptions.motiv === "22") {
+      const file = uploadFiles["egen_design_0"]?.[0];
+
+      if (
+        file &&
+        (file.type !== "image/jpeg" || !/\.(jpg|jpeg)$/i.test(file.name))
+      ) {
+        setCartError(
+          language === "sv"
+            ? "Egen design måste vara en JPG-bild."
+            : "Custom design must be a JPG image.",
+        );
+
+        return;
+      }
+    }
 
     // Kontrollera färger
     if (requiresColors && !backgroundColor && !printColor) {
@@ -616,6 +656,21 @@ if (
       return;
     }
 
+    if (
+      product.id.startsWith("ES.") &&
+      product.text_fields?.some(
+        (field) => field.field_name === "house_number",
+      ) &&
+      !customTexts.house_number?.trim()
+    ) {
+      setCartError(
+        language === "sv"
+          ? "Ange ett husnummer innan du lägger produkten i kundkorgen."
+          : "Enter a house number before adding the product to your cart.",
+      );
+      return;
+    }
+
     addItem({
       product,
       quantity,
@@ -633,47 +688,41 @@ if (
         : undefined,
 
       selected_size:
-        isCustomEnamel || product.id === "LFG.TRA"
-          ? selectedOptions.size
-          : undefined,
+        isCustomEnamel || isImageEngraving ? selectedOptions.size : undefined,
 
       selected_shape:
-        isCustomEnamel || product.id === "LFG.TRA"
-          ? selectedOptions.shape
-          : undefined,
+        isCustomEnamel || isImageEngraving ? selectedOptions.shape : undefined,
 
       custom_texts:
-  isCustomEnamel ||
-  product.type === "gift_card" ||
-  product.type === "KT"
-    ? customTexts
-    : {},
+        isCustomEnamel || product.type === "gift_card" || product.type === "KT"
+          ? customTexts
+          : {},
 
       custom_photo: isCustomEnamel
-  ? customPhoto || undefined
-  : product.id === "LFG.TRA"
-    ? uploadFiles["engraving_image_0"]?.[0] || undefined
-    : product.type === "KT" && selectedOptions.motiv === "22"
-      ? uploadFiles["egen_design_0"]?.[0] || undefined
-      : undefined,
+        ? customPhoto || undefined
+        : isImageEngraving
+          ? uploadFiles["engraving_image_0"]?.[0] || undefined
+          : product.type === "KT" && selectedOptions.motiv === "22"
+            ? uploadFiles["egen_design_0"]?.[0] || undefined
+            : undefined,
 
       unit_price:
-  product.type === "KT"
-    ? getQuantityPrice(product, quantity)
-    : displayedPrice,
+        product.type === "KT"
+          ? getQuantityPrice(product, quantity)
+          : displayedPrice,
 
-total_price:
-  (product.type === "KT"
-    ? getQuantityPrice(product, quantity)
-    : displayedPrice) * quantity,
+      total_price:
+        (product.type === "KT"
+          ? getQuantityPrice(product, quantity)
+          : displayedPrice) * quantity,
 
       selected_options:
-  isCustomEnamel ||
-  product.type === "gift_card" ||
-  product.id === "LFG.TRA" ||
-  product.type === "KT"
-    ? selectedOptions
-    : {},
+        isCustomEnamel ||
+        product.type === "gift_card" ||
+        isImageEngraving ||
+        product.type === "KT"
+          ? selectedOptions
+          : {},
     });
 
     setShowCartConfirmation(true);
@@ -806,6 +855,43 @@ total_price:
               ? product.description
               : product.description_en || product.description}
           </p>
+          {/* Mängdpriser för KT-produkter */}
+          {product.type === "KT" &&
+            product.quantity_prices &&
+            product.quantity_prices.length > 0 && (
+              <div className="quantity-prices">
+                <h3>
+                  {language === "sv" ? "Mängdrabatt" : "Quantity discounts"}
+                </h3>
+
+                <table>
+                  <thead>
+                    <tr>
+                      <th>{language === "sv" ? "Antal" : "Quantity"}</th>
+                      <th>{language === "sv" ? "Styckpris" : "Unit price"}</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {product.quantity_prices.map((tier) => (
+                      <tr key={tier.min_quantity}>
+                        <td>
+                          {tier.max_quantity === null
+                            ? `${tier.min_quantity}+`
+                            : tier.min_quantity === tier.max_quantity
+                              ? tier.min_quantity
+                              : `${tier.min_quantity}–${tier.max_quantity}`}
+                        </td>
+                        <td>
+                          {tier.unit_price} SEK{" "}
+                          {language === "sv" ? "/st" : "/each"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
         </div>
 
         {/* Höger — info + val */}
@@ -825,16 +911,37 @@ total_price:
           </div>
 
           {/* Pris */}
-          <p className="product-price">{displayedPrice} SEK</p>
+          <p className="product-price">
+            {product.type === "KT"
+              ? getQuantityPrice(product, quantity)
+              : displayedPrice}{" "}
+            SEK {language === "sv" ? "/st" : "/each"}
+          </p>
 
           {/* Dynamiska produktval */}
           {(isCustomEnamel ||
             product.type === "gift_card" ||
             product.id === "LFG.TRA" ||
+            product.id === "LFG.DEK" ||
             product.type === "KT") &&
             product.options?.map((option) => {
+              const isImageEngraving =
+                product.id === "LFG.TRA" || product.id === "LFG.DEK";
+
+              const hiddenEngravingOptions = [
+                "thickness",
+                "epoxy_finish",
+                "floating_led",
+              ];
+
+              if (
+                isImageEngraving &&
+                hiddenEngravingOptions.includes(option.option_name)
+              ) {
+                return null;
+              }
               const shouldHideOrientation =
-                product.id === "LFG.TRA" &&
+                (product.id === "LFG.TRA" || product.id === "LFG.DEK") &&
                 option.option_name === "orientation" &&
                 selectedOptions.shape !== "rectangle" &&
                 selectedOptions.shape !== "oval";
@@ -912,6 +1019,7 @@ total_price:
           {/* Dynamiska uppladdningsfält */}
           {(isCustomEnamel ||
             product.id === "LFG.TRA" ||
+            product.id === "LFG.DEK" ||
             product.type === "KT") &&
             product.upload_fields
               ?.filter(
@@ -972,7 +1080,11 @@ total_price:
           {/* Egen text */}
           {(isCustomEnamel ||
             product.type === "gift_card" ||
-            product.type === "KT") &&
+            product.type === "KT" ||
+            (product.id.startsWith("ES.") &&
+              product.text_fields?.some(
+                (field) => field.field_name === "house_number",
+              ))) &&
             product.allows_custom_text &&
             product.text_fields
               ?.filter((field) => {

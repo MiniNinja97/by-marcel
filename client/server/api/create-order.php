@@ -401,6 +401,47 @@ if (
 $unitPrice = (float) $product["base_price"];
 $weight = (float) $product["weight"];
 
+// -----------------------------------------
+// Mängdpriser för KT-produkter
+// -----------------------------------------
+
+if ($productType === "KT") {
+
+    $quantityPriceSql = "
+        SELECT unit_price
+        FROM product_quantity_prices
+        WHERE product_id = ?
+          AND min_quantity <= ?
+          AND (max_quantity IS NULL OR max_quantity >= ?)
+        ORDER BY min_quantity DESC
+        LIMIT 1
+    ";
+
+    $quantityPriceStmt = $conn->prepare($quantityPriceSql);
+
+    $quantityPriceStmt->bind_param(
+        "sii",
+        $productId,
+        $quantity,
+        $quantity
+    );
+
+    $quantityPriceStmt->execute();
+
+    $quantityPriceResult = $quantityPriceStmt->get_result();
+    $quantityPrice = $quantityPriceResult->fetch_assoc();
+
+    $quantityPriceStmt->close();
+
+    if (!$quantityPrice) {
+        throw new Exception(
+            "Mängdpris saknas för " . $productId
+        );
+    }
+
+    $unitPrice = (float) $quantityPrice["unit_price"];
+}
+
 $supplierId = null;
 
 $selectedSize =
@@ -412,7 +453,92 @@ $selectedShape =
 $selectedOptions =
     $item["selected_options"] ?? null;
 
-    $isWoodEngraving = $productId === "LFG.TRA";
+   // -----------------------------------------
+// Kontrollera obligatoriska KT-val
+// -----------------------------------------
+
+if ($productType === "KT") {
+
+    if (!is_array($selectedOptions)) {
+        throw new Exception(
+            "Produktval saknas för " . $productId
+        );
+    }
+
+    $requiredKtOptions = [
+        "motiv",
+        "material",
+        "yta"
+    ];
+
+    // Kontrollera att alla val finns
+    foreach ($requiredKtOptions as $optionName) {
+
+        if (
+            !isset($selectedOptions[$optionName]) ||
+            !is_scalar($selectedOptions[$optionName]) ||
+            (string) $selectedOptions[$optionName] === ""
+        ) {
+            throw new Exception(
+                "Produktval saknas: " .
+                $optionName .
+                " för " .
+                $productId
+            );
+        }
+    }
+
+    // -----------------------------------------
+    // Kontrollera KT-val mot databasen
+    // -----------------------------------------
+
+    foreach ($requiredKtOptions as $optionName) {
+
+        $selectedValue = (string) $selectedOptions[$optionName];
+
+        $validOptionSql = "
+            SELECT pov.id
+            FROM product_option_values pov
+            INNER JOIN product_options po
+                ON po.id = pov.option_id
+            WHERE po.product_id = ?
+              AND po.option_name = ?
+              AND pov.value = ?
+            LIMIT 1
+        ";
+
+        $validOptionStmt = $conn->prepare($validOptionSql);
+
+        $validOptionStmt->bind_param(
+            "sss",
+            $productId,
+            $optionName,
+            $selectedValue
+        );
+
+        $validOptionStmt->execute();
+
+        $validOptionResult = $validOptionStmt->get_result();
+        $validOption = $validOptionResult->fetch_assoc();
+
+        $validOptionStmt->close();
+
+        if (!$validOption) {
+            throw new Exception(
+                "Ogiltigt produktval: " .
+                $optionName .
+                " för " .
+                $productId
+            );
+        }
+    }
+}
+
+$isImageEngraving = in_array(
+    $productId,
+    ["LFG.TRA", "LFG.DEK"],
+    true
+);
 
             // -----------------------------------------
 // Presentkort
@@ -465,7 +591,7 @@ if ($productType === "gift_card") {
         // EC måste ha en giltig variant
         // -----------------------------------------
 
-      if ($productType === "EC" || $isWoodEngraving) {
+      if ($productType === "EC" || $isImageEngraving) {
 
             if (
                 !isset($item["variant_id"]) ||
@@ -568,7 +694,7 @@ $selectedShape =
     ?? $selectedShape;
 
 
-if ($isWoodEngraving) {
+if ($isImageEngraving) {
 
     if (
         !is_array($selectedOptions) ||
@@ -604,15 +730,19 @@ if ($isWoodEngraving) {
     // Kontrollera obligatoriska produktval
     // -----------------------------------------
 
-    $requiredWoodOptions = [
+    $requiredWoodOptions = $productId === "LFG.TRA"
+    ? [
         "shape",
         "size",
         "surface",
-        "thickness",
         "wall_mount",
-        "epoxy_finish",
-        "wooden_stand",
-        "floating_led"
+        "wooden_stand"
+    ]
+    : [
+        "shape",
+        "size",
+        "wall_mount",
+        "wooden_stand"
     ];
 
     if (
@@ -694,37 +824,37 @@ if ($isWoodEngraving) {
         }
     }
 
-    $optionPriceSql = "
-        SELECT
-            option_name,
-            option_value,
-            price_delta
-        FROM product_variant_option_prices
-        WHERE variant_id = ?
-    ";
+    // $optionPriceSql = "
+    //     SELECT
+    //         option_name,
+    //         option_value,
+    //         price_delta
+    //     FROM product_variant_option_prices
+    //     WHERE variant_id = ?
+    // ";
 
-    $optionPriceStmt = $conn->prepare($optionPriceSql);
-    $optionPriceStmt->bind_param("s", $variantId);
-    $optionPriceStmt->execute();
+    // $optionPriceStmt = $conn->prepare($optionPriceSql);
+    // $optionPriceStmt->bind_param("s", $variantId);
+    // $optionPriceStmt->execute();
 
-    $optionPriceResult = $optionPriceStmt->get_result();
+    // $optionPriceResult = $optionPriceStmt->get_result();
 
-    while ($optionPrice = $optionPriceResult->fetch_assoc()) {
+    // while ($optionPrice = $optionPriceResult->fetch_assoc()) {
 
-        $optionName = $optionPrice["option_name"];
-        $optionValue = $optionPrice["option_value"];
-        $priceDelta = (float) $optionPrice["price_delta"];
+    //     $optionName = $optionPrice["option_name"];
+    //     $optionValue = $optionPrice["option_value"];
+    //     $priceDelta = (float) $optionPrice["price_delta"];
 
-        if (
-            isset($selectedOptions[$optionName]) &&
-            (string) $selectedOptions[$optionName] ===
-            (string) $optionValue
-        ) {
-            $unitPrice += $priceDelta;
-        }
-    }
+    //     if (
+    //         isset($selectedOptions[$optionName]) &&
+    //         (string) $selectedOptions[$optionName] ===
+    //         (string) $optionValue
+    //     ) {
+    //         $unitPrice += $priceDelta;
+    //     }
+    // }
 
-    $optionPriceStmt->close();
+    // $optionPriceStmt->close();
 }
 
 }
@@ -917,15 +1047,191 @@ if ($isWoodEngraving) {
         }
 
 
-        // -----------------------------------------
-        // Egna texter
-        // -----------------------------------------
+      // -----------------------------------------
+// Egna texter
+// -----------------------------------------
 
-        $customTexts =
-            isset($item["custom_texts"]) &&
-            is_array($item["custom_texts"])
-                ? $item["custom_texts"]
-                : null;
+$customTexts =
+    isset($item["custom_texts"]) &&
+    is_array($item["custom_texts"])
+        ? $item["custom_texts"]
+        : null;
+
+// -----------------------------------------
+// Validering för KT-produkter
+// -----------------------------------------
+
+if ($productType === "KT") {
+
+    // -----------------------------------------
+    // Kontrollera textfältens längd
+    // -----------------------------------------
+
+    $allowedTextFields = [
+        "utskuren_text" => 10,
+        "graverad_text" => 35
+    ];
+
+    if (
+        isset($item["custom_texts"]) &&
+        !is_array($item["custom_texts"])
+    ) {
+        throw new Exception(
+            "Ogiltigt format för kundens texter."
+        );
+    }
+
+    foreach ($customTexts ?? [] as $fieldName => $text) {
+
+        if (!array_key_exists($fieldName, $allowedTextFields)) {
+            throw new Exception(
+                "Ogiltigt textfält för " . $productId
+            );
+        }
+
+        if (!is_string($text)) {
+            throw new Exception(
+                "Ogiltig text för " . $fieldName
+            );
+        }
+
+        if (
+            mb_strlen($text, "UTF-8") >
+            $allowedTextFields[$fieldName]
+        ) {
+            throw new Exception(
+                "Texten är för lång för " . $fieldName
+            );
+        }
+    }
+
+    // -----------------------------------------
+    // Tillåtna textfält beroende på motiv
+    // -----------------------------------------
+
+    $motivValue = $selectedOptions["motiv"] ?? null;
+
+    if (
+        !is_scalar($motivValue) ||
+        !preg_match('/^(?:[1-9]|1[0-9]|2[0-2])$/', (string) $motivValue)
+    ) {
+        throw new Exception("Ogiltigt motiv för KT-produkten.");
+    }
+
+    $motiv = (int) $motivValue;
+
+    $allowsCutText =
+        ($motiv >= 1 && $motiv <= 12) ||
+        $motiv === 14 ||
+        ($motiv >= 17 && $motiv <= 21);
+
+    $allowsEngravedText =
+        in_array($motiv, [13, 15, 16, 21], true);
+
+    // -----------------------------------------
+    // Kontrollera otillåtna textfält
+    // -----------------------------------------
+
+    if (
+        !$allowsCutText &&
+        trim($customTexts["utskuren_text"] ?? "") !== ""
+    ) {
+        throw new Exception(
+            "Utskuren text är inte tillåten för motiv " . $motiv
+        );
+    }
+
+    if (
+        !$allowsEngravedText &&
+        trim($customTexts["graverad_text"] ?? "") !== ""
+    ) {
+        throw new Exception(
+            "Graverad text är inte tillåten för motiv " . $motiv
+        );
+    }
+
+    // -----------------------------------------
+    // Kontrollera obligatoriska textfält
+    // -----------------------------------------
+
+    if (
+        $allowsCutText &&
+        trim($customTexts["utskuren_text"] ?? "") === ""
+    ) {
+        throw new Exception(
+            "Du måste ange utskuren text för motiv " . $motiv
+        );
+    }
+
+    if (
+        $allowsEngravedText &&
+        trim($customTexts["graverad_text"] ?? "") === ""
+    ) {
+        throw new Exception(
+            "Du måste ange graverad text för motiv " . $motiv
+        );
+    }
+
+    // -----------------------------------------
+    // Validera egen design för KT-produkter
+    // -----------------------------------------
+
+    $customPhotoUrl = $item["custom_photo_url"] ?? null;
+
+    if ($motiv === 22) {
+
+        // Motiv 22 kräver en uppladdad bild
+        if (
+            !is_string($customPhotoUrl) ||
+            trim($customPhotoUrl) === ""
+        ) {
+            throw new Exception(
+                "Du måste ladda upp en bild för motiv 22."
+            );
+        }
+
+        // Endast JPG tillåts för motiv 22
+        if (
+            !preg_match(
+                '~^/uploads/customerUploads/[a-f0-9]{32}\.jpg$~i',
+                $customPhotoUrl
+            )
+        ) {
+            throw new Exception(
+                "Egen design för KT-produkter måste vara en JPG-bild."
+            );
+        }
+
+    } else {
+
+        // Övriga motiv får inte ha en egen design
+        if (
+            $customPhotoUrl !== null &&
+            $customPhotoUrl !== ""
+        ) {
+            throw new Exception(
+                "Egen design är endast tillåten för motiv 22."
+            );
+        }
+    }
+}
+
+// -----------------------------------------
+// Obligatorisk bild för gravyrprodukter
+// -----------------------------------------
+
+if ($isImageEngraving) {
+    $engravingPhotoUrl = $item["custom_photo_url"] ?? null;
+
+    if (
+        !is_string($engravingPhotoUrl) ||
+        trim($engravingPhotoUrl) === ""
+    ) {
+        throw new Exception(
+            "Du måste ladda upp en bild för " . $productId
+        );
+    }
+}
 
 
         // -----------------------------------------

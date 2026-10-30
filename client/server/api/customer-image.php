@@ -3,7 +3,8 @@
 $allowedOrigins = [
     "https://www.bymarcel.se",
     "https://bymarcel.se",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "https://test.bymarcel.se"
 ];
 
 $origin = $_SERVER["HTTP_ORIGIN"] ?? "";
@@ -15,7 +16,7 @@ if (in_array($origin, $allowedOrigins, true)) {
 
 header("Vary: Origin");
 
-require_once __DIR__ . "/session.php";
+require_once __DIR__ . "/auth/session.php";
 
 if (empty($_SESSION["admin_user_id"])) {
     http_response_code(401);
@@ -34,8 +35,9 @@ if (
 }
 
 $imageDirectory = realpath(
-    __DIR__ . "/../../../uploads/customerUploads"
+    __DIR__ . "/../../uploads/customerUploads"
 );
+
 
 if ($imageDirectory === false) {
     http_response_code(500);

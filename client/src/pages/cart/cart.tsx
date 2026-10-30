@@ -262,8 +262,10 @@ export default function Cart() {
                     </p>
                   )}
 
-                  {/* KT: Visa motiv, material och yta */}
-                  {item.product.type === "KT" &&
+                  {/* Visa produktval för KT och bildgravyr */}
+                  {(item.product.type === "KT" ||
+                    item.product.id === "LFG.TRA" ||
+                    item.product.id === "LFG.DEK") &&
                     Object.entries(item.selected_options ?? {}).map(
                       ([optionName, optionValue]) => {
                         const option = item.product.options?.find(
@@ -326,6 +328,17 @@ export default function Cart() {
                       <p className="cart-item-text">
                         {language === "sv" ? "Bifogad fil" : "Attached file"}:{" "}
                         {item.custom_photo.name}
+                      </p>
+                    )}
+                  {/* Visa uppladdad bild för bildgravyr */}
+                  {(item.product.id === "LFG.TRA" ||
+                    item.product.id === "LFG.DEK") &&
+                    item.custom_photo && (
+                      <p className="cart-item-text">
+                        {language === "sv"
+                          ? "Uppladdad bild"
+                          : "Uploaded image"}
+                        : {item.custom_photo.name}
                       </p>
                     )}
 

@@ -178,7 +178,7 @@ export async function getCustomerImage(
   }
 
   const response = await fetch(
-    `https://www.bymarcel.se/Server/api/admin/customer-image.php?file=${encodeURIComponent(filename)}`,
+    `https://www.bymarcel.se/Server/api/customer-image.php?file=${encodeURIComponent(filename)}`,
     {
       credentials: "include",
     },
