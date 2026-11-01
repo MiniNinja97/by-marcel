@@ -617,6 +617,99 @@ export default function Products() {
           </div>
         )}
 
+        {/* KOMMANDE PRODUKTER */}
+{kategori === "kommande-produkter" && (
+  <section className="upcoming-products">
+    <h1>Kommande produkter</h1>
+
+    <p>
+      Webbutiken är igång med våra första produkter! Under de kommande
+      månaderna fyller vi på med fler personliga produkter och kreativa
+      möjligheter.
+    </p>
+
+    <div className="upcoming-products-list">
+      <div>
+        <h2>Premium PhotoArt</h2>
+        <p>
+          Dina foton i stort format på aluminium eller akryl. En
+          transparent epoxiyta ger färgerna djup och lyster med en
+          glasliknande känsla. Integrerad bakgrundsbelysning skapar ett
+          varmt sken och får bilden att sväva på väggen.
+        </p>
+      </div>
+
+      <div>
+        <h2>Spegelgravyr</h2>
+        <p>
+          Foto, text eller logotyp graverad i spegel, med möjlighet
+          till färgdetaljer. Ett personligt minne från dopet,
+          bröllopet eller studenten, eller en unik inredningsdetalj.
+        </p>
+      </div>
+
+      <div>
+        <h2>Bildgravyr – fler material och tillval</h2>
+        <p>
+          Utöver plywood, MDF och dekorpanel kommer bland annat skiffer,
+          natursten, glas, akryl och metall. Bakgrundsbelysning och en
+          transparent epoxiyta blir nya tillval som ger bilden extra
+          djup och karaktär.
+        </p>
+      </div>
+
+      <div>
+        <h2>Fler kreativa träprodukter</h2>
+        <p>
+          Vi utökar sortimentet med nya former, egna designer och
+          personliga detaljer i trä.
+        </p>
+      </div>
+
+      <div>
+        <h2>Textiltryck</h2>
+        <p>
+          Din text, logotyp eller bild på kläder för privatpersoner,
+          företag och föreningar. Brett klädsortiment och beställning
+          från ett enda plagg.
+        </p>
+      </div>
+
+      <div>
+        <h2>Tapettryck</h2>
+        <p>
+          Din egen design som tapet. På en hel vägg eller som en
+          dekorativ detalj.
+        </p>
+      </div>
+
+      <div>
+        <h2>Personliga gåvor</h2>
+        <p>
+          Graverade skifferunderlägg och dricksglas kommer snart.
+          Därefter följer bland annat nyckelringar och pennor med
+          personlig gravyr och mycket mer.
+        </p>
+      </div>
+
+      <div>
+        <h2>Skyltar för inne och ute</h2>
+        <p>
+          Unika skyltar för hemmet och stilfulla informationsskyltar
+          som lyfter presentationen av konst, böcker och
+          museiutställningar.
+        </p>
+      </div>
+    </div>
+
+    <p className="upcoming-products-contact">
+      Mejla{" "}
+      <a href="mailto:info@bymarcel.se">info@bymarcel.se</a>
+      {" "}om du redan nu vill ha mer information.
+    </p>
+  </section>
+)}
+
         {/* ========================================
           PRODUKTVY
           Visas först när Egen design eller

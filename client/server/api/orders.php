@@ -48,9 +48,12 @@ orders.discount_amount,
         orders.total_weight,
         orders.total_price,
         orders.status,
-        orders.stripe_payment_id,
-        orders.customer_notes,
-        orders.created_at,
+       orders.stripe_payment_id,
+orders.customer_notes,
+orders.created_at,
+orders.order_email_status,
+orders.order_email_sent_at,
+orders.order_email_started_at,
 
         customers.id AS customer_id,
         customers.first_name,
@@ -109,10 +112,12 @@ while ($row = $result->fetch_assoc()) {
         selected_background_color,
         selected_print_color,
         selected_font,
-        selected_options,
-        custom_photo_url,
-        custom_text,
-        custom_texts
+selected_options,
+custom_photo_url,
+custom_photo_urls,
+custom_text,
+custom_texts,
+additional_requests
 
     FROM order_items
 
@@ -153,6 +158,11 @@ $item["custom_texts"] =
     $item["custom_texts"] !== null
         ? json_decode($item["custom_texts"], true)
         : null;
+
+        $item["custom_photo_urls"] =
+    $item["custom_photo_urls"] !== null
+        ? json_decode($item["custom_photo_urls"], true)
+        : [];
 
         // Gör numeriska värden numeriska i JSON
         $item["quantity"] = (int) $item["quantity"];
@@ -237,9 +247,12 @@ $item["gift_cards"] = $giftCards;
         "total_price" => (float) $row["total_price"],
 
         "status" => $row["status"],
-        "stripe_payment_id" => $row["stripe_payment_id"],
-        "customer_notes" => $row["customer_notes"],
-        "created_at" => $row["created_at"]
+"stripe_payment_id" => $row["stripe_payment_id"],
+"customer_notes" => $row["customer_notes"],
+"created_at" => $row["created_at"],
+"order_email_status" => $row["order_email_status"],
+"order_email_sent_at" => $row["order_email_sent_at"],
+"order_email_started_at" => $row["order_email_started_at"]
     ];
 }
 

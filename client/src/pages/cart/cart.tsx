@@ -229,7 +229,7 @@ export default function Cart() {
 
             return (
               <div
-                key={`${item.product.id}-${item.variant_id}-${item.selected_background_color?.id ?? ""}-${item.selected_print_color?.id ?? ""}-${JSON.stringify(item.custom_texts)}`}
+               key={`${item.product.id}-${item.variant_id}-${item.selected_background_color?.id ?? ""}-${item.selected_print_color?.id ?? ""}-${JSON.stringify(item.selected_options)}-${JSON.stringify(item.custom_texts)}-${item.additional_requests ?? ""}`}
                 className="cart-item"
               >
                 <div className="cart-item-img">
@@ -320,6 +320,17 @@ export default function Cart() {
                         );
                       },
                     )}
+                  {/* Övriga önskemål */}
+                  {item.additional_requests?.trim() && (
+                    <p className="cart-item-text cart-item-additional-requests">
+                      <strong>
+                        {language === "sv"
+                          ? "Övriga önskemål:"
+                          : "Additional requests:"}
+                      </strong>{" "}
+                      {item.additional_requests}
+                    </p>
+                  )}
 
                   {/* KT: Visa uppladdad fil för Egen design */}
                   {item.product.type === "KT" &&

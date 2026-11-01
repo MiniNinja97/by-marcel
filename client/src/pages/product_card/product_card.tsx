@@ -25,6 +25,7 @@ export default function Product() {
   >({});
 
   const [customTexts, setCustomTexts] = useState<Record<string, string>>({});
+  const [additionalRequests, setAdditionalRequests] = useState("");
 
   const [customPhoto, setCustomPhoto] = useState<File | null>(null);
 
@@ -99,6 +100,7 @@ export default function Product() {
     setPrintColor(null);
     setCustomTexts({});
     setCustomPhoto(null);
+    setAdditionalRequests("");
     setUploadFiles({});
     setQuantity(1);
     setSelectedImage(0);
@@ -674,6 +676,7 @@ export default function Product() {
     addItem({
       product,
       quantity,
+      additional_requests: additionalRequests.trim(),
 
       variant_id: selectedVariant?.id,
 
@@ -693,18 +696,21 @@ export default function Product() {
       selected_shape:
         isCustomEnamel || isImageEngraving ? selectedOptions.shape : undefined,
 
-      custom_texts:
-        isCustomEnamel || product.type === "gift_card" || product.type === "KT"
-          ? customTexts
-          : {},
+      custom_texts: customTexts,
 
       custom_photo: isCustomEnamel
         ? customPhoto || undefined
-        : isImageEngraving
-          ? uploadFiles["engraving_image_0"]?.[0] || undefined
-          : product.type === "KT" && selectedOptions.motiv === "22"
-            ? uploadFiles["egen_design_0"]?.[0] || undefined
-            : undefined,
+        : product.type === "KT" && selectedOptions.motiv === "22"
+          ? uploadFiles["egen_design_0"]?.[0] || undefined
+          : undefined,
+
+      custom_photos: isImageEngraving
+        ? [
+            uploadFiles["engraving_image_0"]?.[0],
+            uploadFiles["engraving_image_1"]?.[0],
+            uploadFiles["engraving_image_2"]?.[0],
+          ].filter((file): file is File => file !== undefined)
+        : undefined,
 
       unit_price:
         product.type === "KT"
@@ -735,6 +741,7 @@ export default function Product() {
     setBackgroundColor(null);
     setPrintColor(null);
     setCustomTexts({});
+    setAdditionalRequests("");
     setCustomPhoto(null);
     setUploadFiles({});
     setQuantity(1);
@@ -1074,6 +1081,15 @@ export default function Product() {
                       </div>
                     );
                   })}
+
+                  {/* Hjälptext visas endast en gång under alla bilder */}
+                  {(product.id === "LFG.TRA" || product.id === "LFG.DEK") && (
+                    <p className="engraving-upload-hint">
+                      {language === "sv"
+                        ? "Du kan ladda upp upp till tre bilder. Bild 1 är obligatorisk, medan bild 2 och 3 är frivilliga."
+                        : "You can upload up to three images. Image 1 is required, while images 2 and 3 are optional."}
+                    </p>
+                  )}
                 </div>
               ))}
 
@@ -1290,6 +1306,34 @@ export default function Product() {
                 : "The selected combination is not available."}
             </p>
           )}
+
+          {/* Övriga önskemål */}
+          <div className="product-option product-additional-requests">
+            <label htmlFor="additional-requests">
+              {language === "sv"
+                ? "Övriga önskemål (valfritt)"
+                : "Additional requests (optional)"}
+            </label>
+
+            <textarea
+              id="additional-requests"
+              value={additionalRequests}
+              onChange={(event) => setAdditionalRequests(event.target.value)}
+              maxLength={1000}
+              rows={3}
+              placeholder={
+                language === "sv"
+                  ? "Har du några särskilda önskemål för den här produkten? Skriv dem här..."
+                  : "Do you have any special requests for this product? Write them here..."
+              }
+            />
+
+            <p className="product-additional-requests-hint">
+              {language === "sv"
+                ? "Exempelvis önskemål om placering, utformning eller andra detaljer. Vi kontaktar dig om något behöver förtydligas."
+                : "For example, requests regarding placement, design or other details. We will contact you if anything needs clarification."}
+            </p>
+          </div>
 
           {/* Antal */}
           <div className="product-option">

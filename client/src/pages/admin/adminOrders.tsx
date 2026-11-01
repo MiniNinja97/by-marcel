@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { getOrders, updateOrderStatus } from "../../api/orders";
+import {
+  getOrders,
+  updateOrderStatus,
+  resendOrderEmail,
+} from "../../api/orders";
 import AdminCustomerImage from "./adminCustomerImage";
 import type { Order, OrderStatus } from "../../types";
 
@@ -15,6 +19,12 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [sendingEmailOrderId, setSendingEmailOrderId] = useState<string | null>(
+    null,
+  );
+
+  const [emailError, setEmailError] = useState("");
 
   const [activeFilter, setActiveFilter] = useState<OrderStatus | "alla">(
     "alla",
@@ -92,6 +102,38 @@ export default function AdminOrders() {
     }
   };
 
+  const handleResendOrderEmail = async (orderId: string) => {
+    if (sendingEmailOrderId !== null) return;
+
+    setSendingEmailOrderId(orderId);
+    setEmailError("");
+
+    try {
+      await resendOrderEmail(orderId);
+
+      const updatedOrders = await getOrders();
+      setOrders(updatedOrders);
+    } catch (error) {
+      console.error(error);
+
+      setEmailError(
+        error instanceof Error
+          ? error.message
+          : "Kunde inte skicka ordermejlet",
+      );
+
+      // Hämta aktuell status även om anropet misslyckades.
+      try {
+        const updatedOrders = await getOrders();
+        setOrders(updatedOrders);
+      } catch (refreshError) {
+        console.error(refreshError);
+      }
+    } finally {
+      setSendingEmailOrderId(null);
+    }
+  };
+
   return (
     <div className="admin-orders">
       {/* Statusfilter */}
@@ -142,6 +184,12 @@ export default function AdminOrders() {
         />
       </div>
 
+      {emailError && (
+        <p role="alert" className="admin-order-email-error">
+          {emailError}
+        </p>
+      )}
+
       {/* Orderlista */}
       <div className="admin-orders-list">
         {filtered.map((order) => (
@@ -174,6 +222,37 @@ export default function AdminOrders() {
               </p>
 
               <p>{order.created_at}</p>
+              <div className="admin-order-email-status">
+                {order.order_email_status === "sent" && (
+                  <p>✉️ Ordermejl skickat</p>
+                )}
+
+                {order.order_email_status === "pending" && (
+                  <p>⚠️ Ordermejl ej skickat</p>
+                )}
+
+                {order.order_email_status === "sending" && (
+                  <p>⏳ Ordermejl – utskick behöver kontrolleras</p>
+                )}
+
+                {order.order_email_sent_at && (
+                  <p>Skickat: {order.order_email_sent_at}</p>
+                )}
+
+                {order.order_email_status === "pending" &&
+                  order.status === "processing" &&
+                  !!order.stripe_payment_id && (
+                    <button
+                      type="button"
+                      disabled={sendingEmailOrderId !== null}
+                      onClick={() => handleResendOrderEmail(order.id)}
+                    >
+                      {sendingEmailOrderId === order.id
+                        ? "Skickar ordermejl..."
+                        : "Skicka ordermejl igen"}
+                    </button>
+                  )}
+              </div>
 
               <select
                 className="admin-status-select"
@@ -274,6 +353,22 @@ export default function AdminOrders() {
                     <AdminCustomerImage imageUrl={item.custom_photo_url} />
                   )}
 
+                  {/* Kundens uppladdade bilder för bildgravyr */}
+                  {item.custom_photo_urls &&
+                    item.custom_photo_urls.length > 0 && (
+                      <div className="admin-engraving-images">
+                        {item.custom_photo_urls.map((imageUrl, index) => (
+                          <div key={`${imageUrl}-${index}`}>
+                            <p>
+                              <strong>Bild {index + 1}:</strong>
+                            </p>
+
+                            <AdminCustomerImage imageUrl={imageUrl} showLabel={false} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                   {/* Dynamiska textrader */}
                   {item.custom_texts &&
                     Object.entries(item.custom_texts).map(
@@ -284,6 +379,18 @@ export default function AdminOrders() {
                           </p>
                         ),
                     )}
+
+                  {/* Övriga önskemål för produkten */}
+                  {item.additional_requests?.trim() && (
+                    <div className="admin-order-notes">
+                      <p>
+                        <strong>Övriga önskemål:</strong>
+                      </p>
+                      <p style={{ whiteSpace: "pre-wrap" }}>
+                        {item.additional_requests}
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
 

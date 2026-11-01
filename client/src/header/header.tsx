@@ -16,11 +16,7 @@ export default function Header() {
 
   return (
     <header className="header">
-      <Link
-        to="/"
-        className="header__logo"
-        onClick={closeMenu}
-      >
+      <Link to="/" className="header__logo" onClick={closeMenu}>
         By Marcel
       </Link>
 
@@ -29,9 +25,7 @@ export default function Header() {
         type="button"
         className={`header__burger ${menuOpen ? "open" : ""}`}
         onClick={() => setMenuOpen(!menuOpen)}
-        aria-label={
-          language === "sv" ? "Öppna meny" : "Open menu"
-        }
+        aria-label={language === "sv" ? "Öppna meny" : "Open menu"}
         aria-expanded={menuOpen}
       >
         <span></span>
@@ -40,38 +34,23 @@ export default function Header() {
       </button>
 
       {/* NAVIGATION */}
-      <div
-        className={`header__menu ${
-          menuOpen ? "header__menu--open" : ""
-        }`}
-      >
+      <div className={`header__menu ${menuOpen ? "header__menu--open" : ""}`}>
         <nav>
           <ul className="header__nav">
             <li>
-              <NavLink
-                to="/produkter"
-                onClick={closeMenu}
-              >
+              <NavLink to="/produkter" onClick={closeMenu}>
                 {language === "sv" ? "Produkter" : "Products"}
               </NavLink>
             </li>
 
             <li>
-              <NavLink
-                to="/about"
-                onClick={closeMenu}
-              >
-                {language === "sv"
-                  ? "Bakom kulisserna"
-                  : "Behind the scenes"}
+              <NavLink to="/about" onClick={closeMenu}>
+                {language === "sv" ? "Bakom kulisserna" : "Behind the scenes"}
               </NavLink>
             </li>
 
             <li>
-              <NavLink
-                to="/contact"
-                onClick={closeMenu}
-              >
+              <NavLink to="/contact" onClick={closeMenu}>
                 {language === "sv" ? "Kontakt" : "Contact"}
               </NavLink>
             </li>
@@ -84,8 +63,10 @@ export default function Header() {
               type="button"
               className={language === "sv" ? "active" : ""}
               onClick={() => setLanguage("sv")}
+              aria-label="Byt till svenska"
+              aria-pressed={language === "sv"}
             >
-              SV
+              <span aria-hidden="true">🇸🇪</span> SV
             </button>
 
             <span>/</span>
@@ -94,8 +75,10 @@ export default function Header() {
               type="button"
               className={language === "en" ? "active" : ""}
               onClick={() => setLanguage("en")}
+              aria-label="Switch to English"
+              aria-pressed={language === "en"}
             >
-              EN
+              <span aria-hidden="true">🇬🇧</span> EN
             </button>
           </div>
 
@@ -105,9 +88,7 @@ export default function Header() {
             onClick={closeMenu}
           >
             <span className="header__cart-icon">🛒</span>
-
-            {language === "sv" ? "Kundkorgen" : "Cart"} (
-            {getTotalItems()})
+            {language === "sv" ? "Kundkorgen" : "Cart"} ({getTotalItems()})
           </NavLink>
         </div>
       </div>

@@ -28,28 +28,23 @@ export default function ProductsSidebar({
 }: ProductsSidebarProps) {
   const { kategori, produkttyp } = useParams();
 
-  const [isEnamelOpen, setIsEnamelOpen] = useState(
-    kategori === "emalj",
-  );
+  const [isEnamelOpen, setIsEnamelOpen] = useState(kategori === "emalj");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const [openProductType, setOpenProductType] =
-    useState<"egen-design" | "standardprodukter" | null>(
-      produkttyp === "egen-design" ||
-        produkttyp === "standardprodukter"
-        ? produkttyp
-        : null,
-    );
+  const [openProductType, setOpenProductType] = useState<
+    "egen-design" | "standardprodukter" | null
+  >(
+    produkttyp === "egen-design" || produkttyp === "standardprodukter"
+      ? produkttyp
+      : null,
+  );
 
   useEffect(() => {
     if (kategori === "emalj") {
       setIsEnamelOpen(true);
     }
 
-    if (
-      produkttyp === "egen-design" ||
-      produkttyp === "standardprodukter"
-    ) {
+    if (produkttyp === "egen-design" || produkttyp === "standardprodukter") {
       setOpenProductType(produkttyp);
     } else {
       setOpenProductType(null);
@@ -59,49 +54,45 @@ export default function ProductsSidebar({
   // resten av din kod...
 
   // Bara underkategorier som faktiskt har EC-produkter
-  const customDesignSubcategories =
-    subcategories.filter((subcategory) =>
-      products.some(
-        (product) =>
-          !product.is_hidden &&
-          product.type === "EC" &&
-          getSubcategory(product) ===
-            subcategory.slug,
-      ),
-    );
+  const customDesignSubcategories = subcategories.filter((subcategory) =>
+    products.some(
+      (product) =>
+        !product.is_hidden &&
+        product.type === "EC" &&
+        getSubcategory(product) === subcategory.slug,
+    ),
+  );
 
   // Bara underkategorier som faktiskt har ES-produkter
-  const standardSubcategories =
-    subcategories.filter((subcategory) =>
-      products.some(
-        (product) =>
-          !product.is_hidden &&
-          product.type === "ES" &&
-          getSubcategory(product) ===
-            subcategory.slug,
-      ),
-    );
+  const standardSubcategories = subcategories.filter((subcategory) =>
+    products.some(
+      (product) =>
+        !product.is_hidden &&
+        product.type === "ES" &&
+        getSubcategory(product) === subcategory.slug,
+    ),
+  );
 
   return (
-  <aside className="products-sidebar">
-    <button
-      type="button"
-      className="products-mobile-toggle"
-      onClick={() => setIsMobileMenuOpen((open) => !open)}
-      aria-expanded={isMobileMenuOpen}
-      aria-controls="products-sidebar-content"
-    >
-      <span>{language === "sv" ? "Produkter" : "Products"}</span>
-      <span aria-hidden="true">{isMobileMenuOpen ? "−" : "+"}</span>
-    </button>
+    <aside className="products-sidebar">
+      <button
+        type="button"
+        className="products-mobile-toggle"
+        onClick={() => setIsMobileMenuOpen((open) => !open)}
+        aria-expanded={isMobileMenuOpen}
+        aria-controls="products-sidebar-content"
+      >
+        <span>{language === "sv" ? "Produkter" : "Products"}</span>
+        <span aria-hidden="true">{isMobileMenuOpen ? "−" : "+"}</span>
+      </button>
 
-    <div
-      id="products-sidebar-content"
-      className={`products-sidebar-content ${
-        isMobileMenuOpen ? "products-sidebar-content--open" : ""
-      }`}
-    >
-      {/* ALLA PRODUKTER
+      <div
+        id="products-sidebar-content"
+        className={`products-sidebar-content ${
+          isMobileMenuOpen ? "products-sidebar-content--open" : ""
+        }`}
+      >
+        {/* ALLA PRODUKTER
       <NavLink
         to="/produkter"
         end
@@ -116,283 +107,232 @@ export default function ProductsSidebar({
           : "All products"}
       </NavLink> */}
 
-      {/* EMALJ */}
-      <div className="sidebar-category">
-        <div className="sidebar-menu-row">
+        {/* EMALJ */}
+        <div className="sidebar-category">
+          <div className="sidebar-menu-row">
+            <NavLink
+              to="/produkter/emalj"
+              end
+              className={({ isActive }) =>
+                isActive
+                  ? "sidebar-category-link active"
+                  : "sidebar-category-link"
+              }
+              onClick={() => setIsEnamelOpen(true)}
+            >
+              {language === "sv" ? "Emalj" : "Enamel"}
+            </NavLink>
+
+            <button
+              type="button"
+              className="sidebar-toggle"
+              onClick={() => {
+                setIsEnamelOpen((open) => !open);
+
+                if (isEnamelOpen) {
+                  setOpenProductType(null);
+                }
+              }}
+              aria-label={
+                isEnamelOpen
+                  ? language === "sv"
+                    ? "Stäng Emalj"
+                    : "Close Enamel"
+                  : language === "sv"
+                    ? "Öppna Emalj"
+                    : "Open Enamel"
+              }
+            >
+              {isEnamelOpen ? "−" : "+"}
+            </button>
+          </div>
+
+          {isEnamelOpen && (
+            <div className="sidebar-product-types">
+              {/* EGEN DESIGN */}
+              <div className="sidebar-product-type">
+                <div className="sidebar-menu-row">
+                  <NavLink
+                    to="/produkter/emalj/egen-design"
+                    end
+                    className={({ isActive }) =>
+                      isActive
+                        ? "sidebar-type-link active"
+                        : "sidebar-type-link"
+                    }
+                    onClick={() => setOpenProductType("egen-design")}
+                  >
+                    {language === "sv" ? "Egen design" : "Custom design"}
+                  </NavLink>
+
+                  <button
+                    type="button"
+                    className="sidebar-toggle sidebar-toggle-small"
+                    onClick={() =>
+                      setOpenProductType((current) =>
+                        current === "egen-design" ? null : "egen-design",
+                      )
+                    }
+                    aria-label={
+                      openProductType === "egen-design"
+                        ? language === "sv"
+                          ? "Stäng Egen design"
+                          : "Close Custom design"
+                        : language === "sv"
+                          ? "Öppna Egen design"
+                          : "Open Custom design"
+                    }
+                  >
+                    {openProductType === "egen-design" ? "−" : "+"}
+                  </button>
+                </div>
+
+                {openProductType === "egen-design" && (
+                  <ul className="sidebar-subcategories">
+                    {customDesignSubcategories.map((subcategory) => (
+                      <li key={`custom-${subcategory.slug}`}>
+                        <NavLink
+                          to={`/produkter/emalj/egen-design/${subcategory.slug}`}
+                          className={({ isActive }) =>
+                            isActive
+                              ? "sidebar-sub-link active"
+                              : "sidebar-sub-link"
+                          }
+                        >
+                          {subcategory.name[language]}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* STANDARDPRODUKTER */}
+              <div className="sidebar-product-type">
+                <div className="sidebar-menu-row">
+                  <NavLink
+                    to="/produkter/emalj/standardprodukter"
+                    end
+                    className={({ isActive }) =>
+                      isActive
+                        ? "sidebar-type-link active"
+                        : "sidebar-type-link"
+                    }
+                    onClick={() => setOpenProductType("standardprodukter")}
+                  >
+                    {language === "sv"
+                      ? "Standardprodukter"
+                      : "Standard products"}
+                  </NavLink>
+
+                  <button
+                    type="button"
+                    className="sidebar-toggle sidebar-toggle-small"
+                    onClick={() =>
+                      setOpenProductType((current) =>
+                        current === "standardprodukter"
+                          ? null
+                          : "standardprodukter",
+                      )
+                    }
+                    aria-label={
+                      openProductType === "standardprodukter"
+                        ? language === "sv"
+                          ? "Stäng Standardprodukter"
+                          : "Close Standard products"
+                        : language === "sv"
+                          ? "Öppna Standardprodukter"
+                          : "Open Standard products"
+                    }
+                  >
+                    {openProductType === "standardprodukter" ? "−" : "+"}
+                  </button>
+                </div>
+
+                {openProductType === "standardprodukter" && (
+                  <ul className="sidebar-subcategories">
+                    {standardSubcategories.map((subcategory) => (
+                      <li key={`standard-${subcategory.slug}`}>
+                        <NavLink
+                          to={`/produkter/emalj/standardprodukter/${subcategory.slug}`}
+                          className={({ isActive }) =>
+                            isActive
+                              ? "sidebar-sub-link active"
+                              : "sidebar-sub-link"
+                          }
+                        >
+                          {subcategory.name[language]}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* KREATIVA TRÄPRODUKTER */}
+        <div className="sidebar-category">
           <NavLink
-            to="/produkter/emalj"
+            to="/produkter/kreativa-traprodukter"
             end
             className={({ isActive }) =>
               isActive
                 ? "sidebar-category-link active"
                 : "sidebar-category-link"
             }
-            onClick={() => setIsEnamelOpen(true)}
           >
             {language === "sv"
-              ? "Emalj"
-              : "Enamel"}
+              ? "Kreativa träprodukter"
+              : "Creative wooden products"}
           </NavLink>
-
-          <button
-            type="button"
-            className="sidebar-toggle"
-            onClick={() => {
-              setIsEnamelOpen((open) => !open);
-
-              if (isEnamelOpen) {
-                setOpenProductType(null);
-              }
-            }}
-            aria-label={
-              isEnamelOpen
-                ? language === "sv"
-                  ? "Stäng Emalj"
-                  : "Close Enamel"
-                : language === "sv"
-                  ? "Öppna Emalj"
-                  : "Open Enamel"
-            }
-          >
-            {isEnamelOpen ? "−" : "+"}
-          </button>
         </div>
 
-        {isEnamelOpen && (
-          <div className="sidebar-product-types">
-            {/* EGEN DESIGN */}
-            <div className="sidebar-product-type">
-              <div className="sidebar-menu-row">
-                <NavLink
-                  to="/produkter/emalj/egen-design"
-                  end
-                  className={({ isActive }) =>
-                    isActive
-                      ? "sidebar-type-link active"
-                      : "sidebar-type-link"
-                  }
-                  onClick={() =>
-                    setOpenProductType(
-                      "egen-design",
-                    )
-                  }
-                >
-                  {language === "sv"
-                    ? "Egen design"
-                    : "Custom design"}
-                </NavLink>
+        {/* BILDGRAVYR */}
+        <div className="sidebar-category">
+          <NavLink
+            to="/produkter/bildgravyr"
+            end
+            className={({ isActive }) =>
+              isActive
+                ? "sidebar-category-link active"
+                : "sidebar-category-link"
+            }
+          >
+            {language === "sv" ? "Bildgravyr" : "Photo engraving"}
+          </NavLink>
+        </div>
 
-                <button
-                  type="button"
-                  className="sidebar-toggle sidebar-toggle-small"
-                  onClick={() =>
-                    setOpenProductType(
-                      (current) =>
-                        current === "egen-design"
-                          ? null
-                          : "egen-design",
-                    )
-                  }
-                  aria-label={
-                    openProductType ===
-                    "egen-design"
-                      ? language === "sv"
-                        ? "Stäng Egen design"
-                        : "Close Custom design"
-                      : language === "sv"
-                        ? "Öppna Egen design"
-                        : "Open Custom design"
-                  }
-                >
-                  {openProductType ===
-                  "egen-design"
-                    ? "−"
-                    : "+"}
-                </button>
-              </div>
+        {/* PRESENTKORT */}
+        <div className="sidebar-category">
+          <NavLink
+            to="/produkter/presentkort"
+            className={({ isActive }) =>
+              isActive
+                ? "sidebar-category-link active"
+                : "sidebar-category-link"
+            }
+          >
+            {language === "sv" ? "Presentkort" : "Gift cards"}
+          </NavLink>
+        </div>
 
-              {openProductType ===
-                "egen-design" && (
-                <ul className="sidebar-subcategories">
-                  {customDesignSubcategories.map(
-                    (subcategory) => (
-                      <li
-                        key={`custom-${subcategory.slug}`}
-                      >
-                        <NavLink
-                          to={`/produkter/emalj/egen-design/${subcategory.slug}`}
-                          className={({
-                            isActive,
-                          }) =>
-                            isActive
-                              ? "sidebar-sub-link active"
-                              : "sidebar-sub-link"
-                          }
-                        >
-                          {
-                            subcategory.name[
-                              language
-                            ]
-                          }
-                        </NavLink>
-                      </li>
-                    ),
-                  )}
-                </ul>
-              )}
-            </div>
-
-            {/* STANDARDPRODUKTER */}
-            <div className="sidebar-product-type">
-              <div className="sidebar-menu-row">
-                <NavLink
-                  to="/produkter/emalj/standardprodukter"
-                  end
-                  className={({ isActive }) =>
-                    isActive
-                      ? "sidebar-type-link active"
-                      : "sidebar-type-link"
-                  }
-                  onClick={() =>
-                    setOpenProductType(
-                      "standardprodukter",
-                    )
-                  }
-                >
-                  {language === "sv"
-                    ? "Standardprodukter"
-                    : "Standard products"}
-                </NavLink>
-
-                <button
-                  type="button"
-                  className="sidebar-toggle sidebar-toggle-small"
-                  onClick={() =>
-                    setOpenProductType(
-                      (current) =>
-                        current ===
-                        "standardprodukter"
-                          ? null
-                          : "standardprodukter",
-                    )
-                  }
-                  aria-label={
-                    openProductType ===
-                    "standardprodukter"
-                      ? language === "sv"
-                        ? "Stäng Standardprodukter"
-                        : "Close Standard products"
-                      : language === "sv"
-                        ? "Öppna Standardprodukter"
-                        : "Open Standard products"
-                  }
-                >
-                  {openProductType ===
-                  "standardprodukter"
-                    ? "−"
-                    : "+"}
-                </button>
-              </div>
-
-              {openProductType ===
-                "standardprodukter" && (
-                <ul className="sidebar-subcategories">
-                  {standardSubcategories.map(
-                    (subcategory) => (
-                      <li
-                        key={`standard-${subcategory.slug}`}
-                      >
-                        <NavLink
-                          to={`/produkter/emalj/standardprodukter/${subcategory.slug}`}
-                          className={({
-                            isActive,
-                          }) =>
-                            isActive
-                              ? "sidebar-sub-link active"
-                              : "sidebar-sub-link"
-                          }
-                        >
-                          {
-                            subcategory.name[
-                              language
-                            ]
-                          }
-                        </NavLink>
-                      </li>
-                    ),
-                  )}
-                </ul>
-              )}
-            </div>
-          </div>
-        )}
+        {/* KOMMANDE PRODUKTER */}
+        <div className="sidebar-category">
+          <NavLink
+            to="/produkter/kommande-produkter"
+            end
+            className={({ isActive }) =>
+              isActive
+                ? "sidebar-category-link active"
+                : "sidebar-category-link"
+            }
+          >
+            {language === "sv" ? "Kommande produkter" : "Upcoming products"}
+          </NavLink>
+        </div>
       </div>
-
-      {/* KREATIVA TRÄPRODUKTER */}
-<div className="sidebar-category">
-  <NavLink
-    to="/produkter/kreativa-traprodukter"
-    end
-    className={({ isActive }) =>
-      isActive
-        ? "sidebar-category-link active"
-        : "sidebar-category-link"
-    }
-  >
-    {language === "sv"
-      ? "Kreativa träprodukter"
-      : "Creative wooden products"}
-  </NavLink>
-</div>
-
-      {/* BILDGRAVYR */}
-<div className="sidebar-category">
-  <NavLink
-    to="/produkter/bildgravyr"
-    end
-    className={({ isActive }) =>
-      isActive
-        ? "sidebar-category-link active"
-        : "sidebar-category-link"
-    }
-  >
-    {language === "sv" ? "Bildgravyr" : "Photo engraving"}
-  </NavLink>
-</div>
-
-      {/* KOMMANDE PRODUKTER */}
-      <div className="sidebar-category">
-        <NavLink
-          to="/produkter/kommande-produkter"
-          end
-          className={({ isActive }) =>
-            isActive
-              ? "sidebar-category-link active"
-              : "sidebar-category-link"
-          }
-        >
-          {language === "sv"
-            ? "Kommande produkter"
-            : "Upcoming products"}
-        </NavLink>
-      </div>
-
-      {/* PRESENTKORT */}
-<div className="sidebar-category">
-  <NavLink
-    to="/produkter/presentkort"
-          className={({ isActive }) =>
-            isActive
-              ? "sidebar-category-link active"
-              : "sidebar-category-link"
-          }
-        >
-          {language === "sv"
-            ? "Presentkort"
-            : "Gift cards"}
-        </NavLink>
-      </div>
-    </div>
     </aside>
   );
 }

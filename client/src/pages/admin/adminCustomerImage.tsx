@@ -4,10 +4,12 @@ import { getCustomerImage } from "../../api/orders";
 
 interface AdminCustomerImageProps {
   imageUrl: string;
+  showLabel?: boolean;
 }
 
 export default function AdminCustomerImage({
   imageUrl,
+  showLabel = true,
 }: AdminCustomerImageProps) {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [error, setError] = useState(false);
@@ -49,7 +51,11 @@ export default function AdminCustomerImage({
 
   return (
     <div className="admin-customer-image">
-      <p><strong>Kundens uppladdade bild:</strong></p>
+      {showLabel && (
+  <p>
+    <strong>Kundens uppladdade bild:</strong>
+  </p>
+)}
 
       {imageSrc ? (
         <a href={imageSrc} target="_blank" rel="noopener noreferrer">

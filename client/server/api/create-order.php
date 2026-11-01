@@ -1057,6 +1057,30 @@ $customTexts =
         ? $item["custom_texts"]
         : null;
 
+        // -----------------------------------------
+// Övriga önskemål för produkten
+// -----------------------------------------
+
+$additionalRequests = $item["additional_requests"] ?? null;
+
+if ($additionalRequests !== null) {
+    if (!is_string($additionalRequests)) {
+        throw new Exception("Ogiltigt format för övriga önskemål.");
+    }
+
+    $additionalRequests = trim($additionalRequests);
+
+    if (mb_strlen($additionalRequests, "UTF-8") > 1000) {
+        throw new Exception(
+            "Övriga önskemål får innehålla högst 1000 tecken."
+        );
+    }
+
+    if ($additionalRequests === "") {
+        $additionalRequests = null;
+    }
+}
+
 // -----------------------------------------
 // Validering för KT-produkter
 // -----------------------------------------
@@ -1217,19 +1241,49 @@ if ($productType === "KT") {
 }
 
 // -----------------------------------------
-// Obligatorisk bild för gravyrprodukter
+// Validera bilder för gravyrprodukter
 // -----------------------------------------
 
+$customPhotoUrls = null;
+
 if ($isImageEngraving) {
-    $engravingPhotoUrl = $item["custom_photo_url"] ?? null;
+
+    $customPhotoUrls = $item["custom_photo_urls"] ?? null;
 
     if (
-        !is_string($engravingPhotoUrl) ||
-        trim($engravingPhotoUrl) === ""
+        !is_array($customPhotoUrls) ||
+        !array_is_list($customPhotoUrls) ||
+        count($customPhotoUrls) < 1 ||
+        count($customPhotoUrls) > 3
     ) {
         throw new Exception(
-            "Du måste ladda upp en bild för " . $productId
+            "Du måste ladda upp mellan 1 och 3 bilder för " . $productId
         );
+    }
+
+    foreach ($customPhotoUrls as $photoUrl) {
+
+        if (
+            !is_string($photoUrl) ||
+            !preg_match(
+                '~^/uploads/customerUploads/[a-f0-9]{32}\.(jpg|png|webp)$~i',
+                $photoUrl
+            )
+        ) {
+            throw new Exception(
+                "Ogiltig bildadress för " . $productId
+            );
+        }
+
+        $filename = basename($photoUrl);
+
+        $imagePath = __DIR__ . "/../../uploads/customerUploads/" . $filename;
+
+        if (!is_file($imagePath)) {
+            throw new Exception(
+                "En uppladdad bild saknas för " . $productId
+            );
+        }
     }
 }
 
@@ -1290,8 +1344,14 @@ if ($isImageEngraving) {
 "custom_texts" =>
     $customTexts,
 
+"additional_requests" =>
+    $additionalRequests,
+
 "custom_photo_url" =>
-    $item["custom_photo_url"] ?? null
+    $item["custom_photo_url"] ?? null,
+
+"custom_photo_urls" =>
+    $customPhotoUrls
         ];
 
 
@@ -1834,29 +1894,31 @@ if ($giftCardCode !== "" && $giftCardAmount > 0) {
     // Skapa order_items
     // -----------------------------------------
 
-    $itemSql = "
-        INSERT INTO order_items (
-            id,
-            order_id,
-            product_id,
-            product_name,
-            supplier_id,
-            quantity,
-            unit_price,
-            weight,
-            selected_size,
-            selected_shape,
-            selected_color,
-            selected_background_color,
-            selected_print_color,
-            selected_font,
-            selected_options,
-            custom_photo_url,
-            custom_text,
-            custom_texts
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ";
+   $itemSql = "
+    INSERT INTO order_items (
+        id,
+        order_id,
+        product_id,
+        product_name,
+        supplier_id,
+        quantity,
+        unit_price,
+        weight,
+        selected_size,
+        selected_shape,
+        selected_color,
+        selected_background_color,
+        selected_print_color,
+        selected_font,
+        selected_options,
+        custom_photo_url,
+        custom_photo_urls,
+        custom_text,
+        custom_texts,
+        additional_requests
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+";
 
     $itemStmt =
         $conn->prepare($itemSql);
@@ -1958,41 +2020,53 @@ if ($customPhotoUrl !== null) {
     }
 }
 
+// Kundens uppladdade bilder för bildgravyr
+$customPhotoUrls = $item["custom_photo_urls"] !== null
+    ? json_encode(
+        $item["custom_photo_urls"],
+        JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
+    )
+    : null;
+
 
         $customText =
             $item["custom_text"];
 
 
         $customTexts =
-            $item["custom_texts"] !== null
-                ? json_encode(
-                    $item["custom_texts"],
-                    JSON_UNESCAPED_UNICODE
-                )
-                : null;
+    $item["custom_texts"] !== null
+        ? json_encode(
+            $item["custom_texts"],
+            JSON_UNESCAPED_UNICODE
+        )
+        : null;
+
+$additionalRequests = $item["additional_requests"] ?? null;
 
 
         $itemStmt->bind_param(
-            "sssssiddssssssssss",
-            $itemId,
-            $orderId,
-            $productId,
-            $productName,
-            $supplierId,
-            $quantity,
-            $unitPrice,
-            $weight,
-            $selectedSize,
-            $selectedShape,
-            $selectedColor,
-            $selectedBackgroundColor,
-            $selectedPrintColor,
-            $selectedFont,
-            $selectedOptions,
-            $customPhotoUrl,
-            $customText,
-            $customTexts
-        );
+    "sssssiddssssssssssss",
+    $itemId,
+    $orderId,
+    $productId,
+    $productName,
+    $supplierId,
+    $quantity,
+    $unitPrice,
+    $weight,
+    $selectedSize,
+    $selectedShape,
+    $selectedColor,
+    $selectedBackgroundColor,
+    $selectedPrintColor,
+    $selectedFont,
+    $selectedOptions,
+    $customPhotoUrl,
+    $customPhotoUrls,
+    $customText,
+    $customTexts,
+    $additionalRequests
+);
 
         $itemStmt->execute();
 

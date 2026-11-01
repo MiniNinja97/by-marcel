@@ -24,7 +24,6 @@ interface CreateOrderResponse {
   checkout_url: string;
 }
 
-
 export async function uploadOrderImage(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("image", file);
@@ -40,14 +39,11 @@ export async function uploadOrderImage(file: File): Promise<string> {
   const data = await response.json();
 
   if (!response.ok || !data.success || !data.image_url) {
-    throw new Error(
-      data.message ?? "Kunde inte ladda upp bilden.",
-    );
+    throw new Error(data.message ?? "Kunde inte ladda upp bilden.");
   }
 
   return data.image_url;
 }
-
 
 export async function createOrder(
   customer: Omit<Customer, "id">,
@@ -57,59 +53,67 @@ export async function createOrder(
   // customerNotes: string,
 ): Promise<CreateOrderResponse> {
   const orderItems = await Promise.all(
-  items.map(async (item) => {
-    const customPhotoUrl = item.custom_photo
-      ? await uploadOrderImage(item.custom_photo)
-      : null;
+    items.map(async (item) => {
+      const customPhotoUrl = item.custom_photo
+        ? await uploadOrderImage(item.custom_photo)
+        : null;
 
-    return {
-    product_id: item.product.id,
-    product_name: item.product.name,
+      const customPhotoUrls = item.custom_photos?.length
+        ? await Promise.all(
+            item.custom_photos.map((file) => uploadOrderImage(file)),
+          )
+        : [];
 
-    variant_id: item.variant_id,
+      return {
+        product_id: item.product.id,
+        product_name: item.product.name,
 
-    supplier_id: item.supplier_id,
+        variant_id: item.variant_id,
 
-    quantity: item.quantity,
-    unit_price: item.unit_price,
+        supplier_id: item.supplier_id,
 
-    weight: item.product.weight,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
 
-    selected_size: item.selected_size,
-    selected_shape: item.selected_shape,
-    selected_color: item.selected_color?.name,
-    selected_font: item.selected_font,
+        weight: item.product.weight,
 
-    selected_background_color: item.selected_background_color
-      ? {
-          id: item.selected_background_color.id,
-          name: item.selected_background_color.name,
-          ral_code: item.selected_background_color.ral_code,
-          supplier_code: item.selected_background_color.background_code,
-          price: item.selected_background_color.background_price,
-        }
-      : null,
+        selected_size: item.selected_size,
+        selected_shape: item.selected_shape,
+        selected_color: item.selected_color?.name,
+        selected_font: item.selected_font,
 
-    selected_print_color: item.selected_print_color
-      ? {
-          id: item.selected_print_color.id,
-          name: item.selected_print_color.name,
-          ral_code: item.selected_print_color.ral_code,
-          supplier_code: item.selected_print_color.print_code,
-          price: item.selected_print_color.print_price,
-        }
-      : null,
+        selected_background_color: item.selected_background_color
+          ? {
+              id: item.selected_background_color.id,
+              name: item.selected_background_color.name,
+              ral_code: item.selected_background_color.ral_code,
+              supplier_code: item.selected_background_color.background_code,
+              price: item.selected_background_color.background_price,
+            }
+          : null,
 
-    selected_options: item.selected_options,
+        selected_print_color: item.selected_print_color
+          ? {
+              id: item.selected_print_color.id,
+              name: item.selected_print_color.name,
+              ral_code: item.selected_print_color.ral_code,
+              supplier_code: item.selected_print_color.print_code,
+              price: item.selected_print_color.print_price,
+            }
+          : null,
 
-    custom_text: item.custom_text,
-custom_texts: item.custom_texts,
-custom_photo_url: customPhotoUrl,
-     };
-  }),
-);
+        selected_options: item.selected_options,
 
-console.log("ORDER ITEMS:", JSON.stringify(orderItems, null, 2));
+        custom_text: item.custom_text,
+        custom_texts: item.custom_texts,
+        additional_requests: item.additional_requests?.trim() || null,
+        custom_photo_url: customPhotoUrl,
+        custom_photo_urls: customPhotoUrls,
+      };
+    }),
+  );
+
+  console.log("ORDER ITEMS:", JSON.stringify(orderItems, null, 2));
 
   const response = await fetch(
     "https://www.bymarcel.se/Server/api/create-order.php",
@@ -120,14 +124,14 @@ console.log("ORDER ITEMS:", JSON.stringify(orderItems, null, 2));
         "Content-Type": "application/json",
       },
 
-     body: JSON.stringify({
-  customer,
-  items: orderItems,
-  discount_code: discountCode,
-  gift_card_code: giftCardCode,
-  // customer_notes: customerNotes,
-  site_origin: window.location.origin
-}),
+      body: JSON.stringify({
+        customer,
+        items: orderItems,
+        discount_code: discountCode,
+        gift_card_code: giftCardCode,
+        // customer_notes: customerNotes,
+        site_origin: window.location.origin,
+      }),
     },
   );
 
@@ -168,9 +172,7 @@ export async function updateOrderStatus(
     throw new Error("Kunde inte uppdatera orderstatus");
   }
 }
-export async function getCustomerImage(
-  imageUrl: string,
-): Promise<string> {
+export async function getCustomerImage(imageUrl: string): Promise<string> {
   const filename = imageUrl.split("/").pop();
 
   if (!filename) {
@@ -191,4 +193,26 @@ export async function getCustomerImage(
   const blob = await response.blob();
 
   return URL.createObjectURL(blob);
+}
+
+export async function resendOrderEmail(orderId: string): Promise<void> {
+  const response = await fetch(
+    "https://www.bymarcel.se/Server/api/resend-order-email.php",
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        order_id: orderId,
+      }),
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message ?? "Kunde inte skicka ordermejlet");
+  }
 }

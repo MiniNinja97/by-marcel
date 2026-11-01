@@ -106,6 +106,7 @@ export interface CartItem {
   selected_color?: ProductColor;
   selected_font?: FontOption;
   custom_photo?: File;
+custom_photos?: File[];
   custom_text?: string;
   custom_texts?: Record<string, string>;
   unit_price: number;
@@ -113,6 +114,8 @@ export interface CartItem {
   selected_options?: Record<string, ProductOptionValue>;
   variant_id?: string;
   supplier_id?: string;
+
+  additional_requests?: string;
 
   selected_background_color?: ProductColor;
   selected_print_color?: ProductColor;
@@ -148,6 +151,9 @@ export interface Order {
   stripe_payment_id?: string;
   customer_notes: string | null;
   created_at: string;
+  order_email_status: "pending" | "sending" | "sent";
+order_email_sent_at: string | null;
+order_email_started_at: string | null;
 }
 
 export interface OrderItem {
@@ -179,12 +185,14 @@ export interface OrderItem {
   selected_font?: FontOption;
 
  custom_photo_url?: string | null;
+custom_photo_urls?: string[];
 
-  custom_text?: string;
+custom_text?: string;
 
   selected_options?: Record<string, ProductOptionValue>;
 
   custom_texts?: Record<string, string>;
+  additional_requests?: string | null;
 
   gift_cards?: GiftCard[];
 }

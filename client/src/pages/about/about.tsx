@@ -18,7 +18,7 @@ export default function About() {
   return (
     <div className="about">
       <div className="about-start">
-        <h2>{language === "sv" ? "Om oss" : "About us"}</h2>
+        <h2>{language === "sv" ? "Bakom kulisserna" : "Behind the scenes"}</h2>
       </div>
 
       {/* BAKOM KULISSERNA */}
@@ -103,7 +103,7 @@ export default function About() {
   </div>
 </Link>
 
-        <div className="imgbox-5">
+        {/* <div className="imgbox-5">
           <div className="imgbox-img"></div>
 
           <div className="imgbox-info">
@@ -113,9 +113,9 @@ export default function About() {
               {language === "sv" ? "Kort beskrivning" : "Short description"}
             </p>
           </div>
-        </div>
+        </div> */}
 
-        <div className="imgbox-6">
+        {/* <div className="imgbox-6">
           <div className="imgbox-img"></div>
 
           <div className="imgbox-info">
@@ -125,7 +125,7 @@ export default function About() {
               {language === "sv" ? "Kort beskrivning" : "Short description"}
             </p>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* OM MARCEL OCH BY MARCEL */}

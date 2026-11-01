@@ -263,6 +263,63 @@
     letter-spacing: 0.03rem;
 }
 
+
+/* ÖVRIGA ÖNSKEMÅL */
+
+.product-additional-requests {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.product-additional-requests label {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  color: #e5e0dc;
+}
+
+.engraving-upload-hint {
+  font-size: 14px;
+  color: #ffffff;
+  line-height: 1.6;
+  margin-top: 12px;
+  font-weight: 500;
+}
+
+.product-additional-requests textarea {
+  width: 100%;
+  min-height: 100px;
+  box-sizing: border-box;
+  padding: 1rem;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #e5e0dc;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.product-additional-requests textarea::placeholder {
+  color: #777;
+}
+
+.product-additional-requests textarea:focus {
+  outline: none;
+  border-color: #b99a45;
+}
+
+.product-additional-requests-hint {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #d1cccc;
+}
 /* ── ANTAL ───────────────────────────────────────────── */
 
 .quantity-row {

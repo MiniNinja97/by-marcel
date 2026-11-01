@@ -4,6 +4,7 @@ header("Content-Type: application/json");
 
 require_once __DIR__ . "/../config/db.php";
 require_once __DIR__ . "/../config/stripe.php";
+require_once __DIR__ . "/send-order-email.php";
 
 // Stripe skickar webhookens innehåll som rå JSON.
 $payload = file_get_contents("php://input");
@@ -111,8 +112,11 @@ try {
                     $orderId
                 );
 
-                $stmt->execute();
-                $stmt->close();
+               $stmt->execute();
+
+$orderWasPaidNow = $stmt->affected_rows === 1;
+
+$stmt->close();
 
 
                 // -----------------------------------------
@@ -239,16 +243,110 @@ try {
                 // Allt lyckades
                 // -----------------------------------------
 
-                $conn->commit();
+                // -----------------------------------------
+// -----------------------------------------
+// Reservera ordermejlet
+// -----------------------------------------
 
-            } catch (Throwable $e) {
+$shouldSendOrderEmail = false;
 
-                // Om något går fel återställs både
-                // orderändringen och presentkortsändringarna.
-                $conn->rollback();
+if ($orderWasPaidNow) {
 
-                throw $e;
-            }
+    $emailStmt = $conn->prepare("
+        UPDATE orders
+        SET
+            order_email_status = 'sending',
+            order_email_started_at = NOW()
+        WHERE id = ?
+        AND status = 'processing'
+        AND order_email_status = 'pending'
+    ");
+
+    $emailStmt->bind_param("s", $orderId);
+    $emailStmt->execute();
+
+    $shouldSendOrderEmail =
+        $emailStmt->affected_rows === 1;
+
+    $emailStmt->close();
+}
+
+$conn->commit();
+
+} catch (Throwable $e) {
+    $conn->rollback();
+    throw $e;
+}
+
+// -----------------------------------------
+// Skicka ordermejl efter bekräftad betalning
+// -----------------------------------------
+
+if ($shouldSendOrderEmail) {
+
+    try {
+        $emailSent = sendOrderEmail($conn, $orderId);
+
+        $newEmailStatus = $emailSent ? "sent" : "pending";
+
+        if (!$emailSent) {
+    error_log(
+        "Ordermejl kunde inte skickas för order " . $orderId
+    );
+}
+
+       $emailStmt = $conn->prepare("
+    UPDATE orders
+    SET
+        order_email_status = ?,
+        order_email_sent_at =
+            CASE
+                WHEN ? = 'sent' THEN NOW()
+                ELSE NULL
+            END,
+        order_email_started_at =
+            CASE
+                WHEN ? = 'sent' THEN order_email_started_at
+                ELSE NULL
+            END
+    WHERE id = ?
+    AND order_email_status = 'sending'
+");
+
+        $emailStmt->bind_param(
+    "ssss",
+    $newEmailStatus,
+    $newEmailStatus,
+    $newEmailStatus,
+    $orderId
+);
+
+       $emailStmt->execute();
+
+$wasUpdated = $emailStmt->affected_rows === 1;
+
+$emailStmt->close();
+
+if (!$wasUpdated) {
+    throw new RuntimeException(
+        "Mejlstatus kunde inte uppdateras för order " . $orderId
+    );
+}
+
+  } catch (Throwable $emailError) {
+
+    error_log(
+        "Ordermejl behöver kontrolleras för order " .
+        $orderId . ": " . $emailError->getMessage()
+    );
+
+    // Behåll statusen 'sending' vid oväntade fel.
+    // Mejlet kan redan ha accepterats för utskick.
+    // Kontrollera ordern manuellt innan ett nytt försök.
+}
+}
+
+            
         }
     }
 

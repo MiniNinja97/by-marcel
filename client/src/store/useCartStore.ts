@@ -47,11 +47,14 @@ export const useCartStore = create<CartStore>((set, get) => ({
             JSON.stringify(newItem.selected_options) &&
           JSON.stringify(item.custom_texts) ===
             JSON.stringify(newItem.custom_texts) &&
+          item.additional_requests === newItem.additional_requests &&
           item.selected_background_color?.id ===
             newItem.selected_background_color?.id &&
           item.selected_print_color?.id === newItem.selected_print_color?.id &&
           item.custom_photo === undefined &&
-          newItem.custom_photo === undefined,
+          newItem.custom_photo === undefined &&
+          (!item.custom_photos || item.custom_photos.length === 0) &&
+          (!newItem.custom_photos || newItem.custom_photos.length === 0),
       );
 
       if (existing) {
@@ -73,24 +76,22 @@ export const useCartStore = create<CartStore>((set, get) => ({
   },
 
   removeItem: (itemToRemove) => {
-  set((state) => ({
-    items: updateKTPrices(
-      state.items.filter((item) => item !== itemToRemove),
-    ),
-  }));
-},
-
- updateQuantity: (itemToUpdate, quantity) => {
-  set((state) => ({
-    items: updateKTPrices(
-      state.items.map((item) =>
-        item === itemToUpdate
-          ? { ...item, quantity }
-          : item,
+    set((state) => ({
+      items: updateKTPrices(
+        state.items.filter((item) => item !== itemToRemove),
       ),
-    ),
-  }));
-},
+    }));
+  },
+
+  updateQuantity: (itemToUpdate, quantity) => {
+    set((state) => ({
+      items: updateKTPrices(
+        state.items.map((item) =>
+          item === itemToUpdate ? { ...item, quantity } : item,
+        ),
+      ),
+    }));
+  },
 
   clearCart: () =>
     set({
