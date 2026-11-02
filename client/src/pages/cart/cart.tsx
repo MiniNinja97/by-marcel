@@ -9,6 +9,8 @@ import {
 import "./cart.css";
 import { useEffect, useState } from "react";
 
+import CartCustomerImages from "./CartCustomerImages";
+
 export default function Cart() {
   const {
     items,
@@ -229,7 +231,7 @@ export default function Cart() {
 
             return (
               <div
-               key={`${item.product.id}-${item.variant_id}-${item.selected_background_color?.id ?? ""}-${item.selected_print_color?.id ?? ""}-${JSON.stringify(item.selected_options)}-${JSON.stringify(item.custom_texts)}-${item.additional_requests ?? ""}`}
+                key={`${item.product.id}-${item.variant_id}-${item.selected_background_color?.id ?? ""}-${item.selected_print_color?.id ?? ""}-${JSON.stringify(item.selected_options)}-${JSON.stringify(item.custom_texts)}-${item.additional_requests ?? ""}`}
                 className="cart-item"
               >
                 <div className="cart-item-img">
@@ -341,16 +343,20 @@ export default function Cart() {
                         {item.custom_photo.name}
                       </p>
                     )}
-                  {/* Visa uppladdad bild för bildgravyr */}
+                  {/* Visa uppladdade bilder för bildgravyr */}
                   {(item.product.id === "LFG.TRA" ||
                     item.product.id === "LFG.DEK") &&
-                    item.custom_photo && (
-                      <p className="cart-item-text">
-                        {language === "sv"
-                          ? "Uppladdad bild"
-                          : "Uploaded image"}
-                        : {item.custom_photo.name}
-                      </p>
+                    item.custom_photos &&
+                    item.custom_photos.length > 0 && (
+                      <div className="cart-item-customer-photos">
+                        <p className="cart-item-text">
+                          {language === "sv"
+                            ? "Uppladdade bilder:"
+                            : "Uploaded images:"}
+                        </p>
+
+                        <CartCustomerImages files={item.custom_photos} />
+                      </div>
                     )}
 
                   <div className="cart-item-quantity">

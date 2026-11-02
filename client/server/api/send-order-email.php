@@ -1,5 +1,123 @@
 <?php
 
+function compressOrderImage(string $filePath): string|false
+{
+    $imageInfo = @getimagesize($filePath);
+
+    if ($imageInfo === false) {
+        return false;
+    }
+
+    [$width, $height] = $imageInfo;
+
+    if (
+        $width <= 0 ||
+        $height <= 0 ||
+        $width * $height > 20_000_000
+    ) {
+        return false;
+    }
+
+    $mimeType = $imageInfo["mime"];
+
+    $source = match ($mimeType) {
+        "image/jpeg" => @imagecreatefromjpeg($filePath),
+        "image/png" => @imagecreatefrompng($filePath),
+        "image/webp" => @imagecreatefromwebp($filePath),
+        default => false
+    };
+
+    if ($source === false) {
+        return false;
+    }
+
+    $maxBytes = 2 * 1024 * 1024;
+
+    $dimensions = [2000, 1600, 1200, 900, 600];
+
+    $qualities = match ($mimeType) {
+        "image/jpeg", "image/webp" => [85, 75, 65, 55],
+        "image/png" => [6, 9],
+        default => []
+    };
+
+    foreach ($dimensions as $maxDimension) {
+
+        $scale = min(
+            1,
+            $maxDimension / max($width, $height)
+        );
+
+        $newWidth = max(1, (int) round($width * $scale));
+        $newHeight = max(1, (int) round($height * $scale));
+
+        $resized = imagecreatetruecolor($newWidth, $newHeight);
+
+        if ($resized === false) {
+            imagedestroy($source);
+            return false;
+        }
+
+        if ($mimeType === "image/png" || $mimeType === "image/webp") {
+            imagealphablending($resized, false);
+            imagesavealpha($resized, true);
+
+            $transparent = imagecolorallocatealpha(
+                $resized, 0, 0, 0, 127
+            );
+
+            imagefill($resized, 0, 0, $transparent);
+        }
+
+        if (!imagecopyresampled(
+            $resized,
+            $source,
+            0, 0, 0, 0,
+            $newWidth,
+            $newHeight,
+            $width,
+            $height
+        )) {
+            imagedestroy($resized);
+            imagedestroy($source);
+            return false;
+        }
+
+        foreach ($qualities as $quality) {
+            ob_start();
+
+            $saved = match ($mimeType) {
+                "image/jpeg" => imagejpeg($resized, null, $quality),
+                "image/png" => imagepng($resized, null, $quality),
+                "image/webp" => imagewebp($resized, null, $quality),
+                default => false
+            };
+
+            $compressed = ob_get_clean();
+
+            if (
+                $saved &&
+                is_string($compressed) &&
+                $compressed !== "" &&
+                strlen($compressed) <= $maxBytes
+            ) {
+                imagedestroy($resized);
+                imagedestroy($source);
+
+                return $compressed;
+            }
+        }
+
+        imagedestroy($resized);
+    }
+
+    imagedestroy($source);
+
+    error_log("Bilden kunde inte komprimeras till högst 2 MB");
+
+    return false;
+}
+
 function sendOrderEmail(mysqli $conn, string $orderId): bool
 {
     // Hämta ordern och kunduppgifterna
@@ -299,20 +417,29 @@ foreach ($attachmentUrls as $index => $photoUrl) {
         return false;
     }
 
-    $fileContents = file_get_contents($filePath);
+   // Komprimera bilden utan att ändra originalfilen
+$fileContents = compressOrderImage($filePath);
 
-    if ($fileContents === false) {
-        error_log("Kunde inte läsa bildfil i order " . $orderId);
-        return false;
-    }
+if ($fileContents === false) {
+    error_log("Kunde inte komprimera bild i order " . $orderId);
+    return false;
+}
 
-    $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+// Kontrollera att den komprimerade bilden inte är för stor
+$maxAttachmentSize = 2 * 1024 * 1024; // 2 MB
 
-    $attachments[] = [
-        "name" => "orderbild-" . ($index + 1) . "." . $extension,
-        "type" => $mimeType,
-        "content" => $fileContents
-    ];
+if (strlen($fileContents) > $maxAttachmentSize) {
+    error_log("Komprimerad bild överstiger 2 MB i order " . $orderId);
+    return false;
+}
+
+$extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+
+$attachments[] = [
+    "name" => "orderbild-" . ($index + 1) . "." . $extension,
+    "type" => $mimeType,
+    "content" => $fileContents
+];
 }
 
 // -----------------------------------------

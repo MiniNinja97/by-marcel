@@ -39,6 +39,18 @@ export default function AdminOrders() {
     async function loadOrders() {
       try {
         const data = await getOrders();
+
+        console.log(
+          "KUNDBILDER:",
+          data.map((order) => ({
+            orderId: order.id,
+            images: order.items.map((item) => ({
+              custom_photo_url: item.custom_photo_url,
+              custom_photo_urls: item.custom_photo_urls,
+            })),
+          })),
+        );
+
         setOrders(data);
       } catch (error) {
         console.error(error);
@@ -363,7 +375,10 @@ export default function AdminOrders() {
                               <strong>Bild {index + 1}:</strong>
                             </p>
 
-                            <AdminCustomerImage imageUrl={imageUrl} showLabel={false} />
+                            <AdminCustomerImage
+                              imageUrl={imageUrl}
+                              showLabel={false}
+                            />
                           </div>
                         ))}
                       </div>

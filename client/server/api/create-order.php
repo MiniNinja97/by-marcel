@@ -2329,10 +2329,10 @@ echo json_encode([
         );
     }
 
-    http_response_code(400);
+   http_response_code(400);
 
-    echo json_encode([
-        "success" => false,
-        "message" => "Kunde inte skapa order"
-    ]);
+echo json_encode([
+    "success" => false,
+    "message" => "Kunde inte skapa order"
+]);
 }
