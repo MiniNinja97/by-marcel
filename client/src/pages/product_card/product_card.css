@@ -320,6 +320,20 @@
   line-height: 1.6;
   color: #d1cccc;
 }
+
+.product-quantity-discount-info {
+  font-size: 1.2rem;
+  color: #d1d1d1;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.product-delivery-time {
+  margin-top: 12px;
+  font-size: 1.2rem;
+  color: #c9c6c6;
+  
+}
 /* ── ANTAL ───────────────────────────────────────────── */
 
 .quantity-row {

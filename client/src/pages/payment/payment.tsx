@@ -320,7 +320,6 @@ export default function Payment() {
           city: city.trim(),
           zip_code: zipCode.trim(),
           country: country.trim(),
-
         },
         items,
         discountCode,
@@ -662,6 +661,11 @@ export default function Payment() {
                   ? "Till betalning"
                   : "Proceed to payment"}
             </button>
+            <p className="payment-delivery-time">
+              {language === "sv"
+                ? "Beräknad leveranstid: 3–4 veckor"
+                : "Estimated delivery time: 3–4 weeks"}
+            </p>
           </div>
         </div>
       </div>

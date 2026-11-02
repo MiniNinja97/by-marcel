@@ -231,6 +231,13 @@
     color: var(--gold);
 }
 
+.payment-delivery-time {
+  margin-top: 12px;
+  font-size: 1rem;
+  color: #cecdcd;
+  text-align: center;
+}
+
 
 /* FELMEDDELANDE */
 

@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams, NavLink } from "react-router-dom";
+import {
+  useParams,
+  NavLink,
+  useSearchParams,
+  useLocation,
+} from "react-router-dom";
 import "./products.css";
 import { getProducts } from "../../api/products";
 import type { Product } from "../../types";
@@ -10,6 +15,7 @@ import photoEngravingImage from "./products-img/bildgravyrfirst.jpeg";
 import enamelCustomImage from "./products-img/emaljegendesign.jpeg";
 import enamelStandardImage from "./products-img/emaljstandard.jpeg";
 import creativeWoodImage from "./products-img/kreativa-traprodukter.jpeg";
+import upcomingProductsImage from "./products-img/KT-first-img.jpeg";
 
 const giftCardImage =
   "https://www.bymarcel.se/uploads/products/presentkort1.jpeg";
@@ -24,8 +30,8 @@ const categories = [
     subcategories: [
       {
         name: {
-          sv: "Företagsskyltar",
-          en: "Company signs",
+          sv: "Företags- och textskylt",
+          en: "Business and text signs",
         },
         slug: "foretagsskyltar",
       },
@@ -80,18 +86,55 @@ const categories = [
       },
       {
         name: {
-          sv: "Gatunamn",
-          en: "Street names",
+          sv: "Gatunamnskyltar",
+          en: "Street name signs",
         },
         slug: "gatunamn",
       },
       {
-        name: {
-          sv: "Automotive",
-          en: "Automotive",
-        },
-        slug: "automotive",
+  name: {
+    sv: "Vintage skyltar",
+    en: "Vintage signs",
+  },
+  slug: "automotive",
+  subcategories: [
+    {
+      name: {
+        sv: "Vintage bilskyltar",
+        en: "Vintage car signs",
       },
+      slug: "vintage-bil",
+    },
+    {
+      name: {
+        sv: "Vintage MC-skyltar",
+        en: "Vintage motorcycle signs",
+      },
+      slug: "vintage-mc",
+    },
+    {
+      name: {
+        sv: "Vintage garageskyltar",
+        en: "Vintage garage signs",
+      },
+      slug: "vintage-garage",
+    },
+    {
+      name: {
+        sv: "Vintage lantbruksskyltar",
+        en: "Vintage agricultural signs",
+      },
+      slug: "vintage-lantbruk",
+    },
+    {
+      name: {
+        sv: "Små vintageskyltar",
+        en: "Small vintage signs",
+      },
+      slug: "vintage-sma",
+    },
+  ],
+},
       // {
       //   name: {
       //     sv: "Termometrar",
@@ -180,12 +223,19 @@ function getSubcategory(product: Product): string {
   }
 
   // WC
-  if (id.startsWith("ES.WC") || id.startsWith("ES.PG")) {
+  if (
+    id.startsWith("ES.WC") ||
+    id.startsWith("ES.CEHS-") ||
+    ["ES.PG.05", "ES.PG.06", "ES.PG.07"].includes(id)
+  ) {
     return "wc-skyltar";
   }
 
   // INFORMATIONSSKYLTAR
-  if (id.startsWith("ES.MS")) {
+  if (
+    id.startsWith("ES.MS") ||
+    ["ES.PG.01", "ES.PG.02", "ES.PG.03", "ES.PG.04"].includes(id)
+  ) {
     return "informationsskyltar";
   }
 
@@ -228,6 +278,19 @@ function getSubcategory(product: Product): string {
   return "ovrigt";
 }
 
+function getSubcategories(product: Product): string[] {
+  const id = product.id;
+
+  const subcategories = [getSubcategory(product)];
+
+  // Dessa WC-skyltar ska även visas under Informationsskyltar
+  if (["ES.PG.05", "ES.PG.06", "ES.PG.07"].includes(id)) {
+    subcategories.push("informationsskyltar");
+  }
+
+  return subcategories;
+}
+
 function getPaginationPages(
   currentPage: number,
   totalPages: number,
@@ -266,6 +329,7 @@ function getPaginationPages(
 }
 export default function Products() {
   const { kategori, produkttyp, underkategori } = useParams();
+  const location = useLocation();
 
   const { language } = useLanguage();
 
@@ -275,7 +339,26 @@ export default function Products() {
   //   "egen-design" | "standardprodukter" | null
   // >(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const pageParam = Number(searchParams.get("page"));
+
+  const currentPage =
+    Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
+
+  const changePage = (page: number) => {
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+
+      if (page === 1) {
+        params.delete("page");
+      } else {
+        params.set("page", String(page));
+      }
+
+      return params;
+    });
+  };
 
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -310,9 +393,16 @@ export default function Products() {
     När användaren byter kategori börjar vi
     alltid på sida 1 igen.
   */
+  // useEffect(() => {
+  //   setCurrentPage(1);
+  // }, [kategori, produkttyp, underkategori]);
+
   useEffect(() => {
-    setCurrentPage(1);
-  }, [kategori, produkttyp, underkategori]);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [currentPage]);
 
   /*
     FILTRERING
@@ -361,7 +451,7 @@ export default function Products() {
         }
 
         // Specifik underkategori inom egen design
-        return getSubcategory(product) === underkategori;
+        return getSubcategories(product).includes(underkategori);
       }
 
       // Standardprodukter = ES
@@ -376,7 +466,7 @@ export default function Products() {
         }
 
         // Specifik underkategori inom standardprodukter
-        return getSubcategory(product) === underkategori;
+        return getSubcategories(product).includes(underkategori);
       }
 
       return false;
@@ -521,26 +611,26 @@ export default function Products() {
               </NavLink>
 
               <NavLink
-  to="/produkter/kreativa-traprodukter"
-  className="products-category-card"
->
-  <div className="products-category-image">
-    <img
-      src={creativeWoodImage}
-      alt={
-        language === "sv"
-          ? "Kreativa träprodukter"
-          : "Creative wooden products"
-      }
-    />
-  </div>
+                to="/produkter/kreativa-traprodukter"
+                className="products-category-card"
+              >
+                <div className="products-category-image">
+                  <img
+                    src={creativeWoodImage}
+                    alt={
+                      language === "sv"
+                        ? "Kreativa träprodukter"
+                        : "Creative wooden products"
+                    }
+                  />
+                </div>
 
-  <h2>
-    {language === "sv"
-      ? "Kreativa träprodukter"
-      : "Creative wooden products"}
-  </h2>
-</NavLink>
+                <h2>
+                  {language === "sv"
+                    ? "Kreativa träprodukter"
+                    : "Creative wooden products"}
+                </h2>
+              </NavLink>
 
               <NavLink
                 to="/produkter/bildgravyr"
@@ -556,6 +646,7 @@ export default function Products() {
                 <h2>{language === "sv" ? "Bildgravyr" : "Photo engraving"}</h2>
               </NavLink>
 
+              {/* Presentkort */}
               <NavLink
                 to="/produkter/presentkort"
                 className="products-category-card"
@@ -568,6 +659,27 @@ export default function Products() {
                 </div>
 
                 <h2>{language === "sv" ? "Presentkort" : "Gift cards"}</h2>
+              </NavLink>
+
+              {/* Kommande produkter */}
+              <NavLink
+                to="/produkter/kommande-produkter"
+                className="products-category-card"
+              >
+                <div className="products-category-image">
+                  <img
+                    src={upcomingProductsImage}
+                    alt={
+                      language === "sv"
+                        ? "Kommande produkter"
+                        : "Upcoming products"
+                    }
+                  />
+                </div>
+
+                <h2>
+                  {language === "sv" ? "Kommande produkter" : "Coming soon"}
+                </h2>
               </NavLink>
             </div>
           </div>
@@ -618,97 +730,123 @@ export default function Products() {
         )}
 
         {/* KOMMANDE PRODUKTER */}
-{kategori === "kommande-produkter" && (
-  <section className="upcoming-products">
-    <h1>Kommande produkter</h1>
+        {kategori === "kommande-produkter" && (
+          <section className="upcoming-products">
+            <h1>{language === "sv" ? "Kommande produkter" : "Coming soon"}</h1>
 
-    <p>
-      Webbutiken är igång med våra första produkter! Under de kommande
-      månaderna fyller vi på med fler personliga produkter och kreativa
-      möjligheter.
-    </p>
+            <p>
+              {language === "sv"
+                ? "Webbutiken är igång med våra första produkter! Under de kommande månaderna fyller vi på med fler personliga produkter och kreativa möjligheter."
+                : "Our online store is now open with our first products! Over the coming months, we'll be adding more personalised products and creative possibilities."}
+            </p>
 
-    <div className="upcoming-products-list">
-      <div>
-        <h2>Premium PhotoArt</h2>
-        <p>
-          Dina foton i stort format på aluminium eller akryl. En
-          transparent epoxiyta ger färgerna djup och lyster med en
-          glasliknande känsla. Integrerad bakgrundsbelysning skapar ett
-          varmt sken och får bilden att sväva på väggen.
-        </p>
-      </div>
+            <div className="upcoming-products-list">
+              <div>
+                <h2>Premium PhotoArt</h2>
+                <p>
+                  {language === "sv"
+                    ? "Dina foton i stort format på aluminium eller akryl. En transparent epoxiyta ger färgerna djup och lyster med en glasliknande känsla. Integrerad bakgrundsbelysning skapar ett varmt sken och får bilden att sväva på väggen."
+                    : "Your photos in large format on aluminium or acrylic. A transparent epoxy finish adds depth and brilliance to the colours with a glass-like appearance. Integrated backlighting creates a warm glow and makes the image appear to float on the wall."}
+                </p>
+              </div>
 
-      <div>
-        <h2>Spegelgravyr</h2>
-        <p>
-          Foto, text eller logotyp graverad i spegel, med möjlighet
-          till färgdetaljer. Ett personligt minne från dopet,
-          bröllopet eller studenten, eller en unik inredningsdetalj.
-        </p>
-      </div>
+              <div>
+                <h2>
+                  {language === "sv" ? "Spegelgravyr" : "Mirror engraving"}
+                </h2>
+                <p>
+                  {language === "sv"
+                    ? "Foto, text eller logotyp graverad i spegel, med möjlighet till färgdetaljer. Ett personligt minne från dopet, bröllopet eller studenten, eller en unik inredningsdetalj."
+                    : "Photos, text or logos engraved onto mirrors, with the option to add coloured details. A personalised keepsake for a christening, wedding or graduation, or a unique decorative piece for your home."}
+                </p>
+              </div>
 
-      <div>
-        <h2>Bildgravyr – fler material och tillval</h2>
-        <p>
-          Utöver plywood, MDF och dekorpanel kommer bland annat skiffer,
-          natursten, glas, akryl och metall. Bakgrundsbelysning och en
-          transparent epoxiyta blir nya tillval som ger bilden extra
-          djup och karaktär.
-        </p>
-      </div>
+              <div>
+                <h2>
+                  {language === "sv"
+                    ? "Bildgravyr – fler material och tillval"
+                    : "Photo engraving – more materials and options"}
+                </h2>
+                <p>
+                  {language === "sv"
+                    ? "Utöver plywood, MDF och dekorpanel kommer bland annat skiffer, natursten, glas, akryl och metall. Bakgrundsbelysning och en transparent epoxiyta blir nya tillval som ger bilden extra djup och karaktär."
+                    : "In addition to plywood, MDF and decorative panels, we'll be introducing slate, natural stone, glass, acrylic and metal. Backlighting and a transparent epoxy finish will also be available as new options, adding extra depth and character to your image."}
+                </p>
+              </div>
 
-      <div>
-        <h2>Fler kreativa träprodukter</h2>
-        <p>
-          Vi utökar sortimentet med nya former, egna designer och
-          personliga detaljer i trä.
-        </p>
-      </div>
+              <div>
+                <h2>
+                  {language === "sv"
+                    ? "Fler kreativa träprodukter"
+                    : "More creative wooden products"}
+                </h2>
+                <p>
+                  {language === "sv"
+                    ? "Vi utökar sortimentet med nya former, egna designer och personliga detaljer i trä."
+                    : "We're expanding our range with new shapes, custom designs and personalised wooden details."}
+                </p>
+              </div>
 
-      <div>
-        <h2>Textiltryck</h2>
-        <p>
-          Din text, logotyp eller bild på kläder för privatpersoner,
-          företag och föreningar. Brett klädsortiment och beställning
-          från ett enda plagg.
-        </p>
-      </div>
+              <div>
+                <h2>
+                  {language === "sv" ? "Textiltryck" : "Textile printing"}
+                </h2>
+                <p>
+                  {language === "sv"
+                    ? "Din text, logotyp eller bild på kläder för privatpersoner, företag och föreningar. Brett klädsortiment och beställning från ett enda plagg."
+                    : "Your text, logo or image printed on clothing for individuals, businesses and organisations. A wide range of garments, with orders starting from just one item."}
+                </p>
+              </div>
 
-      <div>
-        <h2>Tapettryck</h2>
-        <p>
-          Din egen design som tapet. På en hel vägg eller som en
-          dekorativ detalj.
-        </p>
-      </div>
+              <div>
+                <h2>
+                  {language === "sv"
+                    ? "Tapettryck"
+                    : "Custom wallpaper printing"}
+                </h2>
+                <p>
+                  {language === "sv"
+                    ? "Din egen design som tapet. På en hel vägg eller som en dekorativ detalj."
+                    : "Turn your own design into wallpaper, whether for an entire wall or as a decorative feature."}
+                </p>
+              </div>
 
-      <div>
-        <h2>Personliga gåvor</h2>
-        <p>
-          Graverade skifferunderlägg och dricksglas kommer snart.
-          Därefter följer bland annat nyckelringar och pennor med
-          personlig gravyr och mycket mer.
-        </p>
-      </div>
+              <div>
+                <h2>
+                  {language === "sv"
+                    ? "Personliga gåvor"
+                    : "Personalised gifts"}
+                </h2>
+                <p>
+                  {language === "sv"
+                    ? "Graverade skifferunderlägg och dricksglas kommer snart. Därefter följer bland annat nyckelringar och pennor med personlig gravyr och mycket mer."
+                    : "Engraved slate coasters and drinking glasses are coming soon. These will be followed by personalised engraved keyrings, pens and much more."}
+                </p>
+              </div>
 
-      <div>
-        <h2>Skyltar för inne och ute</h2>
-        <p>
-          Unika skyltar för hemmet och stilfulla informationsskyltar
-          som lyfter presentationen av konst, böcker och
-          museiutställningar.
-        </p>
-      </div>
-    </div>
+              <div>
+                <h2>
+                  {language === "sv"
+                    ? "Skyltar för inne och ute"
+                    : "Indoor and outdoor signs"}
+                </h2>
+                <p>
+                  {language === "sv"
+                    ? "Unika skyltar för hemmet och stilfulla informationsskyltar som lyfter presentationen av konst, böcker och museiutställningar."
+                    : "Unique signs for your home and elegant information signs that enhance the presentation of artwork, books and museum exhibitions."}
+                </p>
+              </div>
+            </div>
 
-    <p className="upcoming-products-contact">
-      Mejla{" "}
-      <a href="mailto:info@bymarcel.se">info@bymarcel.se</a>
-      {" "}om du redan nu vill ha mer information.
-    </p>
-  </section>
-)}
+            <p className="upcoming-products-contact">
+              {language === "sv" ? "Mejla " : "Email "}
+              <a href="mailto:info@bymarcel.se">info@bymarcel.se</a>
+              {language === "sv"
+                ? " om du redan nu vill ha mer information."
+                : " if you'd like more information before these products become available."}
+            </p>
+          </section>
+        )}
 
         {/* ========================================
           PRODUKTVY
@@ -740,6 +878,9 @@ export default function Products() {
               {visibleProducts.map((product) => (
                 <NavLink
                   to={`/produkt/${product.id}`}
+                  state={{
+                    from: location.pathname + location.search,
+                  }}
                   key={product.id}
                   className="product-card"
                 >
@@ -776,6 +917,10 @@ export default function Products() {
                     </p>
 
                     <span className="product-card-price">
+                      {product.type !== "ES" &&
+                        product.type !== "gift_card" && (
+                          <>{language === "sv" ? "Från " : "From "}</>
+                        )}
                       {product.base_price} SEK
                     </span>
                   </div>
@@ -796,9 +941,7 @@ export default function Products() {
               <div className="pagination">
                 <button
                   className="pagination-btn"
-                  onClick={() =>
-                    setCurrentPage((page) => Math.max(1, page - 1))
-                  }
+                  onClick={() => changePage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
                 >
                   ‹
@@ -820,7 +963,7 @@ export default function Products() {
                         className={`pagination-btn ${
                           currentPage === item ? "active" : ""
                         }`}
-                        onClick={() => setCurrentPage(item)}
+                        onClick={() => changePage(item)}
                       >
                         {item}
                       </button>
@@ -831,7 +974,7 @@ export default function Products() {
                 <button
                   className="pagination-btn"
                   onClick={() =>
-                    setCurrentPage((page) => Math.min(totalPages, page + 1))
+                    changePage(Math.min(totalPages, currentPage + 1))
                   }
                   disabled={currentPage === totalPages}
                 >

@@ -510,6 +510,12 @@ export default function Cart() {
           <NavLink to="/payment" className="cart-checkout-btn">
             {language === "sv" ? "Gå till betalning" : "Proceed to checkout"}
           </NavLink>
+
+          <p className="cart-delivery-time">
+            {language === "sv"
+              ? "Beräknad leveranstid: 3–4 veckor"
+              : "Estimated delivery time: 3–4 weeks"}
+          </p>
         </div>
       </div>
     </div>

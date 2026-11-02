@@ -17,13 +17,17 @@ export interface Product {
   material_en?: string;
   type: ProductType;
   base_price: number;
-  images: string[];
+  
+images: string[];
 
-  // Äldre fält som vi behåller tills vidare
-  sizes?: string[];
-  shapes?: string[];
-  colors?: ProductColor[];
+// Fast storlek och form från databasen
+size?: string | null;
+shape?: "square" | "rectangle" | "oval" | null;
 
+// Äldre fält som vi behåller tills vidare
+sizes?: string[];
+shapes?: string[];
+colors?: ProductColor[];
   // Alternativ som hämtas från databasen
   options?: ProductOption[];
 

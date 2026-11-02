@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, NavLink } from "react-router-dom";
+import { useParams, NavLink, useLocation } from "react-router-dom";
 import { getProducts } from "../../api/products";
 import type { Product, ProductVariant, ProductColor } from "../../types";
 import { useCartStore } from "../../store/useCartStore";
@@ -12,6 +12,9 @@ export default function Product() {
   const { addItem } = useCartStore();
   const { language } = useLanguage();
 
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from;
+  console.log("FROM:", from);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -202,11 +205,16 @@ export default function Product() {
         (product.id === "KT.JUL01" || product.id === "KT.JUL02") &&
         value !== ""
       ) {
-        setGalleryImage("/uploads/products/KT.JUL01-A.jpg");
+        setGalleryImage(
+          product.id === "KT.JUL01"
+            ? "/uploads/products/KT.JUL01-A.jpg"
+            : "/uploads/products/KT.JUL02-A.jpg",
+        );
+
         setGalleryDescription(
           language === "sv"
-            ? "Välj bland våra 22 motiv"
-            : "Choose from our 22 designs",
+            ? "Välj bland våra 21 motiv"
+            : "Choose from our 21 designs",
         );
       }
     }
@@ -339,6 +347,20 @@ export default function Product() {
       });
     });
 
+    // Extra motivbild för Julens namnglöd
+    if (
+      product.id === "KT.JUL02" &&
+      !images.some((item) => item.image === "/uploads/products/KT.JUL02-A.jpg")
+    ) {
+      images.push({
+        image: "/uploads/products/KT.JUL02-A.jpg",
+        description:
+          language === "sv"
+            ? "Välj bland våra 21 motiv"
+            : "Choose from our 21 designs",
+      });
+    }
+
     // Alla variantbilder
     product.variants?.forEach((variant) => {
       variant.images?.forEach((image) => {
@@ -421,7 +443,7 @@ export default function Product() {
         setCartError(
           language === "sv"
             ? "Välj motiv, material och yta innan du lägger produkten i kundkorgen."
-            : "Select motif, material and finish before adding the product to your cart.",
+            : "Select motive, material and finish before adding the product to your cart.",
         );
 
         return;
@@ -799,6 +821,17 @@ export default function Product() {
           {language === "sv" ? "Produkter" : "Products"}
         </NavLink>
 
+        {from && (
+          <>
+            <span>—</span>
+            <NavLink to={from}>
+              {language === "sv"
+                ? "Tillbaka till produktlistan"
+                : "Back to products"}
+            </NavLink>
+          </>
+        )}
+
         <span>—</span>
         <span>
           {language === "sv" ? product.name : product.name_en || product.name}
@@ -915,15 +948,60 @@ export default function Product() {
                 ? product.material
                 : product.material_en || product.material}
             </p>
+            {/* Fast storlek */}
+            {product.size && (
+              <p className="product-size">
+                <strong>{language === "sv" ? "Storlek:" : "Size:"}</strong>{" "}
+                {product.size.replace(/ x /g, " × ")}
+              </p>
+            )}
+
+            {/* Fast form */}
+            {product.shape && (
+              <p className="product-shape">
+                <strong>{language === "sv" ? "Form:" : "Shape:"}</strong>{" "}
+                {language === "sv"
+                  ? {
+                      square: "Kvadratisk",
+                      rectangle: "Rektangulär",
+                      oval: "Oval",
+                    }[product.shape]
+                  : {
+                      square: "Square",
+                      rectangle: "Rectangular",
+                      oval: "Oval",
+                    }[product.shape]}
+              </p>
+            )}
           </div>
 
           {/* Pris */}
-          <p className="product-price">
-            {product.type === "KT"
-              ? getQuantityPrice(product, quantity)
-              : displayedPrice}{" "}
-            SEK {language === "sv" ? "/st" : "/each"}
-          </p>
+          <div className="product-price-container">
+            <p className="product-price">
+              {product.type === "KT"
+                ? getQuantityPrice(product, quantity)
+                : displayedPrice}{" "}
+              SEK {language === "sv" ? "/st" : "/each"}
+            </p>
+
+            {/* Information för kreativa träprodukter */}
+            {product.type === "KT" && (
+              <p className="product-quantity-discount-info">
+                {language === "sv"
+                  ? "Beställ fler för mängdrabatt, mer info i beskrivningen."
+                  : "Order more for a quantity discount. See the description for details."}
+              </p>
+            )}
+
+            {/* Information för emalj med egen design */}
+            {product.type === "EC" && (
+              <p className="product-quantity-discount-info">
+                {language === "sv"
+                  ? "Priset anpassas efter storlek och färg."
+                  : "The price varies depending on size and colour."}
+              </p>
+            )}
+          </div>
 
           {/* Dynamiska produktval */}
           {(isCustomEnamel ||
@@ -1383,6 +1461,13 @@ export default function Product() {
                 ? "Lägg till i kundkorgen"
                 : "Add to cart"}
           </button>
+
+          {/* Leveranstid */}
+          <p className="product-delivery-time">
+            {language === "sv"
+              ? "Beräknad leveranstid: 3–4 veckor"
+              : "Estimated delivery time: 3–4 weeks"}
+          </p>
         </div>
       </div>
     </div>
