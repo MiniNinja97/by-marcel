@@ -14,7 +14,7 @@ import enamelImage from "./products-img/emalj-framsida.jpeg";
 import photoEngravingImage from "./products-img/bildgravyrfirst.jpeg";
 import enamelCustomImage from "./products-img/emaljegendesign.jpeg";
 import enamelStandardImage from "./products-img/emaljstandard.jpeg";
-import creativeWoodImage from "./products-img/kreativa-traprodukter.jpeg";
+import creativeWoodImage from "./products-img/KT-main.jpeg";
 import upcomingProductsImage from "./products-img/KT-first-img.jpeg";
 
 const giftCardImage =

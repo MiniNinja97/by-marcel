@@ -71,7 +71,7 @@ export default function About() {
           </div>
 
           <div className="imgbox-info">
-            <h3>{language === "sv" ? "Bildgravyr" : "Photo engraving"}</h3>
+            <h3>{language === "sv" ? "Bildgravyr" : "Photo engraving "}</h3>
 
             <p>
               {language === "sv"
@@ -87,13 +87,13 @@ export default function About() {
   <div className="imgbox-img">
     <img
       src={bild2}
-      alt={language === "sv" ? "Trägravyr" : "Wood engraving"}
+      alt={language === "sv" ? "Material till trägravyr" : "Wood engraving materials"}
       loading="lazy"
     />
   </div>
 
   <div className="imgbox-info">
-    <h3>{language === "sv" ? "Trägravyr" : "Wood engraving"}</h3>
+    <h3>{language === "sv" ? "Material till trägravyr" : "Wood engraving materials"}</h3>
 
     <p>
       {language === "sv"
