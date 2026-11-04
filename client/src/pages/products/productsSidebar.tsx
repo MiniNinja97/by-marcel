@@ -11,6 +11,7 @@ type Subcategory = {
     en: string;
   };
   slug: string;
+  subcategories?: Subcategory[];
 };
 
 type ProductsSidebarProps = {
@@ -26,10 +27,14 @@ export default function ProductsSidebar({
   getSubcategory,
   subcategories,
 }: ProductsSidebarProps) {
-  const { kategori, produkttyp } = useParams();
+  const { kategori, produkttyp, underkategori } = useParams();
 
   const [isEnamelOpen, setIsEnamelOpen] = useState(kategori === "emalj");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isVintageOpen, setIsVintageOpen] = useState(
+    underkategori === "automotive" ||
+      underkategori?.startsWith("vintage-") === true,
+  );
 
   const [openProductType, setOpenProductType] = useState<
     "egen-design" | "standardprodukter" | null
@@ -44,6 +49,8 @@ export default function ProductsSidebar({
       setIsEnamelOpen(true);
     }
 
+    
+
     if (produkttyp === "egen-design" || produkttyp === "standardprodukter") {
       setOpenProductType(produkttyp);
     } else {
@@ -51,7 +58,16 @@ export default function ProductsSidebar({
     }
   }, [kategori, produkttyp]);
 
-  // resten av din kod...
+  useEffect(() => {
+      if (
+        underkategori === "automotive" ||
+        underkategori?.startsWith("vintage-")
+      ) {
+        setIsVintageOpen(true);
+      }
+    }, [underkategori]);
+
+  
 
   // Bara underkategorier som faktiskt har EC-produkter
   const customDesignSubcategories = subcategories.filter((subcategory) =>
@@ -71,6 +87,10 @@ export default function ProductsSidebar({
         product.type === "ES" &&
         getSubcategory(product) === subcategory.slug,
     ),
+  );
+
+  const vintageCategory = subcategories.find(
+    (subcategory) => subcategory.slug === "automotive",
   );
 
   return (
@@ -253,16 +273,70 @@ export default function ProductsSidebar({
                   <ul className="sidebar-subcategories">
                     {standardSubcategories.map((subcategory) => (
                       <li key={`standard-${subcategory.slug}`}>
-                        <NavLink
-                          to={`/produkter/emalj/standardprodukter/${subcategory.slug}`}
-                          className={({ isActive }) =>
-                            isActive
-                              ? "sidebar-sub-link active"
-                              : "sidebar-sub-link"
-                          }
-                        >
-                          {subcategory.name[language]}
-                        </NavLink>
+                        {subcategory.slug === "automotive" ? (
+                          <>
+                            <div className="sidebar-menu-row">
+                              <NavLink
+                                to="/produkter/emalj/standardprodukter/automotive"
+                                className={({ isActive }) =>
+                                  isActive
+                                    ? "sidebar-sub-link active"
+                                    : "sidebar-sub-link"
+                                }
+                              >
+                                {subcategory.name[language]}
+                              </NavLink>
+
+                              <button
+                                type="button"
+                                className="sidebar-toggle sidebar-toggle-small"
+                                onClick={() =>
+                                  setIsVintageOpen((open) => !open)
+                                }
+                                aria-expanded={isVintageOpen}
+                                aria-label={
+                                  language === "sv"
+                                    ? "Visa eller dölj vintageskyltar"
+                                    : "Show or hide vintage signs"
+                                }
+                              >
+                                {isVintageOpen ? "−" : "+"}
+                              </button>
+                            </div>
+
+                            {isVintageOpen && (
+                              <ul className="sidebar-subcategories">
+                                {vintageCategory?.subcategories?.map(
+                                  (vintage) => (
+                                    <li key={vintage.slug}>
+                                      <NavLink
+                                        to={`/produkter/emalj/standardprodukter/${vintage.slug}`}
+                                        className={({ isActive }) =>
+                                          isActive
+                                            ? "sidebar-sub-link active"
+                                            : "sidebar-sub-link"
+                                        }
+                                      >
+                                        {vintage.name[language]}
+                                      </NavLink>
+                                    </li>
+                                  ),
+                                )}
+                              </ul>
+                            )}
+                          </>
+                        ) : (
+                          <NavLink
+                            to={`/produkter/emalj/standardprodukter/${subcategory.slug}`}
+                            className={({ isActive }) =>
+                              isActive
+                                ? "sidebar-sub-link active"
+                                : "sidebar-sub-link"
+                            }
+                          >
+                            {subcategory.name[language]}
+                          </NavLink>
+                        )}
                       </li>
                     ))}
                   </ul>

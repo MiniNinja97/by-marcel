@@ -92,49 +92,49 @@ const categories = [
         slug: "gatunamn",
       },
       {
-  name: {
-    sv: "Vintage skyltar",
-    en: "Vintage signs",
-  },
-  slug: "automotive",
-  subcategories: [
-    {
-      name: {
-        sv: "Vintage bilskyltar",
-        en: "Vintage car signs",
+        name: {
+          sv: "Vintage skyltar",
+          en: "Vintage signs",
+        },
+        slug: "automotive",
+        subcategories: [
+          {
+            name: {
+              sv: "Vintage bilskyltar",
+              en: "Vintage car signs",
+            },
+            slug: "vintage-bil",
+          },
+          {
+            name: {
+              sv: "Vintage MC-skyltar",
+              en: "Vintage motorcycle signs",
+            },
+            slug: "vintage-mc",
+          },
+          {
+            name: {
+              sv: "Vintage garageskyltar",
+              en: "Vintage garage signs",
+            },
+            slug: "vintage-garage",
+          },
+          {
+            name: {
+              sv: "Vintage lantbruksskyltar",
+              en: "Vintage agricultural signs",
+            },
+            slug: "vintage-lantbruk",
+          },
+          {
+            name: {
+              sv: "Små vintageskyltar",
+              en: "Small vintage signs",
+            },
+            slug: "vintage-sma",
+          },
+        ],
       },
-      slug: "vintage-bil",
-    },
-    {
-      name: {
-        sv: "Vintage MC-skyltar",
-        en: "Vintage motorcycle signs",
-      },
-      slug: "vintage-mc",
-    },
-    {
-      name: {
-        sv: "Vintage garageskyltar",
-        en: "Vintage garage signs",
-      },
-      slug: "vintage-garage",
-    },
-    {
-      name: {
-        sv: "Vintage lantbruksskyltar",
-        en: "Vintage agricultural signs",
-      },
-      slug: "vintage-lantbruk",
-    },
-    {
-      name: {
-        sv: "Små vintageskyltar",
-        en: "Small vintage signs",
-      },
-      slug: "vintage-sma",
-    },
-  ],
-},
       // {
       //   name: {
       //     sv: "Termometrar",
@@ -286,6 +286,34 @@ function getSubcategories(product: Product): string[] {
   // Dessa WC-skyltar ska även visas under Informationsskyltar
   if (["ES.PG.05", "ES.PG.06", "ES.PG.07"].includes(id)) {
     subcategories.push("informationsskyltar");
+  }
+
+  // VINTAGESKYLTAR - MOTIVKATEGORIER
+  if (id.startsWith("ES.AUT.")) {
+    const articleNumber = Number(id.split(".")[2]);
+
+    if (articleNumber >= 1 && articleNumber <= 69) {
+      subcategories.push("vintage-bil");
+    } else if (articleNumber >= 70 && articleNumber <= 113) {
+      subcategories.push("vintage-mc");
+    } else if (articleNumber >= 114 && articleNumber <= 158) {
+      subcategories.push("vintage-garage");
+    } else if (articleNumber >= 159 && articleNumber <= 168) {
+      subcategories.push("vintage-lantbruk");
+    }
+  }
+
+  // SMÅ VINTAGESKYLTAR
+  if (id.startsWith("ES.AUT.")) {
+    const articleNumber = Number(id.split(".")[2]);
+
+    const smallVintageSigns =
+      (articleNumber >= 169 && articleNumber <= 247) ||
+      [121, 122, 125, 137, 152].includes(articleNumber);
+
+    if (smallVintageSigns) {
+      subcategories.push("vintage-sma");
+    }
   }
 
   return subcategories;
@@ -466,6 +494,10 @@ export default function Products() {
         }
 
         // Specifik underkategori inom standardprodukter
+        if (underkategori === "automotive") {
+          return getSubcategories(product).includes("automotive");
+        }
+
         return getSubcategories(product).includes(underkategori);
       }
 
@@ -511,9 +543,13 @@ export default function Products() {
   );
 
   // Aktiv underkategori
-  const activeSubcategory = activeCategory?.subcategories.find(
-    (subcategory) => subcategory.slug === underkategori,
-  );
+  const activeSubcategory =
+    activeCategory?.subcategories.find(
+      (subcategory) => subcategory.slug === underkategori,
+    ) ??
+    activeCategory?.subcategories
+      .flatMap((subcategory) => subcategory.subcategories ?? [])
+      .find((subcategory) => subcategory.slug === underkategori);
 
   // Rubrik
   let pageTitle = language === "sv" ? "Alla produkter" : "All products";
