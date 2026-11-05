@@ -79,14 +79,8 @@ export default function Payment() {
       return;
     }
 
-    // Presentkort har frakt inkluderad i grundpriset
-    // och ska därför inte räknas med i fraktberäkningen.
-    const shippingItems = items.filter(
-      (item) => item.product.type !== "gift_card",
-    );
+   const shippingItems = items;
 
-    // Om varukorgen endast innehåller presentkort
-    // ska ingen extra frakt läggas på.
     if (shippingItems.length === 0) {
       setShipping(0);
       setShippingLoading(false);
@@ -321,11 +315,12 @@ export default function Payment() {
           zip_code: zipCode.trim(),
           country: country.trim(),
         },
-        items,
-        discountCode,
-        paymentGiftCard?.code ?? null,
-        // customerNotes.trim(),
-      );
+              items,
+      discountCode,
+      paymentGiftCard?.code ?? null,
+      language,
+      // customerNotes.trim(),
+    );
 
       if (result.checkout_url) {
         window.location.href = result.checkout_url;

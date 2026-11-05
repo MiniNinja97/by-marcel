@@ -5,6 +5,7 @@ header("Content-Type: application/json");
 require_once __DIR__ . "/../config/db.php";
 require_once __DIR__ . "/../config/stripe.php";
 require_once __DIR__ . "/send-order-email.php";
+require_once __DIR__ . "/send-customer-email.php";
 require_once __DIR__ . "/order-number.php";
 
 // Stripe skickar webhookens innehåll som rå JSON.
@@ -298,10 +299,37 @@ if ($orderWasPaidNow) {
     $emailStmt->bind_param("s", $orderId);
     $emailStmt->execute();
 
-    $shouldSendOrderEmail =
+        $shouldSendOrderEmail =
         $emailStmt->affected_rows === 1;
 
     $emailStmt->close();
+}
+
+// -----------------------------------------
+// Reservera kundens orderbekräftelse
+// -----------------------------------------
+
+$shouldSendCustomerEmail = false;
+
+if ($orderWasPaidNow) {
+
+    $customerEmailStmt = $conn->prepare("
+        UPDATE orders
+        SET
+            customer_email_status = 'sending',
+            customer_email_started_at = NOW()
+        WHERE id = ?
+        AND status = 'processing'
+        AND customer_email_status = 'pending'
+    ");
+
+    $customerEmailStmt->bind_param("s", $orderId);
+    $customerEmailStmt->execute();
+
+    $shouldSendCustomerEmail =
+        $customerEmailStmt->affected_rows === 1;
+
+    $customerEmailStmt->close();
 }
 
 $conn->commit();
@@ -366,24 +394,99 @@ if (!$wasUpdated) {
     );
 }
 
-  } catch (Throwable $emailError) {
+    } catch (Throwable $emailError) {
 
-    error_log(
-        "Ordermejl behöver kontrolleras för order " .
-        $orderId . ": " . $emailError->getMessage()
-    );
+        error_log(
+            "Ordermejl behöver kontrolleras för order " .
+            $orderId . ": " . $emailError->getMessage()
+        );
 
-    // Behåll statusen 'sending' vid oväntade fel.
-    // Mejlet kan redan ha accepterats för utskick.
-    // Kontrollera ordern manuellt innan ett nytt försök.
+               // Behåll 'sending' vid oväntade fel.
+        // Kontrollera manuellt innan nytt försök.
+    }
 }
+
+if ($shouldSendCustomerEmail) {
+
+    try {
+
+        $customerEmailSent = sendCustomerEmail(
+            $conn,
+            $orderId
+        );
+
+        $newCustomerEmailStatus =
+            $customerEmailSent ? "sent" : "pending";
+
+        if (!$customerEmailSent) {
+            error_log(
+                "Kundmejl kunde inte skickas för order " .
+                $orderId
+            );
+        }
+
+        // -----------------------------------------
+        // Uppdatera kundmejlets status
+        // -----------------------------------------
+
+        $customerEmailStmt = $conn->prepare("
+            UPDATE orders
+            SET
+                customer_email_status = ?,
+                customer_email_sent_at =
+                    CASE
+                        WHEN ? = 'sent' THEN NOW()
+                        ELSE NULL
+                    END,
+                customer_email_started_at =
+                    CASE
+                        WHEN ? = 'sent'
+                            THEN customer_email_started_at
+                        ELSE NULL
+                    END
+            WHERE id = ?
+            AND customer_email_status = 'sending'
+        ");
+
+        $customerEmailStmt->bind_param(
+            "ssss",
+            $newCustomerEmailStatus,
+            $newCustomerEmailStatus,
+            $newCustomerEmailStatus,
+            $orderId
+        );
+
+        $customerEmailStmt->execute();
+
+        $wasUpdated =
+            $customerEmailStmt->affected_rows === 1;
+
+        $customerEmailStmt->close();
+
+        if (!$wasUpdated) {
+            throw new RuntimeException(
+                "Kundmejlets status kunde inte uppdateras för order " .
+                $orderId
+            );
+        }
+
+    } catch (Throwable $customerEmailError) {
+
+        error_log(
+            "Kundmejl behöver kontrolleras för order " .
+            $orderId . ": " .
+            $customerEmailError->getMessage()
+        );
+
+        // Behåll 'sending' vid oväntade fel.
+        // Kontrollera manuellt innan nytt försök.
+        }
 }
 
-            
         }
     }
 
-    // -----------------------------------------
+// -----------------------------------------
 // Stripe Checkout har löpt ut
 // -----------------------------------------
 
@@ -478,3 +581,5 @@ if ($event->type === "checkout.session.expired") {
         "error" => $e->getMessage()
     ]);
 }
+
+

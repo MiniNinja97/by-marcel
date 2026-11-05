@@ -62,12 +62,9 @@ export default function Cart() {
       return;
     }
 
-    const shippingItems = items.filter(
-      (item) => item.product.type !== "gift_card",
-    );
+    const shippingItems = items;
 
-    // Om kundvagnen bara innehåller presentkort
-    // ska ingen extra frakt läggas på.
+    
     if (shippingItems.length === 0) {
       setShipping(0);
       setShippingLoading(false);

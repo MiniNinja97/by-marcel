@@ -50,6 +50,7 @@ export async function createOrder(
   items: CartItem[],
   discountCode: string | null,
   giftCardCode: string | null,
+  language: "sv" | "en",
   // customerNotes: string,
 ): Promise<CreateOrderResponse> {
   const orderItems = await Promise.all(
@@ -129,6 +130,7 @@ export async function createOrder(
         items: orderItems,
         discount_code: discountCode,
         gift_card_code: giftCardCode,
+        language,
         // customer_notes: customerNotes,
         site_origin: window.location.origin,
       }),

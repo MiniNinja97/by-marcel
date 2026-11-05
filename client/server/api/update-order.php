@@ -77,7 +77,7 @@ $status = $data["status"];
 
 // Bara dessa tre statusar är tillåtna
 $allowedStatuses = [
-    "pending",
+    "processing",
     "delivered",
     "cancelled"
 ];
@@ -97,6 +97,17 @@ $sql = "
     UPDATE orders
     SET status = ?
     WHERE id = ?
+      AND (
+          status IN ('processing', 'delivered')
+          OR (
+              status = 'cancelled'
+              AND (
+                  (stripe_payment_id IS NOT NULL
+                   AND stripe_payment_id <> '')
+                  OR order_number IS NOT NULL
+              )
+          )
+      )
 ";
 
 $stmt = $conn->prepare($sql);
@@ -109,10 +120,46 @@ $stmt->bind_param(
 
 $stmt->execute();
 
+$affectedRows = $stmt->affected_rows;
+$stmt->close();
+
+if ($affectedRows === 0) {
+    $checkStmt = $conn->prepare("
+        SELECT status
+        FROM orders
+        WHERE id = ?
+    ");
+
+    $checkStmt->bind_param("s", $orderId);
+    $checkStmt->execute();
+
+    $result = $checkStmt->get_result();
+    $existingOrder = $result->fetch_assoc();
+
+    $checkStmt->close();
+
+    // Ordern hade redan den önskade statusen.
+    if ($existingOrder && $existingOrder["status"] === $status) {
+        echo json_encode([
+            "success" => true,
+            "id" => $orderId,
+            "status" => $status
+        ]);
+        exit;
+    }
+
+    http_response_code(409);
+
+    echo json_encode([
+        "success" => false,
+        "message" => "Orderstatus kunde inte uppdateras"
+    ]);
+
+    exit;
+}
+
 echo json_encode([
     "success" => true,
     "id" => $orderId,
     "status" => $status
 ]);
-
-$stmt->close();

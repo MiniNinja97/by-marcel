@@ -10,7 +10,7 @@ import type { Order, OrderStatus } from "../../types";
 type SortOption = "az" | "datum";
 
 const statusLabels: Partial<Record<OrderStatus, string>> = {
-  pending: "Pågående",
+  processing: "Pågående",
   delivered: "Klar",
   cancelled: "Avbruten",
 };
@@ -157,7 +157,7 @@ export default function AdminOrders() {
     <div className="admin-orders">
       {/* Statusfilter */}
       <div className="admin-filter-row">
-        {(["alla", "pending", "delivered", "cancelled"] as const).map(
+        {(["alla", "processing", "delivered", "cancelled"] as const).map(
           (filter) => (
             <button
               key={filter}
@@ -285,7 +285,7 @@ export default function AdminOrders() {
                   handleStatusChange(order.id, e.target.value as OrderStatus)
                 }
               >
-                <option value="pending">Pågående</option>
+                <option value="processing">Pågående</option>
                 <option value="delivered">Klar</option>
                 <option value="cancelled">Avbruten</option>
               </select>

@@ -14,6 +14,7 @@ require_once __DIR__ . "/../config/db.php";
 require_once __DIR__ . "/../config/stripe.php";
 require_once __DIR__ . "/order-number.php";
 require_once __DIR__ . "/send-order-email.php";
+require_once __DIR__ . "/send-customer-email.php";
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(405);
@@ -86,8 +87,17 @@ if (
 $customer = $data["customer"];
 $items = $data["items"];
 
-// $customerNotes = $data["customer_notes"] ?? null;
+// -----------------------------------------
+// Kundens språkval
+// -----------------------------------------
 
+$language = $data["language"] ?? "sv";
+
+if (!in_array($language, ["sv", "en"], true)) {
+    $language = "sv";
+}
+
+// $customerNotes = $data["customer_notes"] ?? null;
 // if ($customerNotes !== null) {
 //     if (!is_string($customerNotes)) {
 //         throw new InvalidArgumentException("Ogiltigt format för önskemål.");
@@ -1366,10 +1376,7 @@ if ($isImageEngraving) {
         $subtotal +=
             $unitPrice * $quantity;
 
-        if ($productType !== "gift_card") {
-    $totalWeight +=
-        $weight * $quantity;
-}
+        $totalWeight += $weight * $quantity;
     }
 // -----------------------------------------
 // Validera rabattkod
@@ -1798,7 +1805,7 @@ $totalPrice = max(
     // Ingen betalningsintegration ännu
     $stripePaymentId = null;
 
-   $orderSql = "
+  $orderSql = "
     INSERT INTO orders (
         id,
         customer_id,
@@ -1809,17 +1816,17 @@ $totalPrice = max(
         total_weight,
         total_price,
         status,
-        stripe_payment_id
-        
+        stripe_payment_id,
+        language
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ";
 
     $orderStmt =
         $conn->prepare($orderSql);
 
-    $orderStmt->bind_param(
-    "ssdsddddss",
+  $orderStmt->bind_param(
+    "ssdsddddsss",
     $orderId,
     $customerId,
     $subtotal,
@@ -1829,7 +1836,8 @@ $totalPrice = max(
     $totalWeight,
     $totalPrice,
     $status,
-    $stripePaymentId
+    $stripePaymentId,
+    $language
 );
 
     $orderStmt->execute();
@@ -2378,6 +2386,86 @@ if ($totalPrice <= 0) {
         error_log(
             "ORDER EMAIL ERROR: " . $emailError->getMessage()
         );
+    }
+}
+
+// -----------------------------------------
+// Skicka kundens orderbekräftelse vid
+// full presentkortsbetalning
+// -----------------------------------------
+
+if ($totalPrice <= 0) {
+
+    try {
+        // Reservera kundmejlet
+        $customerEmailStmt = $conn->prepare("
+            UPDATE orders
+            SET customer_email_status = 'sending',
+                customer_email_started_at = NOW()
+            WHERE id = ?
+              AND status = 'processing'
+              AND customer_email_status = 'pending'
+        ");
+
+        $customerEmailStmt->bind_param("s", $orderId);
+        $customerEmailStmt->execute();
+
+        $shouldSendCustomerEmail =
+            $customerEmailStmt->affected_rows === 1;
+
+        $customerEmailStmt->close();
+
+        if ($shouldSendCustomerEmail) {
+
+            $customerEmailSent = sendCustomerEmail(
+                $conn,
+                $orderId
+            );
+
+            if ($customerEmailSent) {
+
+                $sentStmt = $conn->prepare("
+                    UPDATE orders
+                    SET customer_email_status = 'sent',
+                        customer_email_sent_at = NOW()
+                    WHERE id = ?
+                      AND customer_email_status = 'sending'
+                ");
+
+                $sentStmt->bind_param("s", $orderId);
+                $sentStmt->execute();
+                $sentStmt->close();
+
+            } else {
+
+                error_log(
+                    "Kundmejl kunde inte skickas för order " .
+                    $orderId
+                );
+
+                // Tillåt ett nytt försök senare
+                $resetStmt = $conn->prepare("
+                    UPDATE orders
+                    SET customer_email_status = 'pending',
+                        customer_email_started_at = NULL
+                    WHERE id = ?
+                      AND customer_email_status = 'sending'
+                ");
+
+                $resetStmt->bind_param("s", $orderId);
+                $resetStmt->execute();
+                $resetStmt->close();
+            }
+        }
+
+    } catch (Throwable $customerEmailError) {
+
+        error_log(
+            "CUSTOMER EMAIL ERROR: " .
+            $customerEmailError->getMessage()
+        );
+
+        // Behåll 'sending' vid oväntade fel.
     }
 }
 
