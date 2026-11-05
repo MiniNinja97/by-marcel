@@ -1,68 +1,75 @@
-import { useState } from 'react'
+import { useState } from "react";
 
-import AdminOrders from './adminOrders'
-import AdminProducts from './adminProducts'
-import AdminDiscounts from './adminDiscounts'
-import AdminAbout from './adminAbout'
+import AdminOrders from "./adminOrders";
+import AdminProducts from "./adminProducts";
+// import AdminDiscounts from './adminDiscounts'
+// import AdminAbout from './adminAbout'
 
-import './admin.css'
+import "./admin.css";
 
-type AdminTab =
-    | 'ordrar'
-    | 'produkter'
-    | 'rabattkoder'
-    | 'om-oss'
+type AdminTab = "ordrar" | "produkter" | "dolda-produkter";
+// | 'rabattkoder'
+// | 'om-oss'
 
 export default function Admin() {
+  const [activeTab, setActiveTab] = useState<AdminTab>("ordrar");
 
-    const [activeTab, setActiveTab] = useState<AdminTab>('ordrar')
+  return (
+    <div className="admin">
+      <div className="admin-header">
+        <h1>Admin läget</h1>
+        <div className="admin-divider" />
+      </div>
 
-    return (
-        <div className='admin'>
-            <div className='admin-header'>
-                <h1>Admin läget</h1>
-                <div className='admin-divider' />
-            </div>
+      <div className="admin-tabs">
+        <button
+          className={`admin-tab ${activeTab === "ordrar" ? "active" : ""}`}
+          onClick={() => setActiveTab("ordrar")}
+        >
+          Ordrar
+        </button>
 
-            <div className='admin-tabs'>
-                <button
-                    className={`admin-tab ${activeTab === 'ordrar' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('ordrar')}
-                >
-                    Ordrar
-                </button>
+        <button
+          className={`admin-tab ${activeTab === "produkter" ? "active" : ""}`}
+          onClick={() => setActiveTab("produkter")}
+        >
+          Produkter
+        </button>
+        <button
+          className={`admin-tab ${activeTab === "dolda-produkter" ? "active" : ""}`}
+          onClick={() => setActiveTab("dolda-produkter")}
+        >
+          Dolda / Ej i lager
+        </button>
 
-                <button
-                    className={`admin-tab ${activeTab === 'produkter' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('produkter')}
-                >
-                    Produkter
-                </button>
-
-                <button
+        {/* <button
                     className={`admin-tab ${activeTab === 'rabattkoder' ? 'active' : ''}`}
                     onClick={() => setActiveTab('rabattkoder')}
                 >
                     Rabattkoder
-                </button>
+                </button> */}
 
-                <button
+        {/* <button
                     className={`admin-tab ${activeTab === 'om-oss' ? 'active' : ''}`}
                     onClick={() => setActiveTab('om-oss')}
                 >
                     Om Oss
-                </button>
-            </div>
+                </button> */}
+      </div>
 
-            <div className='admin-content'>
-                {activeTab === 'ordrar' && <AdminOrders />}
+      <div className="admin-content">
+        {activeTab === "ordrar" && <AdminOrders />}
 
-                {activeTab === 'produkter' && <AdminProducts />}
+        {activeTab === "produkter" && <AdminProducts />}
 
-                {activeTab === 'rabattkoder' && <AdminDiscounts />}
+        {activeTab === "dolda-produkter" && (
+          <AdminProducts filterMode="inactive" />
+        )}
 
-                {activeTab === 'om-oss' && <AdminAbout />}
-            </div>
-        </div>
-    )
+        {/* {activeTab === 'rabattkoder' && <AdminDiscounts />}
+
+                {activeTab === 'om-oss' && <AdminAbout />} */}
+      </div>
+    </div>
+  );
 }

@@ -5,6 +5,7 @@ header("Content-Type: application/json");
 require_once __DIR__ . "/../config/db.php";
 require_once __DIR__ . "/../config/stripe.php";
 require_once __DIR__ . "/send-order-email.php";
+require_once __DIR__ . "/order-number.php";
 
 // Stripe skickar webhookens innehåll som rå JSON.
 $payload = file_get_contents("php://input");
@@ -117,6 +118,38 @@ try {
 $orderWasPaidNow = $stmt->affected_rows === 1;
 
 $stmt->close();
+
+// -----------------------------------------
+// Skapa ordernummer efter bekräftad betalning
+// -----------------------------------------
+
+if ($orderWasPaidNow) {
+
+    $orderNumber = generateOrderNumber($conn);
+
+    $numberStmt = $conn->prepare("
+        UPDATE orders
+        SET order_number = ?
+        WHERE id = ?
+        AND order_number IS NULL
+    ");
+
+    $numberStmt->bind_param(
+        "ss",
+        $orderNumber,
+        $orderId
+    );
+
+    $numberStmt->execute();
+
+    if ($numberStmt->affected_rows !== 1) {
+        throw new RuntimeException(
+            "Ordernummer kunde inte sparas"
+        );
+    }
+
+    $numberStmt->close();
+}
 
 
                 // -----------------------------------------

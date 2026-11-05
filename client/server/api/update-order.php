@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
 }
 
 require_once __DIR__ . "/../config/db.php";
-require_once __DIR__ . "/admin/session.php";
+require_once __DIR__ . "/auth/session.php";
 
 if (empty($_SESSION["admin_user_id"])) {
     http_response_code(401);

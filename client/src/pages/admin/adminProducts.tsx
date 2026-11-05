@@ -11,7 +11,13 @@ import {
   createProduct,
 } from "../../api/products";
 
-export default function AdminProducts() {
+type AdminProductsProps = {
+  filterMode?: "all" | "inactive";
+};
+
+export default function AdminProducts({
+  filterMode = "all",
+}: AdminProductsProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -307,6 +313,14 @@ export default function AdminProducts() {
 
   const filteredProducts = products
     .filter((product) => {
+      if (
+        filterMode === "inactive" &&
+        !product.is_hidden &&
+        !product.is_out_of_stock
+      ) {
+        return false;
+      }
+
       if (!normalizedSearch) {
         return true;
       }

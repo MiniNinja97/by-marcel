@@ -131,7 +131,7 @@ export default function ProductsSidebar({
         <div className="sidebar-category">
           <div className="sidebar-menu-row">
             <NavLink
-              to="/produkter/emalj"
+              to="/produkter/emalj/valj"
               end
               className={({ isActive }) =>
                 isActive

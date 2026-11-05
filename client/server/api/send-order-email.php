@@ -124,6 +124,7 @@ function sendOrderEmail(mysqli $conn, string $orderId): bool
     $stmt = $conn->prepare("
         SELECT
             o.id,
+             o.order_number,
             o.created_at,
             o.subtotal,
             o.discount_amount,
@@ -131,6 +132,7 @@ function sendOrderEmail(mysqli $conn, string $orderId): bool
             o.total_price,
             o.customer_notes,
             o.status,
+            o.stripe_payment_id,
 
             c.first_name,
             c.last_name,
@@ -163,12 +165,16 @@ function sendOrderEmail(mysqli $conn, string $orderId): bool
         return false;
     }
 
+    // Använd det nya ordernumret, annars det interna ID:t
+$displayOrderNumber = $order["order_number"] ?: $order["id"];
+
    // -----------------------------------------
 // Hämta alla produkter i ordern
 // -----------------------------------------
 
 $itemStmt = $conn->prepare("
     SELECT
+     id,
         product_id,
         product_name,
         supplier_id,
@@ -200,6 +206,25 @@ $items = [];
 $attachmentUrls = [];
 
 while ($item = $itemResult->fetch_assoc()) {
+
+    // Hämta presentkort kopplade till orderprodukten
+    $giftCardStmt = $conn->prepare("
+        SELECT
+            code,
+            initial_amount
+        FROM gift_cards
+        WHERE order_item_id = ?
+    ");
+
+    $giftCardStmt->bind_param("s", $item["id"]);
+    $giftCardStmt->execute();
+
+    $giftCardResult = $giftCardStmt->get_result();
+
+    $item["gift_cards"] = $giftCardResult->fetch_all(MYSQLI_ASSOC);
+
+    $giftCardStmt->close();
+
     $items[] = $item;
 
     // Produkter med en kundbild
@@ -227,12 +252,12 @@ $itemStmt->close();
 
 $to = "order@bymarcel.se";
 
-$subject = "Ny betald order - " . $order["id"];
+$subject = "Ny betald order - " . $displayOrderNumber;
 
 $body = "NY BETALD ORDER - BY MARCEL\n";
 $body .= "================================\n\n";
 
-$body .= "Ordernummer: " . $order["id"] . "\n";
+$body .= "Ordernummer: " . $displayOrderNumber . "\n";
 $body .= "Orderdatum: " . $order["created_at"] . "\n\n";
 
 // Kunduppgifter
@@ -263,6 +288,19 @@ foreach ($items as $index => $item) {
 
     $body .= ($index + 1) . ". " . $item["product_name"] . "\n";
     $body .= "Produkt-ID: " . $item["product_id"] . "\n";
+    // Presentkortskoder
+if (!empty($item["gift_cards"])) {
+    foreach ($item["gift_cards"] as $giftCard) {
+        $body .= "Presentkortskod: " . $giftCard["code"] . "\n";
+        $body .= "Presentkortsvärde: " .
+            number_format(
+                (float) $giftCard["initial_amount"],
+                2,
+                ",",
+                " "
+            ) . " kr\n";
+    }
+}
 
     if (!empty($item["supplier_id"])) {
         $body .= "Leverantör: " . $item["supplier_id"] . "\n";
@@ -377,7 +415,11 @@ if (!empty($order["customer_notes"])) {
     $body .= $order["customer_notes"] . "\n\n";
 }
 
-$body .= "Betalning: Bekräftad via Stripe\n";
+if (!empty($order["stripe_payment_id"])) {
+    $body .= "Betalning: Bekräftad via Stripe\n";
+} else {
+    $body .= "Betalning: Betald med presentkort\n";
+}
 
 // -----------------------------------------
 // Förbered bildbilagor

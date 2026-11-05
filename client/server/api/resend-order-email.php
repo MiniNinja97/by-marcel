@@ -113,11 +113,13 @@ if (!is_string($orderId) || trim($orderId) === "") {
 
 // Kontrollera att ordern finns och är betald.
 $stmt = $conn->prepare("
-    SELECT
-        id,
-        status,
-        stripe_payment_id,
-        order_email_status
+   SELECT
+    id,
+    status,
+    total_price,
+    stripe_payment_id,
+    order_email_status
+
     FROM orders
     WHERE id = ?
     LIMIT 1
@@ -144,7 +146,10 @@ if (!$order) {
 
 if (
     $order["status"] !== "processing" ||
-    empty($order["stripe_payment_id"])
+    (
+        empty($order["stripe_payment_id"]) &&
+        (float) $order["total_price"] > 0
+    )
 ) {
     http_response_code(409);
 
@@ -180,8 +185,10 @@ $reserveStmt = $conn->prepare("
         order_email_started_at = NOW()
     WHERE id = ?
     AND status = 'processing'
-    AND stripe_payment_id IS NOT NULL
-    AND stripe_payment_id <> ''
+    AND (
+        (stripe_payment_id IS NOT NULL AND stripe_payment_id <> '')
+        OR total_price <= 0
+    )
     AND order_email_status = 'pending'
 ");
 

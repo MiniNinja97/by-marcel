@@ -2,10 +2,10 @@ import { useCartStore } from "../../store/useCartStore";
 import { NavLink } from "react-router-dom";
 import { useLanguage } from "../../context/languageContext";
 import { getShipping } from "../../api/shipping";
-import {
-  validateDiscountCode,
-  type ValidatedDiscount,
-} from "../../api/discounts";
+// import {
+//   validateDiscountCode,
+//   type ValidatedDiscount,
+// } from "../../api/discounts";
 import "./cart.css";
 import { useEffect, useState } from "react";
 
@@ -18,19 +18,19 @@ export default function Cart() {
     updateQuantity,
     getTotalPrice,
     getTotalItems,
-    setDiscountCode: saveDiscountCode,
+    // setDiscountCode: saveDiscountCode,
   } = useCartStore();
 
   const { language } = useLanguage();
 
-  const [discountCode, setDiscountCode] = useState("");
+  // const [discountCode, setDiscountCode] = useState("");
 
-  const [appliedDiscount, setAppliedDiscount] =
-    useState<ValidatedDiscount | null>(null);
+  // const [appliedDiscount, setAppliedDiscount] =
+  //   useState<ValidatedDiscount | null>(null);
 
-  const [discountError, setDiscountError] = useState("");
+  // const [discountError, setDiscountError] = useState("");
 
-  const [isCheckingDiscount, setIsCheckingDiscount] = useState(false);
+  // const [isCheckingDiscount, setIsCheckingDiscount] = useState(false);
 
   const [shipping, setShipping] = useState<number | null>(null);
 
@@ -42,9 +42,9 @@ export default function Cart() {
   // Momsdelen av ett pris inklusive 25 % moms är 20 % av priset.
   const moms = Math.round(subtotal * 0.2);
 
-  const discountAmount = appliedDiscount?.amount ?? 0;
+  // const discountAmount = appliedDiscount?.amount ?? 0;
 
-  const total = subtotal - discountAmount + (shipping ?? 0);
+  const total = subtotal + (shipping ?? 0);
 
   const formatPrice = (price: number) => {
     const locale = language === "sv" ? "sv-SE" : "en-GB";
@@ -103,82 +103,82 @@ export default function Cart() {
   // Lägg till rabattkod
   // -----------------------------------------
 
-  const applyDiscount = async () => {
-    if (!discountCode.trim()) {
-      setDiscountError(
-        language === "sv" ? "Ange en rabattkod." : "Enter a discount code.",
-      );
+  // const applyDiscount = async () => {
+  //   if (!discountCode.trim()) {
+  //     setDiscountError(
+  //       language === "sv" ? "Ange en rabattkod." : "Enter a discount code.",
+  //     );
 
-      return;
-    }
+  //     return;
+  //   }
 
-    try {
-      setIsCheckingDiscount(true);
-      setDiscountError("");
+  //   try {
+  //     setIsCheckingDiscount(true);
+  //     setDiscountError("");
 
-      const discount = await validateDiscountCode(discountCode, subtotal);
+  //     const discount = await validateDiscountCode(discountCode, subtotal);
 
-      setDiscountCode(discount.code);
-      saveDiscountCode(discount.code);
+  //     setDiscountCode(discount.code);
+  //     saveDiscountCode(discount.code);
 
-      setAppliedDiscount(discount);
-    } catch (error) {
-      setAppliedDiscount(null);
+  //     setAppliedDiscount(discount);
+  //   } catch (error) {
+  //     setAppliedDiscount(null);
 
-      setDiscountError(
-        error instanceof Error
-          ? error.message
-          : language === "sv"
-            ? "Rabattkoden är inte giltig."
-            : "The discount code is not valid.",
-      );
-    } finally {
-      setIsCheckingDiscount(false);
-    }
-  };
+  //     setDiscountError(
+  //       error instanceof Error
+  //         ? error.message
+  //         : language === "sv"
+  //           ? "Rabattkoden är inte giltig."
+  //           : "The discount code is not valid.",
+  //     );
+  //   } finally {
+  //     setIsCheckingDiscount(false);
+  //   }
+  // };
 
   // -----------------------------------------
   // Ta bort rabattkod
   // -----------------------------------------
 
-  const removeDiscount = () => {
-    setAppliedDiscount(null);
-    setDiscountCode("");
-    setDiscountError("");
-    saveDiscountCode(null);
-  };
+  // const removeDiscount = () => {
+  //   setAppliedDiscount(null);
+  //   setDiscountCode("");
+  //   setDiscountError("");
+  //   saveDiscountCode(null);
+  // };
 
   // -----------------------------------------
   // Kontrollera rabatt igen om summan ändras
   // -----------------------------------------
 
-  useEffect(() => {
-    if (!appliedDiscount) return;
+  // useEffect(() => {
+  //   if (!appliedDiscount) return;
 
-    const revalidateDiscount = async () => {
-      try {
-        const discount = await validateDiscountCode(
-          appliedDiscount.code,
-          subtotal,
-        );
+  //   const revalidateDiscount = async () => {
+  //     try {
+  //       const discount = await validateDiscountCode(
+  //         appliedDiscount.code,
+  //         subtotal,
+  //       );
 
-        setAppliedDiscount(discount);
-        setDiscountError("");
-      } catch (error) {
-        setAppliedDiscount(null);
+  //       setAppliedDiscount(discount);
+  //       setDiscountError("");
+  //     } catch (error) {
+  //       setAppliedDiscount(null);
 
-        setDiscountError(
-          error instanceof Error
-            ? error.message
-            : language === "sv"
-              ? "Rabattkoden är inte längre giltig."
-              : "The discount code is no longer valid.",
-        );
-      }
-    };
+  //       setDiscountError(
+  //         error instanceof Error
+  //           ? error.message
+  //           : language === "sv"
+  //             ? "Rabattkoden är inte längre giltig."
+  //             : "The discount code is no longer valid.",
+  //       );
+  //     }
+  //   };
 
-    revalidateDiscount();
-  }, [subtotal]);
+  //   revalidateDiscount();
+  // }, [subtotal]);
 
   // -----------------------------------------
   // Tom kundkorg
@@ -415,7 +415,7 @@ export default function Cart() {
               <span>{formatPrice(subtotal)}</span>
             </div>
 
-            <div className="cart-discount">
+            {/* <div className="cart-discount">
               <label htmlFor="discount-code">
                 {language === "sv" ? "Rabattkod" : "Discount code"}
               </label>
@@ -466,9 +466,9 @@ export default function Cart() {
                     : `Discount code ${appliedDiscount.code} has been applied.`}
                 </p>
               )}
-            </div>
+            </div> */}
 
-            {appliedDiscount && (
+            {/* {appliedDiscount && (
               <div className="cart-summary-row">
                 <span>
                   {language === "sv"
@@ -478,7 +478,7 @@ export default function Cart() {
 
                 <span>-{formatPrice(discountAmount)}</span>
               </div>
-            )}
+            )} */}
 
             <div className="cart-summary-row">
               <span>{language === "sv" ? "Frakt" : "Shipping"}</span>

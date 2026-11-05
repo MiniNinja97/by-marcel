@@ -12,6 +12,8 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
 
 require_once __DIR__ . "/../config/db.php";
 require_once __DIR__ . "/../config/stripe.php";
+require_once __DIR__ . "/order-number.php";
+require_once __DIR__ . "/send-order-email.php";
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(405);
@@ -137,6 +139,8 @@ foreach ($requiredCustomerFields as $field) {
         exit;
     }
 }
+
+
 
 
 // -----------------------------------------
@@ -2177,6 +2181,36 @@ if ($totalPrice > 0) {
     $paidOrderStmt->execute();
     $paidOrderStmt->close();
 
+    // -----------------------------------------
+// Skapa ordernummer vid full presentkortsbetalning
+// -----------------------------------------
+
+$orderNumber = generateOrderNumber($conn);
+
+$numberStmt = $conn->prepare("
+    UPDATE orders
+    SET order_number = ?
+    WHERE id = ?
+    AND status = 'processing'
+    AND order_number IS NULL
+");
+
+$numberStmt->bind_param(
+    "ss",
+    $orderNumber,
+    $orderId
+);
+
+$numberStmt->execute();
+
+if ($numberStmt->affected_rows !== 1) {
+    throw new RuntimeException(
+        "Ordernummer kunde inte sparas"
+    );
+}
+
+$numberStmt->close();
+
 
     // -----------------------------------------
     // Slutför presentkortsreservationen
@@ -2290,6 +2324,62 @@ $updateGiftCardStmt->bind_param(
 // -----------------------------------------
 
 $conn->commit();
+
+// -----------------------------------------
+// Skicka ordermejl vid full presentkortsbetalning
+// -----------------------------------------
+
+if ($totalPrice <= 0) {
+
+    try {
+        // Reservera mejlutskicket så att det inte
+        // kan startas två gånger för samma order.
+        $emailStmt = $conn->prepare("
+            UPDATE orders
+            SET order_email_status = 'sending',
+                order_email_started_at = NOW()
+            WHERE id = ?
+              AND status = 'processing'
+              AND order_email_status = 'pending'
+        ");
+
+        $emailStmt->bind_param("s", $orderId);
+        $emailStmt->execute();
+
+        $shouldSendEmail = $emailStmt->affected_rows === 1;
+
+        $emailStmt->close();
+
+        if ($shouldSendEmail) {
+
+            $emailSent = sendOrderEmail($conn, $orderId);
+
+            if ($emailSent) {
+                $sentStmt = $conn->prepare("
+                    UPDATE orders
+                    SET order_email_status = 'sent',
+                        order_email_sent_at = NOW()
+                    WHERE id = ?
+                      AND order_email_status = 'sending'
+                ");
+
+                $sentStmt->bind_param("s", $orderId);
+                $sentStmt->execute();
+                $sentStmt->close();
+
+            } else {
+                error_log(
+                    "Ordermejl kunde inte skickas för order " . $orderId
+                );
+            }
+        }
+
+    } catch (Throwable $emailError) {
+        error_log(
+            "ORDER EMAIL ERROR: " . $emailError->getMessage()
+        );
+    }
+}
 
 
 http_response_code(201);

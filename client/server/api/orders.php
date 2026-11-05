@@ -41,6 +41,7 @@ if (empty($_SESSION["admin_user_id"])) {
 $sql = "
     SELECT
         orders.id,
+          orders.order_number,
         orders.subtotal,
         orders.discount_code,
 orders.discount_amount,
@@ -66,12 +67,22 @@ orders.order_email_started_at,
         customers.zip_code,
         customers.country
 
-    FROM orders
+   FROM orders
 
-    INNER JOIN customers
-        ON orders.customer_id = customers.id
+INNER JOIN customers
+    ON orders.customer_id = customers.id
 
-    ORDER BY orders.created_at DESC
+WHERE orders.status IN ('processing', 'delivered')
+OR (
+    orders.status = 'cancelled'
+    AND (
+        (orders.stripe_payment_id IS NOT NULL
+         AND orders.stripe_payment_id <> '')
+        OR orders.order_number IS NOT NULL
+    )
+)
+
+ORDER BY orders.created_at DESC
 ";
 
 $result = $conn->query($sql);
@@ -223,6 +234,7 @@ $item["gift_cards"] = $giftCards;
 
     $orders[] = [
         "id" => $row["id"],
+        "order_number" => $row["order_number"],
 
         "customer" => [
             "id" => $row["customer_id"],

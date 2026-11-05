@@ -145,6 +145,7 @@ export interface Customer {
 
 export interface Order {
   id: string;
+  order_number: string | null;
   customer: Customer;
   items: OrderItem[];
   subtotal: number;

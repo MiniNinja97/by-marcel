@@ -169,6 +169,11 @@ export async function updateOrderStatus(
   );
 
   if (!response.ok) {
+    const errorText = await response.text();
+
+    console.error("HTTP-status:", response.status);
+    console.error("Svar från PHP:", errorText);
+
     throw new Error("Kunde inte uppdatera orderstatus");
   }
 }

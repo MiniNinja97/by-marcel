@@ -68,7 +68,14 @@ export default function AdminOrders() {
     .filter((order) =>
       activeFilter === "alla" ? true : order.status === activeFilter,
     )
-    .filter((order) => order.id.toLowerCase().includes(search.toLowerCase()))
+    .filter((order) => {
+      const searchTerm = search.trim().toLowerCase();
+
+      return (
+        order.id.toLowerCase().includes(searchTerm) ||
+        (order.order_number ?? "").toLowerCase().includes(searchTerm)
+      );
+    })
     .sort((a, b) => {
       if (activeSort === "az") {
         return a.customer.last_name.localeCompare(b.customer.last_name);
@@ -230,8 +237,14 @@ export default function AdminOrders() {
             {/* Orderinfo */}
             <div className="order-col-order">
               <p>
-                <strong>{order.id}</strong>
+                <strong>{order.order_number ?? order.id}</strong>
               </p>
+
+              {order.order_number && (
+                <p style={{ fontSize: "0.7rem", opacity: 0.6 }}>
+                  Internt ID: {order.id}
+                </p>
+              )}
 
               <p>{order.created_at}</p>
               <div className="admin-order-email-status">
@@ -252,8 +265,7 @@ export default function AdminOrders() {
                 )}
 
                 {order.order_email_status === "pending" &&
-                  order.status === "processing" &&
-                  !!order.stripe_payment_id && (
+                  order.status === "processing" && (
                     <button
                       type="button"
                       disabled={sendingEmailOrderId !== null}
